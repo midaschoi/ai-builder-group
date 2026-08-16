@@ -1,4 +1,4 @@
--- AI 빌더 그룹 관리자 DB 설치 (0001+0002+0003+0004 를 주석만 빼고 합친 것)
+-- AI 빌더 그룹 관리자 DB 설치 (0001~0005 를 주석만 빼고 합친 것)
 -- 설명이 붙은 원본은 supabase/migrations/ 에 있습니다.
 
 create extension if not exists "pgcrypto";
@@ -347,3 +347,18 @@ revoke update on public.builders from anon, authenticated;
 
 grant update (name, slug, one_liner, role_label, avatar_url)
   on public.builders to authenticated;
+
+alter table public.insights
+  add column if not exists tags text[] not null default '{}';
+
+insert into public.categories (slug, name, type, sort) values
+  ('how-we-work',  '일하는 방식',     'insight', 1),
+  ('ai-playbook',  'AI 활용 공유회',  'insight', 2),
+  ('client-guide', '발주 가이드',     'insight', 3),
+  ('builder-note', '빌더 노트',       'insight', 4)
+on conflict (type, slug) do update
+  set name = excluded.name, sort = excluded.sort;
+
+delete from public.categories
+ where type = 'insight'
+   and slug in ('methodology', 'ai-ax', 'growth', 'dev');

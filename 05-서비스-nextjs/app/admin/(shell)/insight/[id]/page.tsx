@@ -17,6 +17,7 @@ type Row = {
   category_id: string | null
   seo_title: string | null
   seo_description: string | null
+  tags: string[] | null
   status: string
   reject_reason: string | null
   author_id: string | null
@@ -36,7 +37,7 @@ export default async function InsightEditPage({ params }: { params: Promise<{ id
   const [{ data: raw }, { data: cats }] = await Promise.all([
     supabase
       .from('insights')
-      .select('id, title, slug, excerpt, body_html, thumb_url, category_id, seo_title, seo_description, status, reject_reason, author_id, updated_at, author:builders(name)')
+      .select('id, title, slug, excerpt, body_html, thumb_url, category_id, seo_title, seo_description, tags, status, reject_reason, author_id, updated_at, author:builders(name)')
       .eq('id', id)
       .maybeSingle(),
     supabase.from('categories').select('id, name').eq('type', 'insight').order('sort'),
@@ -61,6 +62,7 @@ export default async function InsightEditPage({ params }: { params: Promise<{ id
     category_id: row.category_id ?? '',
     seo_title: row.seo_title ?? '',
     seo_description: row.seo_description ?? '',
+    tags: row.tags ?? [],
     status: row.status,
     reject_reason: row.reject_reason,
     author_name: row.author?.name ?? null,

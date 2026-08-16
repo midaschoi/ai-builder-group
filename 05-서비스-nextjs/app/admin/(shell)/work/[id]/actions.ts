@@ -1,7 +1,8 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
+import { CONTENT_TAG } from '@/lib/content'
 import { createClient } from '@/lib/supabase'
 import { getCurrentBuilder } from '@/lib/session'
 import { sanitizeBody, isBodyEmpty } from '@/lib/sanitize'
@@ -243,9 +244,8 @@ export async function saveWork(_prev: SaveState, form: FormData): Promise<SaveSt
   }
 
   /* ── 7. 공개 반영 (FR-A05-05) ───────────────────────────────────── */
-  /* ⚠ /work/[slug] 동적 라우트가 아직 없다(백로그 §1.1). 지금은 목록만 유효하고,
-     상세는 공개 웹 DB 연결 작업에서 켜진다. 그때 이 호출이 그대로 동작한다. */
-  revalidatePath('/work')
+  /* 공개 캐시를 통째로 비운다 (FR-A05-05 = FR-A03-08) */
+  updateTag(CONTENT_TAG)
   revalidatePath('/admin/work')
 
   if (!id && savedId) redirect(`/admin/work/${savedId}`)

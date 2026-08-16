@@ -38,3 +38,12 @@
 .relrow .c { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; color: var(--muted-2); text-transform: uppercase; }
 .relrow .t { font-size: 18px; font-weight: 700; letter-spacing: -0.025em; }
 @media (max-width: 1000px) { .art-body { grid-template-columns: 1fr; padding-inline: 0; } .toc { display: none; } .relrow { grid-template-columns: 1fr; gap: 4px; } }
+
+/* 관리자에서 올린 대표 이미지. 시안의 .ph 자리를 대신한다 (P-05) */
+.art-cover {
+  width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover;
+  border-radius: 18px; display: block; margin: 0 0 34px;
+  background: var(--paper-2);
+}
+/* 본문 안 이미지 — 에디터에서 올린 것 */
+.art img:not(.art-cover) { max-width: 100%; height: auto; border-radius: 14px; margin: 24px 0; }

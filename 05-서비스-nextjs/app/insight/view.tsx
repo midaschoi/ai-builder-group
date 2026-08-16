@@ -3,8 +3,11 @@
 import Link from 'next/link'
 import { useEffect } from 'react'
 import { useRibbonFlow, useDock } from '@/components/fx'
+import type { Category, InsightCard } from '@/lib/content'
 
-type Article = { c: string; img: string; title: string; cat: string; desc: string; meta: string }
+/* ⚠ 아래 ARTICLES 는 **시연용 샘플**이다. 발행된 글이 하나도 없을 때만 쓴다.
+     하나라도 발행되면 목록 전체가 DB 로 바뀐다 (page.tsx 가 넘겨준다). */
+type Article = { c: string; img: string; title: string; cat: string; desc: string; meta: string; href?: string; cover?: string | null }
 const ARTICLES: Article[] = [
   { c: 'ai-ax', img: 'ins-poc.jpg', title: "AI PoC란? 기업 AI 도입 전 반드시 필요한 'PoC' 알아보기", cat: 'AI · AX', desc: '기업 AI 도입, 전면 구축 전에 PoC로 먼저 검증해야 하는 이유.', meta: '똑똑한개발자 · 2026.08.03' },
   { c: 'ai-ax', img: 'ins-agent.jpg', title: '우리 회사에도 AI 에이전트가 필요할까? 5분 체크리스트', cat: 'AI · AX', desc: '도입이 필요한 조직의 신호 — 5분 만에 자가진단해 보세요.', meta: '똑똑한개발자 · 2026.07.22' },
@@ -16,7 +19,35 @@ const ARTICLES: Article[] = [
   { c: 'ai-ax', img: 'ins-gov.jpg', title: '기업용 AI 도입, 왜 거버넌스가 먼저 필요할까?', cat: 'AI · AX', desc: '데이터 유출·통제 불능을 막는 AI 거버넌스 설계법.', meta: '똑똑한개발자 · 2026.07.14' },
 ]
 
-export default function InsightView() {
+function fromDb(list: InsightCard[]): Article[] {
+  return list.map(a => ({
+    c: a.category_slug,
+    img: '',
+    title: a.title,
+    cat: a.category_name,
+    desc: a.excerpt,
+    meta: `${a.author} · ${a.published_at ? new Date(a.published_at).toLocaleDateString('ko-KR') : ''}`,
+    href: `/insight/${a.slug}`,
+    cover: a.thumb_url,
+  }))
+}
+
+export default function InsightView({
+  articles = [], categories = [], active = '', counts = {},
+}: {
+  articles?: InsightCard[]
+  categories?: Category[]
+  /** 카테고리 경로로 들어온 경우의 현재 슬러그. 빈 문자열이면 전체 */
+  active?: string
+  counts?: Record<string, number>
+}) {
+  /* DB 모드에서는 서버가 이미 걸러서 내려준다 — 카테고리는 링크(경로)가 되고,
+     아래 useEffect 의 클라이언트 필터는 샘플 모드에서만 의미가 있다.
+     IA §1 이 /insight/[category] 를 요구하므로 경로 쪽이 정답이다 (TR-04). */
+  const live = articles.length > 0
+  const rows = live ? fromDb(articles) : ARTICLES
+  const total = Object.values(counts).reduce((a, b) => a + b, 0)
+  const pad = (n: number) => String(n).padStart(2, '0')
   useRibbonFlow({
     rsI: [
       '발주 가이드 ✳ 일하는 방식 ✳ AI · AX ✳ 프로젝트 비하인드 ✳ ',
@@ -73,17 +104,36 @@ export default function InsightView() {
         <div className="wrap ins">
           {/* 카테고리: 전환 시 URL 경로 변경 (실서비스: /insight/[category]) */}
           <nav className="cats" aria-label="카테고리">
-            <button className="on" data-cat="all">전체 <span className="cnt">08</span></button>
-            <button data-cat="ai-ax">AI · AX <span className="cnt">04</span></button>
-            <button data-cat="guide">발주 가이드 <span className="cnt">02</span></button>
-            <button data-cat="how">일하는 방식 <span className="cnt">01</span></button>
-            <button data-cat="project">프로젝트 <span className="cnt">01</span></button>
+            {live ? (
+              <>
+                <Link className={active === '' ? 'on' : undefined} href="/insight">
+                  전체 <span className="cnt">{pad(total)}</span>
+                </Link>
+                {categories.map(c => (
+                  <Link key={c.slug} href={`/insight/${c.slug}`}
+                    className={active === c.slug ? 'on' : undefined}>
+                    {c.name} <span className="cnt">{pad(counts[c.slug] ?? 0)}</span>
+                  </Link>
+                ))}
+              </>
+            ) : (
+              <>
+                <button className="on" data-cat="all">전체 <span className="cnt">08</span></button>
+                <button data-cat="ai-ax">AI · AX <span className="cnt">04</span></button>
+                <button data-cat="guide">발주 가이드 <span className="cnt">02</span></button>
+                <button data-cat="how">일하는 방식 <span className="cnt">01</span></button>
+                <button data-cat="project">프로젝트 <span className="cnt">01</span></button>
+              </>
+            )}
           </nav>
 
           <div data-list>
-            {ARTICLES.map(a => (
-              <Link className="arow" href="/insight-detail" data-c={a.c} key={a.title}>
-                <img className="athumb" src={`/assets/img/ins/${a.img}`} alt="" loading="lazy" />
+            {rows.map(a => (
+              <Link className="arow" href={a.href ?? '/insight-detail'} data-c={a.c}
+                key={a.href ?? a.title}>
+                {(a.cover ?? (a.img ? `/assets/img/ins/${a.img}` : null))
+                  ? <img className="athumb" src={a.cover ?? `/assets/img/ins/${a.img}`} alt="" loading="lazy" />
+                  : <span className="athumb" aria-hidden="true" />}
                 <div>
                   <h3>{a.title}</h3>
                   <span className="cat">{a.cat}</span>

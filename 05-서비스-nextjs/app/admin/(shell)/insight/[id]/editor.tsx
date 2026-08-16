@@ -34,6 +34,7 @@ export type Record_ = {
   category_id: string
   seo_title: string
   seo_description: string
+  tags: string[]
   status: string
   reject_reason: string | null
   author_name: string | null
@@ -66,6 +67,16 @@ export default function InsightEditor({
   const [seoTitle, setSeoTitle] = useState(record.seo_title)
   const [seoDescription, setSeoDescription] = useState(record.seo_description)
   const [body, setBody] = useState(record.body_html)
+  const [tags, setTags] = useState<string[]>(record.tags)
+  const [tagDraft, setTagDraft] = useState('')
+
+  const addTag = (raw: string) => {
+    const v = raw.trim()
+    if (!v || tags.includes(v)) { setTagDraft(''); return }
+    setTags([...tags, v])
+    setTagDraft('')
+    markDirty()
+  }
 
   const markDirty = useCallback(() => {
     dirtyRef.current = true
@@ -174,6 +185,7 @@ export default function InsightEditor({
       <input type="hidden" name="id" value={record.id ?? 'new'} />
       <input type="hidden" name="body_html" value={body} />
       <input type="hidden" name="thumb_url" value={thumb} />
+      <input type="hidden" name="tags" value={tags.join(',')} />
 
       {/* ── 상단 바 ─────────────────────────────────────────── */}
       <div className="ed-top">
@@ -320,6 +332,39 @@ export default function InsightEditor({
                 </span>
               )}
             </div>
+          </section>
+
+          {/* 공개 상세(P-05) 하단의 태그 칩이 이 값을 쓴다 */}
+          <section className="adm-card">
+            <h2>태그</h2>
+            {tags.length > 0 && (
+              <div className="wk-tags">
+                {tags.map(t => (
+                  <span key={t}>
+                    {t}
+                    {!readOnly && (
+                      <button type="button" aria-label={`${t} 제거`}
+                        onClick={() => { setTags(tags.filter(x => x !== t)); markDirty() }}>✕</button>
+                    )}
+                  </span>
+                ))}
+              </div>
+            )}
+            {!readOnly && (
+              <div className="adm-field">
+                <input
+                  value={tagDraft} placeholder="외주 입력 후 Enter" maxLength={24}
+                  onChange={e => setTagDraft(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key !== 'Enter' && e.key !== ',') return
+                    /* Enter 로 폼이 제출되면 안 된다 — 태그만 추가하고 멈춘다 */
+                    e.preventDefault()
+                    addTag(tagDraft)
+                  }}
+                  onBlur={() => addTag(tagDraft)}
+                />
+              </div>
+            )}
           </section>
 
           <section className="adm-card">

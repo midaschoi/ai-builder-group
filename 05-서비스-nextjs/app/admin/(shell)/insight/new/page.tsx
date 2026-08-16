@@ -11,7 +11,7 @@ import '../../../editor.css'
 const EMPTY: Record_ = {
   id: null,
   title: '', slug: '', excerpt: '', body_html: '', thumb_url: '',
-  category_id: '', seo_title: '', seo_description: '',
+  category_id: '', seo_title: '', seo_description: '', tags: [],
   status: 'draft', reject_reason: null, author_name: null, updated_at: null,
 }
 

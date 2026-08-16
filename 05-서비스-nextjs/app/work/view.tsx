@@ -3,9 +3,19 @@
 import Link from 'next/link'
 import { useEffect } from 'react'
 import { useRibbonFlow, useDock, useCountUp } from '@/components/fx'
+import type { WorkCard } from '@/lib/content'
 
-/* ── 수행 프로젝트 데이터 ── */
-type Project = { c: string; tag: string; yr: string; title: string; desc: string; withTeam?: string; img: string; alt: string }
+/* ── 수행 프로젝트 데이터 ──
+
+   ⚠ 아래 PROJECTS 는 **시연용 샘플**이다. 관리자에 발행된 프로젝트가 하나도 없을 때만 쓴다.
+     하나라도 발행되면 DB 쪽으로 통째로 바뀐다 (page.tsx 가 넘겨준다).
+     오픈 전에 이 배열과 대응 이미지는 지워야 한다 — README §절대 규칙(미동의 샘플). */
+type Project = {
+  c: string; tag: string; yr: string; title: string; desc: string
+  withTeam?: string; img: string; alt: string
+  /** DB 에서 온 것만 채워진다 — 있으면 이 주소를 그대로 쓴다 */
+  href?: string; cover?: string | null
+}
 const PROJECTS: Project[] = [
   { c: 'commerce', tag: 'Commerce', yr: '2026', title: 'iloom — 리빙 커머스 리뉴얼', desc: '가구 브랜드 일룸의 커머스 경험 개편. 상품 탐색부터 상담 전환까지 여정 재설계.', withTeam: 'with 똑똑한개발자 · 빌더 조쉬', img: 'work-iloom.png', alt: 'iloom 리빙 커머스 화면' },
   { c: 'aiax', tag: 'AI · AX', yr: '2026', title: 'DAISY — 대홍기획', desc: '광고 그룹의 AI 업무 플랫폼 · 빌더 유나', img: 'work-daisy.png', alt: 'DAISY AI 업무 플랫폼 화면' },
@@ -33,7 +43,27 @@ const BUILDERS: Builder[] = [
   { slug: 'junho', box: 'bcard rv d4', name: '빌더 준호', role: '운영 · 인프라', desc: '배포 자동화와 모니터링으로 서비스를 지킵니다. 출시 후에도 문제가 먼저 보이게.', stk: ['CI/CD', '모니터링'], cnt: 3, badge: { cls: 'lv lv--new', label: 'NEW' } },
 ]
 
-export default function WorkView() {
+/** DB 에서 온 발행 프로젝트를 이 화면이 쓰는 모양으로 맞춘다 */
+function fromDb(list: WorkCard[]): Project[] {
+  return list.map(w => ({
+    c: w.category_slug,
+    tag: w.category_name,
+    yr: w.year,
+    title: w.title,
+    desc: w.summary,
+    withTeam: w.members.length ? `with ${w.members.join(' · ')}` : undefined,
+    img: '',
+    alt: `${w.title} 화면`,
+    href: `/work/${w.slug}`,
+    cover: w.thumb_url,
+  }))
+}
+
+export default function WorkView({ works = [] }: { works?: WorkCard[] }) {
+  /* 발행된 것이 하나라도 있으면 DB 를 쓰고, 없으면 샘플로 화면을 유지한다.
+     둘을 섞지 않는다 — 섞으면 어느 것이 실제인지 화면에서 구분되지 않는다. */
+  const projects = works.length > 0 ? fromDb(works) : PROJECTS
+
   useRibbonFlow({
     rsW: [
       'AI 에이전트 ✳ 랜딩 ✳ 플랫폼 ✳ 모바일 앱 ✳ 자동화 ✳ ',
@@ -173,10 +203,14 @@ export default function WorkView() {
             </div>
 
             <div className="pxg" data-list>
-              {PROJECTS.map(p => (
-                <Link className="wcard" href="/work-detail" data-c={p.c} data-cursor="VIEW →" key={p.title}>
+              {projects.map(p => (
+                <Link className="wcard" href={p.href ?? '/work-detail'} data-c={p.c}
+                  data-cursor="VIEW →" key={p.href ?? p.title}>
                   <div className="slot mask">
-                    <img className="cover" src={`/assets/img/${p.img}`} alt={p.alt} loading="lazy" />
+                    {/* 썸네일이 없는 발행 프로젝트도 있다 — 빈 칸으로 두면 카드 높이가 무너진다 */}
+                    {(p.cover ?? (p.img ? `/assets/img/${p.img}` : null))
+                      ? <img className="cover" src={p.cover ?? `/assets/img/${p.img}`} alt={p.alt} loading="lazy" />
+                      : <span className="cover" aria-hidden="true" />}
                   </div>
                   <div className="meta">
                     <div className="mrow"><span className="tag">{p.tag}</span><span className="yr num">{p.yr}</span></div>

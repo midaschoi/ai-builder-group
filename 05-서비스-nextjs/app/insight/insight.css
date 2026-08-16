@@ -9,11 +9,11 @@
 .cats { position: sticky; top: 96px; display: flex; flex-direction: column; gap: 2px; }
 .cats .k { font-family: var(--mono); font-size: 12px; letter-spacing: .2em; color: var(--muted-2);
   text-transform: uppercase; padding: 0 14px; margin-bottom: 12px; }
-.cats button { text-align: left; background: none; border: 0; font-family: var(--sans); font-size: 16px; font-weight: 600;
+.cats button, .cats a { text-align: left; background: none; border: 0; font-family: var(--sans); font-size: 16px; font-weight: 600;
   color: var(--muted); padding: 10px 14px; border-radius: 11px; cursor: pointer; transition: .15s;
   display: flex; justify-content: space-between; align-items: baseline; }
-.cats button:hover { color: var(--ink); background: var(--paper-2); }
-.cats button.on { color: var(--ink); background: var(--paper-3); font-weight: 700; }
+.cats button:hover, .cats a:hover { color: var(--ink); background: var(--paper-2); }
+.cats button.on, .cats a.on { color: var(--ink); background: var(--paper-3); font-weight: 700; }
 .cats .cnt { font-family: var(--mono); font-size: 12px; color: var(--muted-2); }
 /* 썸네일은 카드 안에 글씨가 박혀 있는 이미지라 190px 에서는 읽히지 않았다.
    폭에 따라 240~360px 로 키워 카드 안 문구가 보이게 한다. */
@@ -33,7 +33,7 @@
   .ins { grid-template-columns: 1fr; gap: 8px; }
   .cats { position: static; flex-direction: row; overflow-x: auto; padding-bottom: 10px; }
   .cats .k { display: none; }
-  .cats button { white-space: nowrap; gap: 6px; }
+  .cats button, .cats a { white-space: nowrap; gap: 6px; }
   .arow { grid-template-columns: 1fr; }
 }
 

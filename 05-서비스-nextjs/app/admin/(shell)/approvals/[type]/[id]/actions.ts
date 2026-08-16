@@ -1,7 +1,8 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
+import { CONTENT_TAG } from '@/lib/content'
 import { createClient } from '@/lib/supabase'
 import { requireAdmin } from '@/lib/session'
 
@@ -51,9 +52,8 @@ export async function approve(_prev: ReviewState, form: FormData): Promise<Revie
 
   if (error) return { error: `발행하지 못했습니다. ${error.message}` }
 
-  /* ⚠ /insight/[slug]·/work/[slug] 동적 라우트가 아직 없다(백로그 §1.1).
-     지금은 목록만 유효하고, 공개 웹 DB 연결 작업에서 상세가 켜지면 그대로 동작한다. */
-  revalidatePath(kind === 'insight' ? '/insight' : '/work')
+  /* 승인 즉시 공개에 반영한다 (FR-A07-03) */
+  updateTag(CONTENT_TAG)
   revalidatePath('/admin/approvals')
   revalidatePath(`/admin/${kind}`)
 

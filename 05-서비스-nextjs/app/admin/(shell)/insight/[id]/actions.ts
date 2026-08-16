@@ -1,7 +1,8 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
+import { CONTENT_TAG } from '@/lib/content'
 import { createClient } from '@/lib/supabase'
 import { getCurrentBuilder } from '@/lib/session'
 import { sanitizeBody, isBodyEmpty } from '@/lib/sanitize'
@@ -87,6 +88,10 @@ export async function saveInsight(_prev: SaveState, form: FormData): Promise<Sav
   /* 저장 직전 서버에서 정제한다 — 에디터가 거른 것은 신뢰하지 않는다 (FR-A03-03) */
   const bodyHtml = sanitizeBody(String(form.get('body_html') ?? ''))
 
+  const tags = String(form.get('tags') ?? '')
+    .split(',').map(x => x.trim()).filter(Boolean)
+    .filter((x, i, arr) => arr.indexOf(x) === i)
+
   /* ── 4. 검증 — 초안은 아무것도 안 채워도 저장된다 ────────────────── */
   const mustValidate = intent !== 'save'
   let slug: string | null = null
@@ -111,6 +116,15 @@ export async function saveInsight(_prev: SaveState, form: FormData): Promise<Sav
     if (id) dup = dup.neq('id', id)
     const { data: found } = await dup
     if (found && found.length > 0) return { error: '이미 사용 중인 슬러그입니다.' }
+
+    /* ⚠ 카테고리 슬러그와 겹치면 안 된다.
+       공개 라우트 /insight/[slug] 가 카테고리를 먼저 보기 때문에(app/insight/[slug]/page.tsx),
+       겹치면 이 글은 주소가 있어도 영영 열리지 않는다. */
+    const { data: cat } = await supabase
+      .from('categories').select('slug').eq('type', 'insight').eq('slug', slug).limit(1)
+    if (cat && cat.length > 0) {
+      return { error: `"${slug}" 는 카테고리 주소로 이미 쓰고 있습니다. 다른 슬러그를 써주세요.` }
+    }
   }
 
   const payload = {
@@ -122,6 +136,7 @@ export async function saveInsight(_prev: SaveState, form: FormData): Promise<Sav
     thumb_url: thumbUrl || null,
     seo_title: seoTitle || null,
     seo_description: seoDescription || null,
+    tags,
     status: nextStatus,
     /* 첫 발행 때만 찍는다. 재발행마다 갱신하면 목록 정렬이 뒤집힌다 */
     published_at:
@@ -170,9 +185,9 @@ export async function saveInsight(_prev: SaveState, form: FormData): Promise<Sav
   }
 
   /* ── 6. 공개 반영 (FR-A03-08) ───────────────────────────────────── */
-  /* ⚠ /insight/[slug] 동적 라우트가 아직 없다(백로그 §1.1). 지금은 목록만 유효하고,
-     상세는 공개 웹 DB 연결 작업에서 켜진다. 그때 이 호출이 그대로 동작한다. */
-  revalidatePath('/insight')
+  /* 공개 캐시를 통째로 비운다 (FR-A03-08). 목록·상세·사이트맵이 한 태그를 공유하므로
+     경로를 하나씩 적다가 빠뜨려 '발행했는데 안 보인다' 가 생기지 않는다. */
+  updateTag(CONTENT_TAG)
   revalidatePath('/admin/insight')
 
   if (!id && savedId) redirect(`/admin/insight/${savedId}`)

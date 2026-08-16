@@ -7,6 +7,7 @@ import SiteFx from '@/components/SiteFx'
 import ChannelTalk from '@/components/ChannelTalk'
 import ChromeGate from '@/components/ChromeGate'
 import Analytics from '@/components/Analytics'
+import { OrganizationLd } from '@/components/JsonLd'
 import { getSiteSettings } from '@/lib/settings'
 
 /* 배포 주소를 코드에 박아두면 안 된다. 실제로 ai-builder-group-pearl(옛 HTML 목업 배포본)이
@@ -47,6 +48,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ChromeGate>
           <Footer />
           <SiteFx />
+          {/* SR-04 — 이 사이트가 누구의 것인지. 관리자 화면에는 넣지 않는다(noindex 지면이다) */}
+          <OrganizationLd />
           {/* 측정 ID·플러그인 키는 관리자 화면(A-08)에서 온다. 없으면 아무것도 하지 않는다 */}
           <Analytics measurementId={s.ga4MeasurementId} />
           <ChannelTalk pluginKey={s.channelPluginKey} />

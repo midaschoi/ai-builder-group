@@ -64,8 +64,10 @@ function useMiniEditor(initial: string, readOnly: boolean, onChange: (html: stri
     editable: !readOnly,
     extensions: [
       StarterKit.configure({
+        /* ⛔ 제목은 없다 — 3막의 01·02·03 과 겹친다 (A-05 §축소판 툴바).
+           인용은 남긴다: 공개 상세(P-03) 템플릿이 고객 인터뷰 인용을 실제로 쓰고 있어서
+           빼두면 그 자리를 채울 방법이 없다. */
         heading: false,
-        blockquote: false,
         codeBlock: false,
         horizontalRule: false,
         link: { openOnClick: false, autolink: true },
@@ -102,6 +104,8 @@ function MiniToolbar({
         className={editor.isActive('bulletList') ? 'on' : ''}>• 목록</button>
       <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()}
         className={editor.isActive('orderedList') ? 'on' : ''}>1. 목록</button>
+      <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        className={editor.isActive('blockquote') ? 'on' : ''}>인용</button>
       <i />
       <label className="ed-upload">
         이미지
