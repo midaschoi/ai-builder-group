@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { saveSettings, type SettingsState } from './actions'
 
 const INITIAL: SettingsState = {}
@@ -15,6 +15,13 @@ export type SettingsForm = {
 
 export default function SettingsView({ current }: { current: SettingsForm }) {
   const [state, action, pending] = useActionState(saveSettings, INITIAL)
+
+  /* 제어 컴포넌트로 둔다. React 19 는 <form action={fn}> 제출 시 네이티브 form.reset() 을
+     호출하므로 defaultValue 로 두면 저장에 실패했을 때 방금 입력한 값이 통째로 날아간다.
+     같은 이유의 버그가 A-03 편집기에 있었다 — insight/[id]/editor.tsx 상단 주석 참고. */
+  const [form, setForm] = useState<SettingsForm>(current)
+  const set = (k: keyof SettingsForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }))
 
   return (
     <form action={action} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -38,7 +45,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
           <label htmlFor="pluug_form_url">폼 주소</label>
           <input
             id="pluug_form_url" name="pluug_form_url" type="url"
-            defaultValue={current.pluug_form_url}
+            value={form.pluug_form_url} onChange={set('pluug_form_url')}
             placeholder="https://www.pluuug.com/form/폼ID"
           />
           <small className="adm-dim" style={{ fontSize: 12 }}>
@@ -62,7 +69,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
           <label htmlFor="google_site_verification">구글 서치 콘솔 확인 코드</label>
           <input
             id="google_site_verification" name="google_site_verification" type="text"
-            defaultValue={current.google_site_verification}
+            value={form.google_site_verification} onChange={set('google_site_verification')}
             placeholder='google-site-verification=... 또는 <meta ... content="..."> 통째로'
             spellCheck={false}
           />
@@ -75,7 +82,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
           <label htmlFor="naver_site_verification">네이버 서치어드바이저 확인 코드</label>
           <input
             id="naver_site_verification" name="naver_site_verification" type="text"
-            defaultValue={current.naver_site_verification}
+            value={form.naver_site_verification} onChange={set('naver_site_verification')}
             placeholder='naver-site-verification 값 또는 태그 통째로'
             spellCheck={false}
           />
@@ -88,7 +95,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
           <label htmlFor="ga4_measurement_id">GA4 측정 ID</label>
           <input
             id="ga4_measurement_id" name="ga4_measurement_id" type="text"
-            defaultValue={current.ga4_measurement_id}
+            value={form.ga4_measurement_id} onChange={set('ga4_measurement_id')}
             placeholder="G-ABCD1234" spellCheck={false}
           />
           <small className="adm-dim" style={{ fontSize: 12 }}>
@@ -109,7 +116,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
           <label htmlFor="channel_plugin_key">플러그인 키</label>
           <input
             id="channel_plugin_key" name="channel_plugin_key" type="text"
-            defaultValue={current.channel_plugin_key} spellCheck={false}
+            value={form.channel_plugin_key} onChange={set('channel_plugin_key')} spellCheck={false}
           />
           <small className="adm-dim" style={{ fontSize: 12 }}>
             ⚠ 키가 틀리면 아무 에러 없이 조용히 안 뜹니다. 바꾼 뒤 런처를 눌러 실제로 열리는지 확인하세요.

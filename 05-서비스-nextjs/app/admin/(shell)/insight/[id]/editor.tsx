@@ -11,7 +11,14 @@ import { saveInsight, uploadImage, type SaveState } from './actions'
 
    ⛔ 툴바에 H1 이 없다 (FR-A03-02). 공개 상세(P-05)는 글 제목이 h1 이므로
       본문에 h1 이 또 생기면 문서 구조가 깨진다.
-      붙여넣기로 들어오는 h1 은 서버에서 h2 로 강등한다 — lib/sanitize.ts */
+      붙여넣기로 들어오는 h1 은 서버에서 h2 로 강등한다 — lib/sanitize.ts
+
+   ⛔ 입력칸은 전부 제어 컴포넌트(value + onChange)여야 한다. defaultValue 를 쓰면 안 된다.
+      React 19 는 <form action={fn}> 을 제출할 때 액션을 부르기 직전에 폼 초기화를 예약하고
+      (react-dom requestFormReset), 커밋 단계에서 네이티브 form.reset() 을 호출한다.
+      reset() 은 모든 필드를 defaultValue 로 되돌리므로 비제어 입력은 매 저장마다 비워진다 —
+      검증 실패 후 "슬러그를 입력해 주세요"가 무한 반복되던 원인이 이것이었다.
+      제어 입력은 React 가 value 와 함께 defaultValue 도 같이 맞춰두기 때문에 reset() 이 무해하다. */
 
 const INITIAL: SaveState = {}
 
@@ -47,15 +54,29 @@ export default function InsightEditor({
 }) {
   const [state, action, pending] = useActionState(saveInsight, INITIAL)
   const [dirty, setDirty] = useState(false)
-  const [thumb, setThumb] = useState(record.thumb_url)
   const [uploadError, setUploadError] = useState('')
-  const bodyRef = useRef<HTMLInputElement>(null)
   const dirtyRef = useRef(false)
+
+  /* 폼 값 — 전부 여기서 들고 있는다. 위 주석의 form.reset() 때문이다. */
+  const [title, setTitle] = useState(record.title)
+  const [slug, setSlug] = useState(record.slug)
+  const [categoryId, setCategoryId] = useState(record.category_id)
+  const [excerpt, setExcerpt] = useState(record.excerpt)
+  const [thumb, setThumb] = useState(record.thumb_url)
+  const [seoTitle, setSeoTitle] = useState(record.seo_title)
+  const [seoDescription, setSeoDescription] = useState(record.seo_description)
+  const [body, setBody] = useState(record.body_html)
 
   const markDirty = useCallback(() => {
     dirtyRef.current = true
     setDirty(true)          /* 값이 같으면 React 가 리렌더를 건너뛴다 */
   }, [])
+
+  /* 입력 한 번에 상태 갱신 + 미저장 표시 */
+  const bind = useCallback(
+    <T,>(set: (v: T) => void) => (v: T) => { set(v); markDirty() },
+    [markDirty],
+  )
 
   const editor = useEditor({
     /* SSR 에서 즉시 렌더하면 하이드레이션이 어긋난다 */
@@ -72,7 +93,7 @@ export default function InsightEditor({
     ],
     content: record.body_html || '',
     onUpdate: ({ editor }) => {
-      if (bodyRef.current) bodyRef.current.value = editor.getHTML()
+      setBody(editor.getHTML())
       markDirty()
     },
   })
@@ -151,12 +172,17 @@ export default function InsightEditor({
   return (
     <form action={action} className="ed">
       <input type="hidden" name="id" value={record.id ?? 'new'} />
-      <input type="hidden" name="body_html" ref={bodyRef} defaultValue={record.body_html || ''} />
+      <input type="hidden" name="body_html" value={body} />
       <input type="hidden" name="thumb_url" value={thumb} />
 
       {/* ── 상단 바 ─────────────────────────────────────────── */}
       <div className="ed-top">
         <Link className="adm-manage" href="/admin/insight">← 목록</Link>
+        {/* 제목을 고정 바에도 둔다 (A-03 와이어프레임).
+            본문을 쓰려고 스크롤하면 제목 입력칸이 툴바 뒤로 사라져 어느 글인지 알 수 없다. */}
+        <span className="ed-top-title" title={title || undefined}>
+          {title || <span className="adm-dim">제목 없음</span>}
+        </span>
         <span className="adm-badge" data-s={record.status}>{LABEL[record.status] ?? record.status}</span>
         {dirty && <span className="adm-dim" style={{ fontSize: 12 }}>· 저장하지 않은 변경</span>}
         <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
@@ -233,8 +259,8 @@ export default function InsightEditor({
 
           <div className="ed-title">
             <input
-              name="title" defaultValue={record.title} placeholder="제목을 입력하세요"
-              onChange={markDirty} readOnly={readOnly} maxLength={120}
+              name="title" value={title} placeholder="제목을 입력하세요"
+              onChange={e => bind(setTitle)(e.target.value)} readOnly={readOnly} maxLength={120}
             />
           </div>
 
@@ -248,8 +274,9 @@ export default function InsightEditor({
 
             <div className="adm-field">
               <label htmlFor="slug">슬러그 <span aria-hidden="true">*</span></label>
-              <input id="slug" name="slug" defaultValue={record.slug} readOnly={readOnly}
-                onChange={markDirty} placeholder="vibe-coding-difference" spellCheck={false} />
+              <input id="slug" name="slug" value={slug} readOnly={readOnly}
+                onChange={e => bind(setSlug)(e.target.value)}
+                placeholder="vibe-coding-difference" spellCheck={false} />
               <small className="adm-dim">
                 영문 소문자·숫자·하이픈. <b>한글 제목은 자동 변환하지 않습니다</b> — 읽을 수 없는 주소가 됩니다.
                 {record.status === 'published' && (
@@ -260,8 +287,8 @@ export default function InsightEditor({
 
             <div className="adm-field">
               <label htmlFor="category_id">카테고리 <span aria-hidden="true">*</span></label>
-              <select id="category_id" name="category_id" defaultValue={record.category_id}
-                onChange={markDirty} disabled={readOnly}>
+              <select id="category_id" name="category_id" value={categoryId}
+                onChange={e => bind(setCategoryId)(e.target.value)} disabled={readOnly}>
                 <option value="">선택하세요</option>
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
@@ -269,8 +296,8 @@ export default function InsightEditor({
 
             <div className="adm-field">
               <label htmlFor="excerpt">요약 <span aria-hidden="true">*</span></label>
-              <textarea id="excerpt" name="excerpt" defaultValue={record.excerpt} rows={3}
-                onChange={markDirty} readOnly={readOnly} maxLength={160} />
+              <textarea id="excerpt" name="excerpt" value={excerpt} rows={3}
+                onChange={e => bind(setExcerpt)(e.target.value)} readOnly={readOnly} maxLength={160} />
               <small className="adm-dim">목록 카드에 노출됩니다. 160자 이내.</small>
             </div>
 
@@ -299,14 +326,15 @@ export default function InsightEditor({
             <h2>SEO</h2>
             <div className="adm-field">
               <label htmlFor="seo_title">SEO 타이틀</label>
-              <input id="seo_title" name="seo_title" defaultValue={record.seo_title}
-                onChange={markDirty} readOnly={readOnly} maxLength={60} />
+              <input id="seo_title" name="seo_title" value={seoTitle}
+                onChange={e => bind(setSeoTitle)(e.target.value)} readOnly={readOnly} maxLength={60} />
               <small className="adm-dim">비우면 제목을 씁니다.</small>
             </div>
             <div className="adm-field">
               <label htmlFor="seo_description">SEO 디스크립션</label>
-              <textarea id="seo_description" name="seo_description" defaultValue={record.seo_description}
-                rows={3} onChange={markDirty} readOnly={readOnly} maxLength={160} />
+              <textarea id="seo_description" name="seo_description" value={seoDescription}
+                rows={3} onChange={e => bind(setSeoDescription)(e.target.value)}
+                readOnly={readOnly} maxLength={160} />
               <small className="adm-dim">비우면 요약을 씁니다.</small>
             </div>
           </section>

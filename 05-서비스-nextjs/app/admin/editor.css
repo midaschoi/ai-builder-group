@@ -1,12 +1,27 @@
 /* A-03 편집 화면. admin.css 의 토큰을 그대로 쓴다 (.adm 안에서만 유효). */
 
-.ed { display: flex; flex-direction: column; gap: 14px; }
+/* 상단 바 높이. 툴바가 이 값만큼 아래에 붙는다 —
+   두 군데에 각각 숫자를 박아두면 버튼 크기를 바꿀 때 한쪽만 고쳐 서로 겹친다. */
+.ed { display: flex; flex-direction: column; gap: 14px; --ed-bar: 48px; }
 
 .ed-top {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 10px; flex-wrap: nowrap;
   position: sticky; top: 0; z-index: 10;
   background: var(--bg); padding: 6px 2px; margin: -6px -2px 0;
+  min-height: var(--ed-bar); box-sizing: border-box;
 }
+/* 제목만 줄어들고 나머지(목록·배지·버튼)는 원래 크기를 지킨다 */
+.ed-top > * { flex: none; }
+
+/* 고정 바의 글 제목 — 길면 말줄임. 줄바꿈되면 바가 두 줄이 되어 툴바를 덮는다 */
+.ed-top-title {
+  flex: 1 1 auto; min-width: 0;
+  font-size: 13px; font-weight: 700; letter-spacing: -.01em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* 좁은 화면에서는 제목을 숨긴다 — 버튼이 밀려 나가는 것이 더 나쁘다 */
+@media (max-width: 767px) { .ed-top-title { display: none; } }
 
 .ed-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; align-items: start; }
 @media (max-width: 1099px) { .ed-grid { grid-template-columns: minmax(0, 1fr); } }
@@ -17,7 +32,7 @@
 .ed-toolbar {
   display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
   padding: 8px 10px; border-bottom: 1px solid var(--ln);
-  position: sticky; top: 44px; background: var(--card); z-index: 5;
+  position: sticky; top: var(--ed-bar); background: var(--card); z-index: 5;
 }
 .ed-toolbar button, .ed-toolbar .ed-upload {
   border: 1px solid transparent; background: none; border-radius: 7px;

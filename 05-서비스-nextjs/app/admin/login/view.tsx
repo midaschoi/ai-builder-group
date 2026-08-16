@@ -1,12 +1,17 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { signIn, type LoginState } from './actions'
 
 const INITIAL: LoginState = {}
 
 export default function LoginView({ next }: { next: string }) {
   const [state, action, pending] = useActionState(signIn, INITIAL)
+
+  /* 이메일은 제어 컴포넌트로 둔다. React 19 는 폼 액션이 끝나면 form.reset() 을 호출하므로
+     비밀번호만 틀려도 이메일까지 지워져 매번 다시 입력해야 한다.
+     비밀번호는 반대로 비워지는 편이 낫다 — 그대로 남겨두면 화면을 떠나도 남는다. */
+  const [email, setEmail] = useState('')
 
   return (
     <div className="adm">
@@ -28,6 +33,7 @@ export default function LoginView({ next }: { next: string }) {
               <label htmlFor="email">이메일 <span aria-hidden="true">*</span></label>
               <input
                 id="email" name="email" type="email" required
+                value={email} onChange={e => setEmail(e.target.value)}
                 autoComplete="email" autoFocus
                 /* 검증은 blur·제출 시점에만 — 입력 중에 빨간 줄이 뜨면 방해만 된다 */
                 spellCheck={false}
