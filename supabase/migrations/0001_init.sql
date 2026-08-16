@@ -290,6 +290,7 @@ create policy builders_admin_all on public.builders for all
 drop policy if exists works_read_published on public.works;
 drop policy if exists works_read_own       on public.works;
 drop policy if exists works_write_own      on public.works;
+drop policy if exists works_insert_own     on public.works;
 drop policy if exists works_admin_all      on public.works;
 
 create policy works_read_published on public.works for select
