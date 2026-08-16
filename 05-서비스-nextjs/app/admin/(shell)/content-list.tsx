@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import RowMenu from './row-menu'
+import type { Kind } from './content-actions'
 
 /* A-02 · A-04 공용 목록.
 
@@ -38,15 +40,19 @@ export type ListRow = {
   status: string
   updated_at: string
   thumb_url: string | null
+  /** 발행된 것만 공개 주소가 있다 — [관리 ▾] 의 미리보기에 쓴다 */
+  slug: string | null
   /** headers 와 같은 순서·길이. 제목과 상태 사이에 들어간다 */
   cells: React.ReactNode[]
 }
 
 export default function ContentList({
-  base, heading, newHref, newLabel, searchPlaceholder,
+  kind, base, heading, newHref, newLabel, searchPlaceholder,
   headers, rows, counts, totalAll, total,
   status, q, page, isAdmin, wideThumb, empty, notice,
 }: {
+  /** 서버 액션이 어느 표를 건드릴지 정한다 */
+  kind: Kind
   base: string
   heading: string
   newHref: string
@@ -149,7 +155,12 @@ export default function ContentList({
                       {r.cells.map((c, i) => <td key={headers[i] ?? i} className="adm-dim">{c}</td>)}
                       <td><span className="adm-badge" data-s={r.status}>{LABEL[r.status] ?? r.status}</span></td>
                       <td className="adm-dim adm-num">{when(r.updated_at)}</td>
-                      <td><Link className="adm-manage" href={`${base}/${r.id}`}>관리 ▾</Link></td>
+                      <td>
+                        <RowMenu
+                          kind={kind} id={r.id} title={r.title || '(제목 없음)'}
+                          slug={r.slug} status={r.status} isAdmin={isAdmin}
+                        />
+                      </td>
                     </tr>
                   ))}
                 </tbody>

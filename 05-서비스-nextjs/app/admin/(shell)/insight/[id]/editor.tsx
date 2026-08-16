@@ -2,6 +2,7 @@
 
 import { useActionState, useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useAutosave, useSlugCheck } from '../../editor-hooks'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
@@ -57,6 +58,7 @@ export default function InsightEditor({
   const [dirty, setDirty] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const dirtyRef = useRef(false)
+  const formRef = useRef<HTMLFormElement>(null)
 
   /* 폼 값 — 전부 여기서 들고 있는다. 위 주석의 form.reset() 때문이다. */
   const [title, setTitle] = useState(record.title)
@@ -154,6 +156,15 @@ export default function InsightEditor({
     else editor?.chain().focus().setImage({ src: res.url, alt: '' }).run()
   }, [editor, markDirty])
 
+  /* 30초 자동 저장 · 슬러그 실시간 확인 (../../editor-hooks.ts) */
+  const savedAt = useAutosave({
+    formRef,
+    enabled: !readOnly && Boolean(record.id),
+    isDirty: () => dirtyRef.current,
+    pending,
+  })
+  const slugCheck = useSlugCheck('insight', slug, record.id)
+
   /* 상단 바 버튼 — 상태와 역할에 따라 달라진다 (A-03 §상단 바) */
   const buttons: Array<{ intent: string; label: string; primary?: boolean }> = []
   if (!readOnly) {
@@ -181,11 +192,23 @@ export default function InsightEditor({
   )
 
   return (
-    <form action={action} className="ed">
+    <form action={action} className="ed" ref={formRef}>
       <input type="hidden" name="id" value={record.id ?? 'new'} />
+      {/* useAutosave 가 이 버튼을 눌러 보낸다 — 저장 경로를 하나로 유지한다 */}
+      <button type="submit" name="intent" value="save" data-autosave hidden aria-hidden="true" tabIndex={-1} />
       <input type="hidden" name="body_html" value={body} />
       <input type="hidden" name="thumb_url" value={thumb} />
       <input type="hidden" name="tags" value={tags.join(',')} />
+
+      {/* 좁은 화면에서는 편집을 막는다 (A-00 §모바일). 목록·읽기는 그대로 된다 */}
+      <div className="ed-mobile">
+        <b>이 화면은 데스크톱에서 작업해 주세요</b>
+        <p>
+          편집기 툴바와 발행 설정을 좁은 화면에 우겨넣으면 오히려 잘못 눌립니다.
+          글 목록과 읽기는 휴대폰에서도 그대로 됩니다.
+        </p>
+        <Link className="adm-btn" href="/admin/insight">목록으로</Link>
+      </div>
 
       {/* ── 상단 바 ─────────────────────────────────────────── */}
       <div className="ed-top">
@@ -196,7 +219,17 @@ export default function InsightEditor({
           {title || <span className="adm-dim">제목 없음</span>}
         </span>
         <span className="adm-badge" data-s={record.status}>{LABEL[record.status] ?? record.status}</span>
-        {dirty && <span className="adm-dim" style={{ fontSize: 12 }}>· 저장하지 않은 변경</span>}
+        {dirty
+          ? <span className="adm-dim" style={{ fontSize: 12 }}>· 저장하지 않은 변경</span>
+          : savedAt && (
+            <span className="adm-dim" style={{ fontSize: 12 }}>
+              · {savedAt.toLocaleTimeString('ko-KR')} 자동 저장됨
+            </span>
+          )}
+        {/* 공개 화면 그대로 보여준다 — 로그인한 사람에게만 열린다 (FR-A07-02) */}
+        {slug && (
+          <a className="adm-manage" href={`/insight/${slug}`} target="_blank" rel="noreferrer">미리보기 ↗</a>
+        )}
         <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           {buttons.map(btn)}
         </span>
@@ -289,6 +322,14 @@ export default function InsightEditor({
               <input id="slug" name="slug" value={slug} readOnly={readOnly}
                 onChange={e => bind(setSlug)(e.target.value)}
                 placeholder="vibe-coding-difference" spellCheck={false} />
+              {/* 저장할 때만 알려주면 다 쓰고 발행을 누른 다음에야 중복을 안다 */}
+              {slugCheck.state !== 'idle' && (
+                <small className={`ed-slug ed-slug--${slugCheck.state}`}>
+                  {slugCheck.state === 'checking' && '확인 중…'}
+                  {slugCheck.state === 'ok' && '✓ 사용 가능'}
+                  {slugCheck.state !== 'checking' && slugCheck.state !== 'ok' && slugCheck.message}
+                </small>
+              )}
               <small className="adm-dim">
                 영문 소문자·숫자·하이픈. <b>한글 제목은 자동 변환하지 않습니다</b> — 읽을 수 없는 주소가 됩니다.
                 {record.status === 'published' && (

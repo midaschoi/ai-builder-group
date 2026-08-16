@@ -3,6 +3,8 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { pageMeta } from '@/app/_meta'
 import { getWork, getWorks, getRedirect } from '@/lib/content'
 import { ArticleLd, BreadcrumbLd } from '@/components/JsonLd'
+import PreviewBar from '@/components/PreviewBar'
+import { previewWork } from '@/lib/preview'
 import '../../work-detail/work-detail.css'
 import WorkArticle from './view'
 
@@ -42,6 +44,18 @@ export default async function WorkDetailPage(
   const work = await getWork(slug)
 
   if (!work) {
+    /* 발행 전 미리보기 (FR-A07-02). 로그인한 사람에게만 보인다 — RLS 가 판정한다.
+       ⚠ 여기서만 쿠키를 만진다. 발행분은 위에서 이미 돌아갔으므로 SSG 가 깨지지 않는다. */
+    const draft = await previewWork(slug)
+    if (draft) {
+      return (
+        <>
+          <PreviewBar status={draft.status} editHref={`/admin/work/${draft.work.id}`} />
+          <WorkArticle work={draft.work} />
+        </>
+      )
+    }
+
     /* 슬러그가 바뀌었거나 보관된 글이면 새 주소로 넘긴다 (SR-06 · DR-08).
        ⚠ 미들웨어가 아니라 여기서 찾는다 — 정상 경로에는 비용이 0 이다.
        ⚠ 실제 응답은 301 이 아니라 308 이다. Next 의 permanentRedirect 가 308 을 쓴다

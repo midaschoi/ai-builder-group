@@ -300,3 +300,47 @@
 @media (prefers-reduced-motion: reduce) {
   .adm *, .adm *::before, .adm *::after { transition: none !important; animation: none !important; }
 }
+
+/* ── 행 액션 [관리 ▾] (A-02 · A-04 §행 액션) ─────────── */
+.rm { position: relative; display: inline-block; }
+.rm > summary { list-style: none; cursor: pointer; }
+.rm > summary::-webkit-details-marker { display: none; }
+
+.rm-menu {
+  /* fixed 다 — 좌표는 row-menu.tsx 가 버튼 위치를 재서 넣는다.
+     absolute 로 두면 .adm-card(overflow:hidden) 와 .adm-scroll 에 잘린다. */
+  position: fixed; z-index: 45;
+  width: 150px; background: var(--card);
+  border: 1px solid var(--ln); border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(14, 14, 12, .12);
+  padding: 5px; display: flex; flex-direction: column; gap: 1px;
+}
+.rm-menu a, .rm-menu button {
+  display: block; width: 100%; text-align: left;
+  background: none; border: 0; padding: 7px 10px; border-radius: 7px;
+  font-size: 12.5px; white-space: nowrap; color: inherit;
+}
+.rm-menu a:hover, .rm-menu button:hover:not(:disabled) { background: var(--hover); }
+.rm-menu button:disabled { opacity: .5; cursor: not-allowed; }
+/* 삭제는 파괴적이다. 나머지와 같은 색이면 실수로 누른다 */
+.rm-menu .rm-danger { color: #A32318; font-weight: 600; }
+.rm-menu form { display: contents; }
+
+.rm-overlay {
+  position: fixed; inset: 0; z-index: 45;
+  background: rgba(14, 14, 12, .34);
+  display: grid; place-items: center; padding: 16px;
+}
+.rm-modal {
+  background: var(--card); border: 1px solid var(--ln); border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(14, 14, 12, .2);
+  width: 100%; max-width: 420px; padding: 24px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.rm-modal h2 { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -.02em; }
+.rm-title { margin: 0; font-size: 14px; font-weight: 700; }
+.rm-warn {
+  margin: 0; border-radius: 9px; padding: 10px 12px;
+  background: #FCE3E1; color: #A32318; font-size: 12.5px; font-weight: 600;
+}
+.rm-foot { display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px; }

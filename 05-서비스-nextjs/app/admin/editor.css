@@ -214,3 +214,25 @@
   width: 16px; height: 16px; border-radius: 50%;
 }
 .wk-tags button:hover { background: var(--hover); color: var(--ink); }
+
+/* ── 슬러그 실시간 확인 (A-03 · A-05 §슬러그) ─────────── */
+.ed-slug { display: block; font-size: 11.5px; font-weight: 700; margin-top: 2px; }
+.ed-slug--checking { color: var(--mut); font-weight: 400; }
+.ed-slug--ok       { color: #14663C; }
+.ed-slug--taken,
+.ed-slug--invalid  { color: #A32318; }
+
+/* ── 모바일 안내 (A-00 §모바일 · A-05) ────────────────
+   Tiptap 툴바와 사이드 설정 패널을 360px 에 우겨넣으면 오히려 오작동한다. 막는 편이 낫다. */
+.ed-mobile { display: none; }
+@media (max-width: 767px) {
+  .ed-mobile {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+    background: var(--card); border: 1px solid var(--ln); border-radius: var(--r);
+    padding: 28px 22px; box-shadow: var(--shadow);
+  }
+  .ed-mobile b { font-size: 15px; font-weight: 800; }
+  .ed-mobile p { margin: 0; font-size: 13px; color: var(--mut); line-height: 1.6; }
+  /* 편집 영역은 통째로 감춘다. 폼 자체는 남아 있어야 저장 버튼이 동작한다 */
+  .ed-grid, .ed-top { display: none; }
+}

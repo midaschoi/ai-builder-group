@@ -16,6 +16,7 @@ type Row = {
   status: string
   updated_at: string
   thumb_url: string | null
+  slug: string | null
   category: { name: string } | null
   author: { name: string } | null
 }
@@ -53,7 +54,7 @@ export default async function InsightListPage({
 
   let list = supabase
     .from('insights')
-    .select('id, title, status, updated_at, thumb_url, category:categories(name), author:builders(name)',
+    .select('id, title, slug, status, updated_at, thumb_url, category:categories(name), author:builders(name)',
       { count: 'exact' })
     .order('updated_at', { ascending: false })
     .range((current - 1) * PAGE_SIZE, current * PAGE_SIZE - 1)
@@ -72,6 +73,7 @@ export default async function InsightListPage({
     status: r.status,
     updated_at: r.updated_at,
     thumb_url: r.thumb_url,
+    slug: r.slug,
     cells: isAdmin
       ? [r.category?.name ?? '—', r.author?.name ?? '—']
       : [r.category?.name ?? '—'],
@@ -79,6 +81,7 @@ export default async function InsightListPage({
 
   return (
     <ContentList
+      kind="insight"
       base="/admin/insight"
       heading="Insight 관리"
       newHref="/admin/insight/new"

@@ -14,6 +14,7 @@ export const dynamic = 'force-dynamic'
 type Row = {
   id: string
   title: string | null
+  slug: string | null
   status: string
   updated_at: string
   thumb_url: string | null
@@ -89,7 +90,7 @@ export default async function WorkListPage({
   let list = supabase
     .from('works')
     .select(
-      'id, title, status, updated_at, thumb_url, hero_url, category:categories(name),' +
+      'id, title, slug, status, updated_at, thumb_url, hero_url, category:categories(name),' +
       ' members:work_builders(sort, builder:builders(name, is_active))',
       { count: 'exact' },
     )
@@ -115,11 +116,13 @@ export default async function WorkListPage({
     updated_at: r.updated_at,
     /* 썸네일을 비워두면 히어로를 쓴다 (A-05 §이미지) — 목록에서도 같은 규칙을 따른다 */
     thumb_url: r.thumb_url || r.hero_url,
+    slug: r.slug,
     cells: [r.category?.name ?? '—', members(r.members ?? [])],
   }))
 
   return (
     <ContentList
+      kind="work"
       base="/admin/work"
       heading="Work 관리"
       newHref="/admin/work/new"
