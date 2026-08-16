@@ -1,0 +1,325 @@
+'use client'
+
+import { useActionState, useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
+import { useEditor, EditorContent } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import Image from '@tiptap/extension-image'
+import { saveInsight, uploadImage, type SaveState } from './actions'
+
+/* A-03 Insight 편집.
+
+   ⛔ 툴바에 H1 이 없다 (FR-A03-02). 공개 상세(P-05)는 글 제목이 h1 이므로
+      본문에 h1 이 또 생기면 문서 구조가 깨진다.
+      붙여넣기로 들어오는 h1 은 서버에서 h2 로 강등한다 — lib/sanitize.ts */
+
+const INITIAL: SaveState = {}
+
+export type Category = { id: string; name: string }
+
+export type Record_ = {
+  id: string | null
+  title: string
+  slug: string
+  excerpt: string
+  body_html: string
+  thumb_url: string
+  category_id: string
+  seo_title: string
+  seo_description: string
+  status: string
+  reject_reason: string | null
+  author_name: string | null
+  updated_at: string | null
+}
+
+const LABEL: Record<string, string> = {
+  draft: '초안', pending: '승인대기', published: '발행', rejected: '반려', archived: '보관',
+}
+
+export default function InsightEditor({
+  record, categories, isAdmin, readOnly,
+}: {
+  record: Record_
+  categories: Category[]
+  isAdmin: boolean
+  readOnly: boolean
+}) {
+  const [state, action, pending] = useActionState(saveInsight, INITIAL)
+  const [dirty, setDirty] = useState(false)
+  const [thumb, setThumb] = useState(record.thumb_url)
+  const [uploadError, setUploadError] = useState('')
+  const bodyRef = useRef<HTMLInputElement>(null)
+  const dirtyRef = useRef(false)
+
+  const markDirty = useCallback(() => {
+    dirtyRef.current = true
+    setDirty(true)          /* 값이 같으면 React 가 리렌더를 건너뛴다 */
+  }, [])
+
+  const editor = useEditor({
+    /* SSR 에서 즉시 렌더하면 하이드레이션이 어긋난다 */
+    immediatelyRender: false,
+    /* 툴바의 활성 상태(굵게가 켜졌는지 등)를 갱신하려면 필요하다 */
+    shouldRerenderOnTransaction: true,
+    editable: !readOnly,
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [2, 3] },         /* ⛔ H1 없음 */
+        link: { openOnClick: false, autolink: true },
+      }),
+      Image.configure({ inline: false }),
+    ],
+    content: record.body_html || '',
+    onUpdate: ({ editor }) => {
+      if (bodyRef.current) bodyRef.current.value = editor.getHTML()
+      markDirty()
+    },
+  })
+
+  /* 저장이 끝나면 더 이상 미저장 상태가 아니다 */
+  useEffect(() => {
+    if (state.ok) { dirtyRef.current = false; setDirty(false) }
+  }, [state.ok])
+
+  /* 이탈 경고 (FR-A00-07) — 브라우저를 닫는 경우 */
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!dirtyRef.current) return
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [])
+
+  /* 이탈 경고 — 앱 안에서 이동하는 경우.
+     브라우저 기본 경고만 붙이면 사이드바 클릭으로 나가는 경우가 안 잡힌다 (A-00 §3.4). */
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (!dirtyRef.current) return
+      const a = (e.target as Element | null)?.closest('a')
+      if (!a) return
+      const href = a.getAttribute('href') ?? ''
+      if (!href.startsWith('/')) return
+      if (!confirm('저장하지 않은 변경이 있습니다. 나가시겠습니까?')) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    }
+    document.addEventListener('click', onClick, true)   /* 캡처 단계 — Link 보다 먼저 */
+    return () => document.removeEventListener('click', onClick, true)
+  }, [])
+
+  const upload = useCallback(async (file: File, into: 'body' | 'thumb') => {
+    setUploadError('')
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await uploadImage(fd)
+    if (res.error) { setUploadError(res.error); return }
+    if (!res.url) return
+    if (into === 'thumb') { setThumb(res.url); markDirty() }
+    else editor?.chain().focus().setImage({ src: res.url, alt: '' }).run()
+  }, [editor, markDirty])
+
+  /* 상단 바 버튼 — 상태와 역할에 따라 달라진다 (A-03 §상단 바) */
+  const buttons: Array<{ intent: string; label: string; primary?: boolean }> = []
+  if (!readOnly) {
+    const s = record.status
+    if (s === 'published') {
+      buttons.push({ intent: 'save', label: '수정 저장', primary: true })
+      buttons.push({ intent: 'archive', label: '보관하기' })
+    } else if (s === 'archived') {
+      buttons.push({ intent: 'publish', label: '다시 발행', primary: true })
+    } else {
+      buttons.push({ intent: 'save', label: '임시저장' })
+      if (isAdmin) buttons.push({ intent: 'publish', label: '발행하기', primary: true })
+      else buttons.push({ intent: 'submit', label: s === 'rejected' ? '다시 제출' : '제출하기', primary: true })
+    }
+  }
+
+  const btn = (b: { intent: string; label: string; primary?: boolean }) => (
+    <button
+      key={b.intent}
+      className={b.primary ? 'adm-btn' : 'adm-btn adm-btn--ghost'}
+      type="submit" name="intent" value={b.intent} disabled={pending}
+    >
+      {pending ? '저장 중…' : b.label}
+    </button>
+  )
+
+  return (
+    <form action={action} className="ed">
+      <input type="hidden" name="id" value={record.id ?? 'new'} />
+      <input type="hidden" name="body_html" ref={bodyRef} defaultValue={record.body_html || ''} />
+      <input type="hidden" name="thumb_url" value={thumb} />
+
+      {/* ── 상단 바 ─────────────────────────────────────────── */}
+      <div className="ed-top">
+        <Link className="adm-manage" href="/admin/insight">← 목록</Link>
+        <span className="adm-badge" data-s={record.status}>{LABEL[record.status] ?? record.status}</span>
+        {dirty && <span className="adm-dim" style={{ fontSize: 12 }}>· 저장하지 않은 변경</span>}
+        <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+          {buttons.map(btn)}
+        </span>
+      </div>
+
+      {state.error && <p className="adm-error" role="alert">{state.error}</p>}
+      {state.ok && (
+        <p className="adm-notice" role="status" style={{ background: '#DBF3E4', color: '#14663C' }}>
+          저장했습니다.{state.notice ? ` ${state.notice}` : ''}
+        </p>
+      )}
+      {uploadError && <p className="adm-error" role="alert">{uploadError}</p>}
+
+      {/* 반려 사유는 편집 화면 안에서 보여준다 — 목록에만 있으면 고치는 동안 안 보인다 */}
+      {record.status === 'rejected' && record.reject_reason && (
+        <p className="adm-error" role="status">
+          <b>반려됨</b> — {record.reject_reason}
+        </p>
+      )}
+
+      {readOnly && (
+        <p className="adm-notice">
+          {record.status === 'pending'
+            ? '제출한 글은 승인·반려 전까지 수정할 수 없습니다.'
+            : '이 글은 운영 관리자만 수정할 수 있습니다.'}
+        </p>
+      )}
+
+      <div className="ed-grid">
+        {/* ── 본문 ──────────────────────────────────────────── */}
+        <div className="adm-card ed-main">
+          {!readOnly && editor && (
+            <div className="ed-toolbar">
+              <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                className={editor.isActive('heading', { level: 2 }) ? 'on' : ''}>H2</button>
+              <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                className={editor.isActive('heading', { level: 3 }) ? 'on' : ''}>H3</button>
+              <i />
+              <button type="button" onClick={() => editor.chain().focus().toggleBold().run()}
+                className={editor.isActive('bold') ? 'on' : ''}><b>B</b></button>
+              <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()}
+                className={editor.isActive('italic') ? 'on' : ''}><i>I</i></button>
+              <button type="button" onClick={() => editor.chain().focus().toggleStrike().run()}
+                className={editor.isActive('strike') ? 'on' : ''}><s>S</s></button>
+              <i />
+              <button type="button" onClick={() => {
+                const prev = editor.getAttributes('link').href ?? ''
+                const url = prompt('링크 주소', prev)
+                if (url === null) return
+                if (url === '') editor.chain().focus().unsetLink().run()
+                else editor.chain().focus().setLink({ href: url }).run()
+              }} className={editor.isActive('link') ? 'on' : ''}>링크</button>
+              <i />
+              <button type="button" onClick={() => editor.chain().focus().toggleBulletList().run()}
+                className={editor.isActive('bulletList') ? 'on' : ''}>• 목록</button>
+              <button type="button" onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                className={editor.isActive('orderedList') ? 'on' : ''}>1. 목록</button>
+              <i />
+              <button type="button" onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                className={editor.isActive('blockquote') ? 'on' : ''}>인용</button>
+              <button type="button" onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                className={editor.isActive('codeBlock') ? 'on' : ''}>코드</button>
+              <button type="button" onClick={() => editor.chain().focus().setHorizontalRule().run()}>구분선</button>
+              <i />
+              <label className="ed-upload">
+                이미지
+                <input type="file" accept="image/jpeg,image/png,image/webp" hidden
+                  onChange={e => { const f = e.target.files?.[0]; if (f) upload(f, 'body'); e.target.value = '' }} />
+              </label>
+            </div>
+          )}
+
+          <div className="ed-title">
+            <input
+              name="title" defaultValue={record.title} placeholder="제목을 입력하세요"
+              onChange={markDirty} readOnly={readOnly} maxLength={120}
+            />
+          </div>
+
+          <EditorContent editor={editor} className="ed-body" />
+        </div>
+
+        {/* ── 사이드 ────────────────────────────────────────── */}
+        <aside className="ed-side">
+          <section className="adm-card">
+            <h2>발행 설정</h2>
+
+            <div className="adm-field">
+              <label htmlFor="slug">슬러그 <span aria-hidden="true">*</span></label>
+              <input id="slug" name="slug" defaultValue={record.slug} readOnly={readOnly}
+                onChange={markDirty} placeholder="vibe-coding-difference" spellCheck={false} />
+              <small className="adm-dim">
+                영문 소문자·숫자·하이픈. <b>한글 제목은 자동 변환하지 않습니다</b> — 읽을 수 없는 주소가 됩니다.
+                {record.status === 'published' && (
+                  <><br />⚠ 발행된 글의 주소를 바꾸면 이전 주소를 넘기는 301 을 자동으로 만듭니다.</>
+                )}
+              </small>
+            </div>
+
+            <div className="adm-field">
+              <label htmlFor="category_id">카테고리 <span aria-hidden="true">*</span></label>
+              <select id="category_id" name="category_id" defaultValue={record.category_id}
+                onChange={markDirty} disabled={readOnly}>
+                <option value="">선택하세요</option>
+                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+
+            <div className="adm-field">
+              <label htmlFor="excerpt">요약 <span aria-hidden="true">*</span></label>
+              <textarea id="excerpt" name="excerpt" defaultValue={record.excerpt} rows={3}
+                onChange={markDirty} readOnly={readOnly} maxLength={160} />
+              <small className="adm-dim">목록 카드에 노출됩니다. 160자 이내.</small>
+            </div>
+
+            <div className="adm-field">
+              <label>썸네일</label>
+              {thumb
+                ? <img className="ed-thumb" src={thumb} alt="" />
+                : <div className="ed-thumb ed-thumb--empty">16:9 · 최대 2MB</div>}
+              {!readOnly && (
+                <span style={{ display: 'flex', gap: 6 }}>
+                  <label className="adm-btn adm-btn--ghost ed-upload">
+                    {thumb ? '이미지 변경' : '+ 이미지 업로드'}
+                    <input type="file" accept="image/jpeg,image/png,image/webp" hidden
+                      onChange={e => { const f = e.target.files?.[0]; if (f) upload(f, 'thumb'); e.target.value = '' }} />
+                  </label>
+                  {thumb && (
+                    <button type="button" className="adm-btn adm-btn--ghost"
+                      onClick={() => { setThumb(''); markDirty() }}>제거</button>
+                  )}
+                </span>
+              )}
+            </div>
+          </section>
+
+          <section className="adm-card">
+            <h2>SEO</h2>
+            <div className="adm-field">
+              <label htmlFor="seo_title">SEO 타이틀</label>
+              <input id="seo_title" name="seo_title" defaultValue={record.seo_title}
+                onChange={markDirty} readOnly={readOnly} maxLength={60} />
+              <small className="adm-dim">비우면 제목을 씁니다.</small>
+            </div>
+            <div className="adm-field">
+              <label htmlFor="seo_description">SEO 디스크립션</label>
+              <textarea id="seo_description" name="seo_description" defaultValue={record.seo_description}
+                rows={3} onChange={markDirty} readOnly={readOnly} maxLength={160} />
+              <small className="adm-dim">비우면 요약을 씁니다.</small>
+            </div>
+          </section>
+
+          <section className="adm-card">
+            <h2>정보</h2>
+            <dl className="ed-meta">
+              <dt>작성자</dt><dd>{record.author_name ?? '—'}</dd>
+              <dt>수정</dt><dd>{record.updated_at ? new Date(record.updated_at).toLocaleString('ko-KR') : '—'}</dd>
+            </dl>
+          </section>
+        </aside>
+      </div>
+    </form>
+  )
+}

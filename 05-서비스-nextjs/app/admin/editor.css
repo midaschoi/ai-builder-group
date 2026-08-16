@@ -1,0 +1,104 @@
+/* A-03 편집 화면. admin.css 의 토큰을 그대로 쓴다 (.adm 안에서만 유효). */
+
+.ed { display: flex; flex-direction: column; gap: 14px; }
+
+.ed-top {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  position: sticky; top: 0; z-index: 10;
+  background: var(--bg); padding: 6px 2px; margin: -6px -2px 0;
+}
+
+.ed-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; align-items: start; }
+@media (max-width: 1099px) { .ed-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ── 본문 ─────────────────────────────────────────────── */
+.ed-main { display: flex; flex-direction: column; }
+
+.ed-toolbar {
+  display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+  padding: 8px 10px; border-bottom: 1px solid var(--ln);
+  position: sticky; top: 44px; background: var(--card); z-index: 5;
+}
+.ed-toolbar button, .ed-toolbar .ed-upload {
+  border: 1px solid transparent; background: none; border-radius: 7px;
+  padding: 5px 9px; font-size: 12.5px; font-weight: 600; line-height: 1;
+  cursor: pointer;
+}
+.ed-toolbar button:hover, .ed-toolbar .ed-upload:hover { background: var(--hover); }
+.ed-toolbar button.on { background: var(--ink); color: var(--paper); }
+.ed-toolbar i:not([class]) { width: 1px; height: 18px; background: var(--ln); margin: 0 4px; }
+
+.ed-title { padding: 22px 28px 0; }
+.ed-title input {
+  width: 100%; border: 0; outline: none; background: none;
+  font-size: 26px; font-weight: 800; letter-spacing: -.025em; color: var(--ink);
+}
+.ed-title input::placeholder { color: var(--ln); }
+
+/* ── Tiptap 본문 영역 ─────────────────────────────────── */
+.ed-body { padding: 8px 28px 40px; }
+.ed-body .tiptap {
+  outline: none; min-height: 420px;
+  font-size: 15px; line-height: 1.75; color: var(--ink);
+  max-width: 62em;                /* 읽기 폭 — 공개 지면과 비슷하게 */
+}
+.ed-body .tiptap > * + * { margin-top: .9em; }
+.ed-body .tiptap h2 { font-size: 20px; font-weight: 800; letter-spacing: -.02em; margin-top: 1.6em; }
+.ed-body .tiptap h3 { font-size: 17px; font-weight: 700; margin-top: 1.4em; }
+.ed-body .tiptap ul, .ed-body .tiptap ol { padding-left: 1.4em; }
+.ed-body .tiptap li + li { margin-top: .3em; }
+.ed-body .tiptap blockquote {
+  border-left: 3px solid var(--ln); padding-left: 14px; color: var(--mut);
+}
+.ed-body .tiptap pre {
+  background: var(--ink); color: var(--paper); border-radius: 10px;
+  padding: 14px 16px; overflow-x: auto; font-size: 13px;
+}
+.ed-body .tiptap code { font-size: .92em; }
+.ed-body .tiptap :not(pre) > code {
+  background: var(--bg); border: 1px solid var(--ln);
+  border-radius: 5px; padding: 1px 5px;
+}
+.ed-body .tiptap hr { border: 0; border-top: 1px solid var(--ln); margin: 1.8em 0; }
+.ed-body .tiptap img { max-width: 100%; height: auto; border-radius: 10px; }
+.ed-body .tiptap a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* 빈 상태 안내 — Tiptap 이 첫 문단에 붙여주는 클래스 */
+.ed-body .tiptap p.is-editor-empty:first-child::before {
+  content: '본문을 작성하세요…';
+  color: var(--ln); float: left; height: 0; pointer-events: none;
+}
+
+/* ── 사이드 ───────────────────────────────────────────── */
+.ed-side { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 56px; }
+@media (max-width: 1099px) { .ed-side { position: static; } }
+
+.ed-side section { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.ed-side h2 { margin: 0; font-size: 13px; font-weight: 800; letter-spacing: .02em; }
+.ed-side small { font-size: 11.5px; line-height: 1.5; }
+
+.ed-side select, .ed-side textarea {
+  border: 1px solid var(--ln); border-radius: 9px; background: var(--card);
+  padding: 9px 11px; font-size: 13px; font-family: inherit; width: 100%;
+  color: var(--ink);
+}
+.ed-side textarea { resize: vertical; }
+.ed-side select:focus, .ed-side textarea:focus, .ed-side input:focus { border-color: var(--ink); outline: none; }
+.ed-side input[readonly], .ed-side textarea[readonly], .ed-side select:disabled {
+  background: var(--bg); color: var(--mut);
+}
+
+.ed-thumb {
+  width: 100%; aspect-ratio: 16 / 9; border-radius: 9px; object-fit: cover;
+  background: var(--bg); display: block;
+}
+.ed-thumb--empty {
+  border: 1px dashed var(--ln); display: grid; place-items: center;
+  color: var(--mut); font-size: 12px;
+}
+
+.ed-upload { cursor: pointer; display: inline-flex; align-items: center; }
+
+.ed-meta { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: 12.5px; }
+.ed-meta dt { color: var(--mut); }
+.ed-meta dd { margin: 0; }
