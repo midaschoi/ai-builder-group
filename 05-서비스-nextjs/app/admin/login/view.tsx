@@ -53,12 +53,9 @@ export default function LoginView({ next }: { next: string }) {
               {pending ? '로그인 중…' : '로그인'}
             </button>
 
-            {/* ⛔ 회원가입 링크를 두지 않는다 — 계정은 관리자가 발급한다 (FR-A01-02)
-
-                비밀번호 재설정(FR-A01-05)은 P1 이라 아직 없다. 링크만 먼저 걸어 두면
-                눌렀을 때 404 가 나므로, 만들기 전까지는 대체 경로를 문장으로 안내한다. */}
+            {/* ⛔ 회원가입 링크를 두지 않는다 — 계정은 관리자가 발급한다 (FR-A01-02) */}
             <p className="adm-auth-foot adm-dim" style={{ justifyContent: 'center' }}>
-              비밀번호를 잊으셨다면 운영 관리자에게 문의해 주세요.
+              <a href="/admin/reset">비밀번호를 잊으셨나요?</a>
             </p>
           </form>
 

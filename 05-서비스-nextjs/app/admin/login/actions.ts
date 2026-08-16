@@ -76,9 +76,11 @@ export async function signIn(_prev: LoginState, form: FormData): Promise<LoginSt
     return { error: GENERIC }   /* 회수된 계정임을 알려주지 않는다 — 운영자가 알린다 */
   }
 
-  /* TODO(A-01 §계정 발급 직후 최초 로그인): /admin/reset 을 만든 뒤
-     builder.must_change_password 가 true 면 그쪽으로 강제 이동시킨다.
-     재설정 화면(FR-A01-05, P1)이 아직 없어 지금은 통과시킨다. */
+  /* 임시 비밀번호로 발급된 계정은 먼저 비밀번호를 바꾸게 한다
+     (A-01 §계정 발급 직후 최초 로그인 · A-06 §계정 발급).
+     ⚠ 여기서 보내지 않으면 임시 비밀번호가 그대로 상용 비밀번호가 된다.
+       발급 화면이 그 값을 평문으로 한 번 노출했으므로 반드시 바꿔야 한다. */
+  if (builder.must_change_password) redirect('/admin/reset')
 
   /* redirect 는 예외를 던져서 동작한다. try 안에 두면 안 된다. */
   redirect(next)

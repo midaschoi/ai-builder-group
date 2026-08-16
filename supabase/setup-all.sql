@@ -1,5 +1,6 @@
--- AI 빌더 그룹 관리자 DB 설치 (0001+0002+0003 을 주석만 빼고 합친 것)
+-- AI 빌더 그룹 관리자 DB 설치 (0001+0002+0003+0004 를 주석만 빼고 합친 것)
 -- 설명이 붙은 원본은 supabase/migrations/ 에 있습니다.
+
 create extension if not exists "pgcrypto";
 
 create or replace function public.touch_updated_at()
@@ -341,3 +342,8 @@ create policy media_update on storage.objects
 create policy media_delete on storage.objects
   for delete to authenticated
   using (bucket_id = 'media' and public.is_admin());
+
+revoke update on public.builders from anon, authenticated;
+
+grant update (name, slug, one_liner, role_label, avatar_url)
+  on public.builders to authenticated;

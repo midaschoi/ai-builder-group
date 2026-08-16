@@ -1,0 +1,130 @@
+/* A-06 빌더 관리. admin.css 의 토큰 위에서 동작한다. */
+
+/* ── 표 ───────────────────────────────────────────────── */
+/* 비활성 행은 전체를 흐리게 — 상태 배지 하나로는 훑을 때 눈에 안 들어온다 (A-06 §컬럼) */
+.bd-table tbody tr[data-off] { opacity: .6; }
+.bd-table tbody tr[data-off]:hover { opacity: 1; }
+
+.bd-avatar {
+  width: 30px; height: 30px; border-radius: 50%; flex: none; object-fit: cover;
+  background: var(--ink); color: var(--lime);
+  display: grid; place-items: center; font-size: 12px; font-weight: 700;
+}
+.bd-avatar--lg { width: 64px; height: 64px; font-size: 22px; }
+
+.bd-admin { background: var(--ink); color: var(--lime); }
+
+/* 발급했는데 안 들어온 계정을 찾기 위한 신호다 */
+.bd-never { color: #9A5B00; }
+
+/* ── 오버레이 · 모달 ──────────────────────────────────── */
+.bd-overlay {
+  position: fixed; inset: 0; z-index: 40;
+  background: rgba(14, 14, 12, .34);
+  display: flex; justify-content: flex-end;
+  padding: 12px;
+  overflow-y: auto;
+}
+/* 모달은 가운데, 프로필 패널은 오른쪽에서 슬라이드 (A-06 §프로필 편집) */
+.bd-overlay:has(.bd-modal) { align-items: center; justify-content: center; }
+
+.bd-modal {
+  background: var(--card); border-radius: 16px; border: 1px solid var(--ln);
+  box-shadow: 0 20px 60px rgba(14, 14, 12, .2);
+  width: 100%; max-width: 440px; padding: 24px;
+  display: flex; flex-direction: column; gap: 14px;
+  max-height: calc(100vh - 24px); overflow-y: auto;
+}
+.bd-modal h2 { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -.02em; }
+.bd-modal form { display: contents; }
+.bd-modal .adm-field input {
+  border: 1px solid var(--ln); border-radius: 9px; background: var(--card);
+  padding: 9px 11px; font-size: 13.5px; width: 100%; color: var(--ink);
+}
+.bd-modal .adm-field input:focus { border-color: var(--ink); outline: none; }
+.bd-modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px; }
+
+/* ── 발급 방식 ────────────────────────────────────────── */
+.bd-method { border: 1px solid var(--ln); border-radius: 11px; padding: 12px 14px; margin: 0; }
+.bd-method legend { font-size: 12.5px; font-weight: 700; padding: 0 5px; }
+.bd-method label { display: flex; gap: 9px; align-items: flex-start; padding: 6px 0; cursor: pointer; }
+.bd-method input { margin-top: 3px; flex: none; }
+.bd-method span { display: flex; flex-direction: column; gap: 1px; }
+.bd-method b { font-size: 13px; }
+.bd-method em { font-style: normal; font-size: 11.5px; color: var(--mut); }
+
+/* ── 임시 비밀번호 ────────────────────────────────────── */
+.bd-secret {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg); border: 1px solid var(--ln); border-radius: 10px; padding: 10px 12px;
+}
+.bd-secret code {
+  flex: 1 1 auto; min-width: 0;
+  font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 600;
+  letter-spacing: .04em; word-break: break-all;
+}
+
+/* ── 회수 확인 ────────────────────────────────────────── */
+.bd-bullets { margin: 0; padding-left: 18px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+.bd-keep {
+  background: #DBF3E4; color: #14663C; border-radius: 10px; padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 3px; font-size: 12.5px;
+}
+.bd-keep b { font-size: 13px; }
+
+/* ── 프로필 패널 ──────────────────────────────────────── */
+.bd-panel {
+  background: var(--card); border: 1px solid var(--ln); border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(14, 14, 12, .18);
+  width: 100%; max-width: 380px;
+  display: flex; flex-direction: column;
+  max-height: calc(100vh - 24px); overflow-y: auto;
+}
+/* 내 프로필 화면에서는 오버레이 없이 그대로 놓인다 */
+.bd-solo .bd-panel { box-shadow: var(--shadow); max-height: none; }
+
+.bd-panel-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px 18px; border-bottom: 1px solid var(--ln);
+  position: sticky; top: 0; background: var(--card); z-index: 1;
+}
+.bd-panel-head b { font-size: 14px; font-weight: 800; margin-right: auto; }
+.bd-x { border: 0; background: none; font-size: 14px; color: var(--mut); padding: 4px 6px; border-radius: 6px; }
+.bd-x:hover { background: var(--hover); color: var(--ink); }
+
+.bd-panel-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.bd-panel-body .adm-field input, .bd-panel-body .adm-field textarea {
+  border: 1px solid var(--ln); border-radius: 9px; background: var(--card);
+  padding: 9px 11px; font-size: 13.5px; font-family: inherit; width: 100%; color: var(--ink);
+}
+.bd-panel-body .adm-field textarea { resize: vertical; }
+.bd-panel-body .adm-field input:focus, .bd-panel-body .adm-field textarea:focus {
+  border-color: var(--ink); outline: none;
+}
+.bd-panel-body small { font-size: 11.5px; line-height: 1.5; }
+.bd-panel-body code {
+  background: var(--bg); border: 1px solid var(--ln); border-radius: 5px; padding: 1px 5px;
+  font-family: ui-monospace, Menlo, monospace; font-size: 11px;
+}
+
+.bd-avatar-row { display: flex; align-items: center; gap: 14px; }
+
+/* 못 바꾸는 항목은 입력칸이 아니라 목록으로 보여준다 — 막힌 칸을 두면 언젠가 누가 연다 */
+.bd-locked {
+  margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--bg);
+  display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 12.5px;
+}
+.bd-locked dt { color: var(--mut); }
+.bd-locked dd { margin: 0; display: flex; flex-direction: column; gap: 1px; word-break: break-all; }
+.bd-locked em { font-style: normal; font-size: 11px; color: var(--mut); }
+
+.bd-panel-foot { display: flex; justify-content: flex-end; padding-top: 4px; }
+.bd-panel-mail {
+  padding: 14px 18px; border-top: 1px solid var(--ln);
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+@media (max-width: 767px) {
+  .bd-overlay { padding: 0; }
+  .bd-panel { max-width: none; border-radius: 16px 16px 0 0; }
+}

@@ -56,7 +56,9 @@ export default async function ShellLayout({ children }: { children: React.ReactN
                   <span>{me.email}</span>
                   <span>{me.role === 'admin' ? '운영 관리자' : '빌더'}</span>
                 </div>
-                {/* 비밀번호 변경(FR-A00-05)은 재설정 흐름을 만든 뒤 여기에 붙인다 */}
+                {/* 빌더는 /admin/builders 목록을 볼 수 없다. 여기로 본인 패널만 연다 (FR-A06-05) */}
+                <a href="/admin/builders/me">내 프로필</a>
+                <a href="/admin/reset">비밀번호 변경</a>
                 <form action={signOut}>
                   <button type="submit">로그아웃</button>
                 </form>

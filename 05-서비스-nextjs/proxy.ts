@@ -39,9 +39,12 @@ export default async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const isLoginPage = pathname === '/admin/login'
+  /* 비밀번호 설정 화면은 비로그인으로 들어온다 — 초대·재설정 메일 링크의 착지점이다.
+     여기를 막으면 계정을 발급받은 사람이 비밀번호를 정할 방법이 없다 (A-06 §계정 발급). */
+  const isResetPage = pathname === '/admin/reset' || pathname === '/admin/auth/callback'
 
   /* 비로그인 → 로그인으로. 원래 가려던 주소는 ?next= 에 실어 보낸다 (A-01 §동작 스펙). */
-  if (!user && !isLoginPage) {
+  if (!user && !isLoginPage && !isResetPage) {
     const to = request.nextUrl.clone()
     to.pathname = '/admin/login'
     to.search = ''
