@@ -19,12 +19,17 @@ export const CHANNEL_PLUGIN_KEY = process.env.NEXT_PUBLIC_CHANNEL_PLUGIN_KEY ?? 
    둘은 질문이 다르다 (우리가 보낸 트래픽인가 vs 이 사람은 원래 어디서 왔나). */
 const UTM_SOURCE = process.env.NEXT_PUBLIC_UTM_SOURCE ?? 'ai-builder-group'
 
-/** 문의 폼 주소에 유입 정보를 붙여 돌려준다. 키가 없으면 빈 문자열. */
-export function pluugUrl(section: string, refContent?: string): string {
-  if (!PLUUG_FORM_URL) return ''
+/** 문의 폼 주소에 유입 정보를 붙여 돌려준다. 키가 없으면 빈 문자열.
+ *
+ *  `base` 는 관리자 화면(A-08)에서 저장한 주소다 — 260812 2차 미팅에서
+ *  "관리자 페이지에서 링크만 딱 바꾸면 렌더링 되게" 해달라는 요구가 나왔다.
+ *  넘어오지 않으면 예전처럼 환경변수를 쓴다. */
+export function pluugUrl(section: string, refContent?: string, base?: string): string {
+  const src = base || PLUUG_FORM_URL
+  if (!src) return ''
   let u: URL
   try {
-    u = new URL(PLUUG_FORM_URL)
+    u = new URL(src)
   } catch {
     return ''   /* 주소를 잘못 넣어도 페이지가 죽지는 않게 */
   }

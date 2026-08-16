@@ -17,7 +17,9 @@ export default function SiteFx() {
 
   /* GA4 이벤트 스텁 — [data-track] 클릭 위임 */
   useEffect(() => {
-    window.track = (name, params) => console.log('[GA4]', name, params || {})
+    /* ??= 인 이유: components/Analytics.tsx 가 GA4 측정 ID 가 있을 때 진짜 구현을 넣는다.
+       = 로 두면 마운트 순서에 따라 실제 전송이 콘솔 출력으로 덮인다. */
+    window.track ??= (name, params) => console.log('[GA4]', name, params || {})
     const onClick = (e: MouseEvent) => {
       const el = (e.target as Element | null)?.closest<HTMLElement>('[data-track]')
       if (!el) return

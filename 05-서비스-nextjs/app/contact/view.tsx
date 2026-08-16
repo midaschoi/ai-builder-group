@@ -4,11 +4,15 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { PLUUG_FORM_URL, pluugUrl } from '@/app/_integrations'
 
-export default function ContactView() {
+/* formUrl 은 관리자 화면(A-08)에서 저장한 주소다. 넘어오지 않으면 환경변수로 되돌아간다.
+   260812 2차 미팅 요구사항 — 클라이언트가 배포 없이 폼 주소를 바꿀 수 있어야 한다. */
+export default function ContactView({ formUrl = '' }: { formUrl?: string }) {
+  const formBase = formUrl || PLUUG_FORM_URL
+
   /* pluug 폼 주소는 클라이언트에서만 만든다 — 유입 utm_source 를 location 에서 읽기 때문에
      서버 렌더 결과와 달라져 하이드레이션이 어긋난다. 마운트 후에 채운다. */
   const [formSrc, setFormSrc] = useState('')
-  useEffect(() => { setFormSrc(pluugUrl('contact_page')) }, [])
+  useEffect(() => { setFormSrc(pluugUrl('contact_page', undefined, formBase)) }, [formBase])
 
   /* 필 라디오 토글 */
   useEffect(() => {
@@ -77,7 +81,7 @@ export default function ContactView() {
               pluug 가 받는다 (README §절대 규칙).
               주소가 없으면 아래 목업 폼이 그대로 남는다 — 키 없이도 화면이 죽지 않아야 한다.
               ⚠ pluug 쪽 '제출 후 이동 링크'를 이 사이트의 /submit 으로 맞춰야 전환 측정이 성립한다. */}
-          {PLUUG_FORM_URL ? (
+          {formBase ? (
             <div className="c-form c-form--embed">
               {formSrc && (
                 <iframe
@@ -88,7 +92,7 @@ export default function ContactView() {
                 />
               )}
               <p className="after-note">
-                폼이 보이지 않으면 <a href={formSrc || PLUUG_FORM_URL} target="_blank" rel="noopener noreferrer">새 창에서 열기</a> ·
+                폼이 보이지 않으면 <a href={formSrc || formBase} target="_blank" rel="noopener noreferrer">새 창에서 열기</a> ·
                 하루 안에 회신드려요
               </p>
             </div>

@@ -1,0 +1,64 @@
+'use client'
+
+import { useActionState } from 'react'
+import { signIn, type LoginState } from './actions'
+
+const INITIAL: LoginState = {}
+
+export default function LoginView({ next }: { next: string }) {
+  const [state, action, pending] = useActionState(signIn, INITIAL)
+
+  return (
+    <div className="adm">
+      <div className="adm-auth">
+        <div className="adm-auth-card">
+          <form className="adm-auth-box" action={action}>
+            <div className="adm-auth-head">
+              <i aria-hidden="true">A</i>
+              <b>AI 빌더 그룹<span>관리자</span></b>
+            </div>
+
+            {state.error && (
+              <p className="adm-error" role="alert">{state.error}</p>
+            )}
+
+            <input type="hidden" name="next" value={next} />
+
+            <div className="adm-field">
+              <label htmlFor="email">이메일 <span aria-hidden="true">*</span></label>
+              <input
+                id="email" name="email" type="email" required
+                autoComplete="email" autoFocus
+                /* 검증은 blur·제출 시점에만 — 입력 중에 빨간 줄이 뜨면 방해만 된다 */
+                spellCheck={false}
+              />
+            </div>
+
+            <div className="adm-field">
+              <label htmlFor="password">비밀번호 <span aria-hidden="true">*</span></label>
+              <input
+                id="password" name="password" type="password" required
+                autoComplete="current-password"
+              />
+            </div>
+
+            {/* 연타로 자기 레이트 리밋을 소진하는 것을 막는다 (A-01 §동작 스펙) */}
+            <button className="adm-btn" type="submit" disabled={pending}>
+              {pending ? '로그인 중…' : '로그인'}
+            </button>
+
+            {/* ⛔ 회원가입 링크를 두지 않는다 — 계정은 관리자가 발급한다 (FR-A01-02)
+
+                비밀번호 재설정(FR-A01-05)은 P1 이라 아직 없다. 링크만 먼저 걸어 두면
+                눌렀을 때 404 가 나므로, 만들기 전까지는 대체 경로를 문장으로 안내한다. */}
+            <p className="adm-auth-foot adm-dim" style={{ justifyContent: 'center' }}>
+              비밀번호를 잊으셨다면 운영 관리자에게 문의해 주세요.
+            </p>
+          </form>
+
+          <p className="adm-auth-back"><a href="/">← 사이트로 돌아가기</a></p>
+        </div>
+      </div>
+    </div>
+  )
+}

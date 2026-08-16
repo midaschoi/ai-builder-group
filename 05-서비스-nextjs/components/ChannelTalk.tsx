@@ -26,9 +26,13 @@ type ChannelIOFn = {
    자체 런처와 같이 두면 메신저가 열렸을 때 우하단에서 둘이 겹친다 (Origin 에서 확인).
    대신 기본 런처는 우하단 고정이라 하단 중앙의 .dock 과 부딪힌다 →
    body.ct-on 을 붙여 CSS 쪽에서 dock 이 비켜서게 한다. */
-export default function ChannelTalk() {
+/* 키는 관리자 화면(A-08)에서 온다. 넘어오지 않으면 기존처럼 환경변수를 쓴다 —
+   DB 마이그레이션 전에도 그대로 동작한다. (260812 2차 미팅) */
+export default function ChannelTalk({ pluginKey }: { pluginKey?: string } = {}) {
+  const key = pluginKey || CHANNEL_PLUGIN_KEY
+
   useEffect(() => {
-    if (!CHANNEL_PLUGIN_KEY) return
+    if (!key) return
     if (window.ChannelIOInitialized) return
     window.ChannelIOInitialized = true
 
@@ -43,7 +47,7 @@ export default function ChannelTalk() {
     el.src = 'https://cdn.channel.io/plugin/ch-plugin-web.js'
     document.head.appendChild(el)
 
-    window.ChannelIO('boot', { pluginKey: CHANNEL_PLUGIN_KEY, language: 'ko' }, (err: unknown) => {
+    window.ChannelIO('boot', { pluginKey: key, language: 'ko' }, (err: unknown) => {
       if (err) return
       document.body.classList.add('ct-on')
       /* 대화가 실제로 시작된 시점만 계측한다. 위젯을 열고 닫는 건 UI 상태라 잡지 않는다. */
@@ -55,7 +59,7 @@ export default function ChannelTalk() {
       window.ChannelIOInitialized = false
       document.body.classList.remove('ct-on')
     }
-  }, [])
+  }, [key])
 
   return null
 }
