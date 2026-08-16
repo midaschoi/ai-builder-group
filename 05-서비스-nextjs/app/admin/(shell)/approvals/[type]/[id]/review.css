@@ -1,0 +1,79 @@
+/* A-07 검토 화면. admin.css 의 토큰 위에서 동작한다. */
+
+.rv-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding-bottom: 4px;
+}
+.rv-head b { font-size: 15px; }
+
+/* ── 미리보기 ─────────────────────────────────────────── */
+.rv-preview {
+  background: var(--card); border: 1px solid var(--ln); border-radius: var(--r);
+  padding: 40px 44px 56px; box-shadow: var(--shadow);
+  /* 하단 고정 바에 가리지 않게 */
+  margin-bottom: 72px;
+}
+@media (max-width: 767px) { .rv-preview { padding: 24px 20px 36px; } }
+
+.rv-hero {
+  width: 100%; max-width: 100%; height: auto; border-radius: 12px;
+  margin-bottom: 28px; display: block;
+}
+.rv-preview h1 {
+  margin: 0 0 12px; font-size: 30px; font-weight: 800;
+  letter-spacing: -.03em; line-height: 1.25; max-width: 22em;
+}
+.rv-lede { margin: 0 0 28px; color: var(--mut); font-size: 16px; max-width: 40em; }
+
+.rv-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 24px; }
+.rv-tags span {
+  border: 1px solid var(--ln); border-radius: 999px;
+  padding: 3px 10px; font-size: 12px; color: var(--mut);
+}
+
+.rv-body { font-size: 15px; line-height: 1.75; max-width: 40em; }
+.rv-body > * + * { margin-top: .9em; }
+.rv-body h2 { font-size: 20px; font-weight: 800; letter-spacing: -.02em; margin-top: 1.8em; }
+.rv-body h3 { font-size: 17px; font-weight: 700; margin-top: 1.4em; }
+.rv-body ul, .rv-body ol { padding-left: 1.4em; }
+.rv-body blockquote { border-left: 3px solid var(--ln); padding-left: 14px; color: var(--mut); }
+.rv-body pre {
+  background: var(--ink); color: var(--paper); border-radius: 10px;
+  padding: 14px 16px; overflow-x: auto; font-size: 13px;
+}
+.rv-body :not(pre) > code {
+  background: var(--bg); border: 1px solid var(--ln); border-radius: 5px; padding: 1px 5px;
+}
+.rv-body img { max-width: 100%; height: auto; border-radius: 10px; }
+.rv-body hr { border: 0; border-top: 1px solid var(--ln); margin: 1.8em 0; }
+.rv-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── 반려 사유 ────────────────────────────────────────── */
+.rv-reject {
+  padding: 20px; display: flex; flex-direction: column; gap: 12px;
+  border-color: #F0C9C4;
+}
+.rv-reject h2 { margin: 0; font-size: 15px; font-weight: 800; }
+.rv-reject p { margin: 4px 0 0; font-size: 13px; }
+.rv-reject textarea {
+  border: 1px solid var(--ln); border-radius: 9px; background: var(--card);
+  padding: 11px 13px; font-size: 14px; font-family: inherit; resize: vertical;
+  color: var(--ink);
+}
+.rv-reject textarea:focus { border-color: #A32318; outline: none; }
+
+.rv-presets { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; }
+.rv-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ── 하단 고정 액션 바 ────────────────────────────────── */
+.rv-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 12px 20px;
+  background: var(--card); border-top: 1px solid var(--ln);
+  box-shadow: 0 -4px 20px rgba(14, 14, 12, .06);
+}
+.rv-check { font-size: 12px; margin-right: auto; }
+@media (max-width: 767px) {
+  .rv-check { width: 100%; margin: 0 0 4px; }
+}
