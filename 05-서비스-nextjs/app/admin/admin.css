@@ -65,11 +65,14 @@
 
 .adm-nav { display: flex; flex-direction: column; gap: 3px; }
 .adm-nav a {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 12px;
   padding: 9px 11px; border-radius: 10px;
   color: var(--paper); opacity: .62; font-size: 13px;
   transition: opacity .15s ease, background .15s ease;
 }
+/* 아이콘 20px · 라벨과 12px 간격 (A-00 §디자인 토큰) */
+.adm-nav a > svg { width: 20px; height: 20px; flex: none; }
+.adm-nav a > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .adm-nav a:hover { opacity: 1; background: rgba(244, 241, 234, .08); }
 .adm-nav a[aria-current='page'] {
   background: var(--lime); color: var(--ink); opacity: 1; font-weight: 700;
@@ -266,17 +269,28 @@
 }
 
 /* ── 반응형 (A-00 §1) ────────────────────────────────── */
+/* 900~1279px — 사이드바만 좁힌다. 라벨은 남긴다.
+   1280 미만을 전부 아이콘 레일로 접으면 창을 최대화하지 않은 노트북(1000px 안팎)에서
+   메뉴 이름이 통째로 사라진다. 레일은 진짜 좁을 때만 쓴다. */
 @media (max-width: 1279px) {
+  .adm-shell { grid-template-columns: 184px minmax(0, 1fr); }
+  .adm-side { padding: 20px 10px; }
+  .adm-nav a { gap: 10px; padding: 9px 9px; }
+}
+
+/* ~899px — 아이콘 레일 (A-00 §태블릿). 라벨은 title 툴팁으로 남는다 */
+@media (max-width: 899px) {
   .adm-shell { grid-template-columns: 64px minmax(0, 1fr); }
   .adm-side { padding: 20px 8px; }
-  .adm-brand b, .adm-nav span { display: none; }
-  .adm-nav a { justify-content: center; padding: 11px 0; }
+  .adm-brand { justify-content: center; padding: 0; }
+  .adm-brand b, .adm-nav a > span { display: none; }
+  .adm-nav a { justify-content: center; padding: 11px 0; position: relative; }
   .adm-nav em { position: absolute; margin: 0; transform: translate(14px, -12px); }
-  .adm-nav a { position: relative; }
 }
 @media (max-width: 767px) {
   .adm-shell { grid-template-columns: minmax(0, 1fr); padding: 8px; }
   .adm-side { flex-direction: row; align-items: center; height: auto; position: static; gap: 10px; }
+  .adm-brand { justify-content: flex-start; }
   .adm-nav { flex-direction: row; overflow-x: auto; }
   .adm-title { font-size: 20px; }
 }

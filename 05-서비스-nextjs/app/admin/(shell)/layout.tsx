@@ -4,6 +4,7 @@ import { getCurrentBuilder } from '@/lib/session'
 import { signOut } from '../actions'
 import SetupNotice from '../setup-notice'
 import AdminNav from './nav'
+import AcctMenu from './acct'
 
 /* 관리자 셸 — 사이드바 + 헤더 (A-00 §1).
 
@@ -44,7 +45,7 @@ export default async function ShellLayout({ children }: { children: React.ReactN
           <div className="adm-top">
             {/* 페이지 제목은 각 화면이 자기 자리에 그린다 */}
             <div />
-            <details className="adm-acct">
+            <AcctMenu>
               <summary>
                 <i aria-hidden="true">{me.name.slice(0, 1)}</i>
                 {me.name} ▾
@@ -60,7 +61,7 @@ export default async function ShellLayout({ children }: { children: React.ReactN
                   <button type="submit">로그아웃</button>
                 </form>
               </div>
-            </details>
+            </AcctMenu>
           </div>
 
           {children}

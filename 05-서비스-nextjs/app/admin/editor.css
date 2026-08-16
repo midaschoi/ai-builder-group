@@ -2,7 +2,7 @@
 
 /* 상단 바 높이. 툴바가 이 값만큼 아래에 붙는다 —
    두 군데에 각각 숫자를 박아두면 버튼 크기를 바꿀 때 한쪽만 고쳐 서로 겹친다. */
-.ed { display: flex; flex-direction: column; gap: 14px; --ed-bar: 48px; }
+.ed { display: flex; flex-direction: column; gap: 14px; --ed-bar: 56px; }
 
 .ed-top {
   display: flex; align-items: center; gap: 10px; flex-wrap: nowrap;
@@ -27,12 +27,18 @@
 @media (max-width: 1099px) { .ed-grid { grid-template-columns: minmax(0, 1fr); } }
 
 /* ── 본문 ─────────────────────────────────────────────── */
-.ed-main { display: flex; flex-direction: column; }
+/* ⛔ overflow 를 hidden 으로 두면 안 된다 (.adm-card 의 기본값을 여기서 되돌린다).
+   overflow 가 visible 이 아닌 조상은 그 안의 sticky 요소의 기준 컨테이너가 된다.
+   그러면 아래 툴바가 "화면 위에서 56px" 이 아니라 "카드 위에서 56px" 로 해석돼
+   스크롤하지 않아도 56px 내려앉아 제목 입력칸을 덮어버린다.
+   대신 툴바가 카드 밖으로 삐져나오지 않도록 위쪽 모서리를 카드와 같게 깎는다. */
+.ed-main { display: flex; flex-direction: column; overflow: visible; }
 
 .ed-toolbar {
   display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
   padding: 8px 10px; border-bottom: 1px solid var(--ln);
   position: sticky; top: var(--ed-bar); background: var(--card); z-index: 5;
+  border-radius: var(--r) var(--r) 0 0;
 }
 .ed-toolbar button, .ed-toolbar .ed-upload {
   border: 1px solid transparent; background: none; border-radius: 7px;
