@@ -183,6 +183,8 @@
   background: linear-gradient(135deg, #E8E5DA, #D6D3C6);
   object-fit: cover;
 }
+/* Work 목록은 16:9 다 — 프로젝트는 이미지로 식별한다 (A-04 §세부) */
+.adm-thumb--wide { width: 48px; height: 27px; border-radius: 5px; }
 .adm-thumb[data-empty] { background: var(--bg); border: 1px dashed var(--ln); }
 .adm-name { font-weight: 600; }
 .adm-name[data-none] { color: var(--mut); font-weight: 400; font-style: italic; }
