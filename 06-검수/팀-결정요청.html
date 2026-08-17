@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>팀 결정 6건 — AI 빌더 그룹</title>
+<style>
+  :root {
+    --ink: #0E0E0C; --paper: #F4F1EA; --surface: #FBFAF6; --lime: #D8FF3D;
+    --mut: #6B6960; --faint: #918E83; --ln: #DCD9CC;
+    --stop: #A63D1B; --stop-bg: rgba(166, 61, 27, .07);
+    --warn: #8A6212; --warn-bg: rgba(138, 98, 18, .08);
+    --ok: #2E6249; --ok-bg: rgba(46, 98, 73, .07);
+    --hl: rgba(216, 255, 61, .55);
+    --shadow: 0 1px 2px rgba(14,14,12,.05), 0 8px 24px -16px rgba(14,14,12,.18);
+    --sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+            "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    --mono: "SFMono-Regular", "JetBrains Mono", Consolas, "D2Coding", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #ECE9DF; --paper: #121210; --surface: #1B1B17;
+      --mut: #9C998E; --faint: #7A776D; --ln: #32312A;
+      --stop: #E08A64; --stop-bg: rgba(224,138,100,.12);
+      --warn: #D9AE55; --warn-bg: rgba(217,174,85,.12);
+      --ok: #7FC3A2; --ok-bg: rgba(127,195,162,.12);
+      --hl: rgba(216,255,61,.20);
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #ECE9DF; --paper: #121210; --surface: #1B1B17;
+    --mut: #9C998E; --faint: #7A776D; --ln: #32312A;
+    --stop: #E08A64; --stop-bg: rgba(224,138,100,.12);
+    --warn: #D9AE55; --warn-bg: rgba(217,174,85,.12);
+    --ok: #7FC3A2; --ok-bg: rgba(127,195,162,.12);
+    --hl: rgba(216,255,61,.20);
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--sans); font-size: 16px; line-height: 1.78;
+    letter-spacing: -.011em; -webkit-font-smoothing: antialiased; word-break: keep-all;
+  }
+  .page { max-width: 800px; margin: 0 auto; padding: 56px 24px 120px;
+          display: flex; flex-direction: column; gap: 48px; }
+
+  .theme-btn {
+    position: fixed; top: 14px; right: 14px; z-index: 10;
+    font: inherit; font-size: 12px; font-weight: 600; line-height: 1;
+    color: var(--mut); background: var(--surface);
+    border: 1px solid var(--ln); border-radius: 999px; padding: 6px 13px; cursor: pointer;
+  }
+  .theme-btn:hover { color: var(--ink); }
+  .theme-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .top { display: flex; flex-direction: column; gap: 18px; }
+  .kicker { font-size: 12px; font-weight: 700; letter-spacing: .13em;
+            color: var(--faint); text-transform: uppercase; }
+  h1 { font-size: clamp(30px,6vw,42px); font-weight: 800; letter-spacing: -.035em;
+       line-height: 1.18; text-wrap: balance; margin: 0; }
+  .standfirst { font-size: 18px; line-height: 1.7; color: var(--mut); max-width: 60ch; margin: 0; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: var(--faint);
+          border-top: 1px solid var(--ln); padding-top: 16px; }
+  .meta b { color: var(--mut); font-weight: 600; }
+
+  p { margin: 0; max-width: 68ch; }
+  .dim { color: var(--mut); }
+  .small { font-size: 14.5px; }
+  strong { font-weight: 700; }
+  em { font-style: normal; background: linear-gradient(transparent 62%, var(--hl) 62%); }
+  code { font-family: var(--mono); font-size: .875em; background: var(--surface);
+         border: 1px solid var(--ln); border-radius: 5px; padding: .1em .4em;
+         letter-spacing: 0; white-space: nowrap; }
+  a { color: inherit; text-underline-offset: 3px; }
+
+  h2.sec { font-size: 23px; font-weight: 800; letter-spacing: -.028em; line-height: 1.32;
+           margin: 0; padding-top: 22px; border-top: 1px solid var(--ln); text-wrap: balance; }
+  section { display: flex; flex-direction: column; gap: 18px; }
+
+  /* 요약 상자 */
+  .tldr { background: var(--surface); border: 1px solid var(--ln); border-radius: 14px;
+          padding: 24px 26px; box-shadow: var(--shadow);
+          display: flex; flex-direction: column; gap: 12px; }
+  .tldr h2 { font-size: 13px; font-weight: 700; letter-spacing: .1em; color: var(--faint);
+             text-transform: uppercase; margin: 0; }
+  .tldr p { margin: 0; }
+
+  /* 결정 항목 카드 */
+  .items { display: flex; flex-direction: column; gap: 16px; }
+  .item { background: var(--surface); border: 1px solid var(--ln); border-left-width: 4px;
+          border-radius: 12px; padding: 22px 24px;
+          display: flex; flex-direction: column; gap: 13px; box-shadow: var(--shadow); }
+  .item.stop { border-left-color: var(--stop); }
+  .item.warn { border-left-color: var(--warn); }
+  .item.ok   { border-left-color: var(--ok); }
+
+  .ihead { display: flex; align-items: baseline; gap: 11px; flex-wrap: wrap; }
+  .inum { font-size: 12px; font-weight: 800; letter-spacing: .06em; color: var(--faint);
+          font-variant-numeric: tabular-nums; flex: none; }
+  .ititle { font-size: 17.5px; font-weight: 700; letter-spacing: -.024em; line-height: 1.4; }
+  .badge { font-size: 11.5px; font-weight: 700; letter-spacing: .05em;
+           padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .item.stop .badge { background: var(--stop-bg); color: var(--stop); }
+  .item.warn .badge { background: var(--warn-bg); color: var(--warn); }
+  .item.ok   .badge { background: var(--ok-bg);   color: var(--ok); }
+
+  .item p { font-size: 15px; }
+
+  .choices { display: flex; flex-direction: column; gap: 7px; margin: 0; padding: 0; list-style: none; }
+  .choices li { font-size: 14.5px; display: flex; gap: 10px; align-items: baseline;
+                padding: 9px 12px; border: 1px solid var(--ln); border-radius: 8px; }
+  .choices li::before { content: '☐'; color: var(--faint); flex: none; }
+  .choices li b { font-weight: 700; }
+
+  .need { display: grid; gap: 8px 16px; font-size: 14px; margin: 0;
+          padding: 13px 15px; border: 1px dashed var(--ln); border-radius: 9px; }
+  @media (min-width: 620px) { .need { grid-template-columns: auto 1fr; } }
+  .need dt { font-size: 12px; font-weight: 700; letter-spacing: .05em; color: var(--faint);
+             text-transform: uppercase; padding-top: 3px; white-space: nowrap; }
+  .need dd { margin: 0; color: var(--mut); }
+  .need dd b { color: var(--ink); font-weight: 600; }
+
+  /* 표 */
+  .tw { overflow-x: auto; margin: 0 -2px; padding: 2px; }
+  table { width: 100%; min-width: 440px; border-collapse: collapse;
+          font-size: 14.5px; font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-weight: 700; font-size: 12px; letter-spacing: .07em;
+       color: var(--faint); text-transform: uppercase;
+       padding: 0 14px 9px 0; border-bottom: 1px solid var(--ln); white-space: nowrap; }
+  td { padding: 11px 14px 11px 0; border-bottom: 1px solid var(--ln); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td.who { color: var(--mut); }
+
+  .ask { border: 2px solid var(--ink); border-radius: 16px; padding: 28px 26px;
+         display: flex; flex-direction: column; gap: 14px; }
+  .ask h2 { font-size: 20px; font-weight: 800; letter-spacing: -.028em; margin: 0; }
+  .ask ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 9px; }
+  .ask li { font-size: 15px; }
+
+  footer { font-size: 13px; color: var(--faint); border-top: 1px solid var(--ln); padding-top: 20px; }
+  footer p { margin: 0; }
+  footer p + p { margin-top: 6px; }
+
+  @media print {
+    :root { --paper:#fff; --surface:#fff; --ink:#000; --mut:#333; --faint:#555;
+            --ln:#bbb; --shadow:none; --hl:transparent; }
+    .theme-btn { display: none; }
+    .page { max-width: none; padding: 0; gap: 28px; }
+    body { font-size: 11pt; line-height: 1.6; }
+    h1 { font-size: 22pt; } h2.sec { font-size: 14pt; }
+    .tldr, .item, .ask { break-inside: avoid; page-break-inside: avoid; }
+    table { min-width: 0; }
+    em { text-decoration: underline; }
+    @page { margin: 18mm; }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-btn" type="button" id="themeBtn">밝게 · 어둡게</button>
+
+<div class="page">
+
+  <header class="top">
+    <div class="kicker">팀 내부 · 결정 요청</div>
+    <h1>팀 결정 6건</h1>
+    <p class="standfirst">
+      개발은 사실상 끝났습니다. 지금 릴리스를 막고 있는 것은 코드가 아니라 <strong>결정</strong>입니다.
+      한 번의 회의로 6건을 정하면 나머지가 전부 병렬로 풀립니다.
+    </p>
+    <div class="meta">
+      <span><b>대상</b> AI 빌더 그룹 랜딩·관리자 플랫폼</span>
+      <span><b>읽는 사람</b> 팀 내부</span>
+      <span><b>작성</b> 2026-08-17</span>
+    </div>
+  </header>
+
+  <div class="tldr">
+    <h2>왜 지금인가</h2>
+    <p>
+      릴리스 게이트 8개 중 <strong>코드로 막힌 것은 사실상 없습니다.</strong>
+      남은 것은 전부 "무엇을 고를지"를 정해야 진행되는 항목입니다.
+    </p>
+    <p class="dim small">
+      하나씩 순서대로 물어보면 몇 주가 걸립니다. 한 번에 정하면 며칠입니다.
+      아래 6건은 <strong>클라이언트 없이 팀 안에서 정할 수 있는 것</strong>만 모았습니다.
+      클라이언트에게 받아야 하는 5건은 별도 문서로 나갑니다.
+    </p>
+  </div>
+
+  <section>
+    <h2 class="sec">한눈에</h2>
+    <div class="tw">
+      <table>
+        <thead><tr><th>#</th><th>결정할 것</th><th>막고 있는 것</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>저장소를 비공개로 돌릴지</td><td class="who">🔴 지금 위험이 진행 중</td></tr>
+          <tr><td>2</td><td>운영 관리자 계정</td><td class="who">🔴 잃으면 복구 불가</td></tr>
+          <tr><td>3</td><td>CTA 정리 방향 (A·B·C)</td><td class="who">게이트 G1</td></tr>
+          <tr><td>4</td><td>모바일 성능 기준</td><td class="who">게이트 G4</td></tr>
+          <tr><td>5</td><td>조원 명단</td><td class="who">완성도 — 지금은 아무도 로그인 못 함</td></tr>
+          <tr><td>6</td><td>범위 변경 문서화</td><td class="who">기획서와 실제가 어긋남</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small dim">
+      추가로 <strong>반응형 육안 확인</strong>(게이트 G3)이 남아 있습니다. 결정이 아니라 작업이라
+      맨 아래에 따로 적었습니다.
+    </p>
+  </section>
+
+  <section>
+    <h2 class="sec">결정 항목</h2>
+
+    <div class="items">
+
+      <!-- 1 -->
+      <div class="item stop">
+        <div class="ihead">
+          <span class="inum">01</span>
+          <span class="ititle">저장소를 비공개로 돌릴까요?</span>
+          <span class="badge">지금 위험 진행 중</span>
+        </div>
+        <p>
+          <code>midaschoi/ai-builder-group</code> 이 <strong>공개(PUBLIC)</strong> 상태입니다.
+          그 안에 시연용 이미지 <strong>69개</strong> — 카카오 · 신한 · 크래프톤 로고와 인물 아바타 —
+          가 함께 올라가 있습니다. README에 <em>"서면 동의를 받지 않은 샘플"</em>로 명시된 것들입니다.
+        </p>
+        <p class="small dim">
+          다른 항목은 늦어도 품질 문제지만, 이건 성격이 다릅니다. 지금 이 순간에도
+          인터넷의 누구나 볼 수 있습니다. 비공개 전환은 1분이면 되고 언제든 되돌릴 수 있습니다.
+        </p>
+        <ul class="choices">
+          <li><b>비공개로 전환</b> — 이미지 교체 후 다시 공개. 가장 안전합니다</li>
+          <li><b>공개 유지</b> — 대신 이미지 교체를 최우선으로 올립니다</li>
+        </ul>
+        <dl class="need">
+          <dt>참고</dt>
+          <dd>비공개로 바꾸면 지금 공유 중인 <b>문서 링크(htmlpreview)도 함께 막힙니다.</b>
+              그 경우 HTML 파일을 첨부해서 돌리면 됩니다</dd>
+        </dl>
+      </div>
+
+      <!-- 2 -->
+      <div class="item stop">
+        <div class="ihead">
+          <span class="inum">02</span>
+          <span class="ititle">운영 관리자 계정을 무엇으로 할까요?</span>
+          <span class="badge">잃으면 복구 불가</span>
+        </div>
+        <p>
+          지금 관리자 화면에 들어갈 수 있는 계정은 <code>builder@test.kr</code>
+          <strong>하나뿐</strong>이고, 테스트용 주소입니다.
+          이 계정을 잃으면 관리자 화면에 들어갈 방법이 없습니다.
+        </p>
+        <dl class="need">
+          <dt>필요한 답</dt>
+          <dd><b>실제 운영 이메일 주소</b> 1개 이상. <b>2명 이상</b>을 권합니다 — 한 명이 자리를 비워도 운영이 멈추지 않습니다</dd>
+          <dt>주의</dt>
+          <dd>비밀번호는 각자 초대 메일에서 직접 설정합니다. <b>문서·메신저에 적지 마세요</b></dd>
+        </dl>
+      </div>
+
+      <!-- 3 -->
+      <div class="item warn">
+        <div class="ihead">
+          <span class="inum">03</span>
+          <span class="ititle">CTA 정리 방향 — A · B · C</span>
+          <span class="badge">게이트 G1</span>
+        </div>
+        <p>
+          기획서는 문의 CTA를 5곳으로 정했는데 실제로는 12종이 있습니다.
+          초과분 7종 중 <strong>2종은 문의 버튼이 아닌데 문의로 집계되는 오류</strong>고,
+          <strong>5종은 정상 작동하는 진짜 문의 버튼</strong>입니다.
+        </p>
+        <dl class="need">
+          <dt>먼저 읽기</dt>
+          <dd>별도 문서 <b>「CTA 12종 정리안」</b> — 세 안의 대가까지 비교해 두었습니다</dd>
+        </dl>
+        <ul class="choices">
+          <li><b>안 A</b> — 오류 2종만 고치고 기획서를 현행에 맞게 개정 <em>(개발 추천)</em></li>
+          <li><b>안 B</b> — 기획서대로 7종 전부 제거. 플로팅 문의 바와 FAQ·빌더 문의가 사라집니다</li>
+          <li><b>안 C</b> — 오류 2종만 고치고 나머지는 보류. G1은 계속 미통과</li>
+        </ul>
+      </div>
+
+      <!-- 4 -->
+      <div class="item warn">
+        <div class="ihead">
+          <span class="inum">04</span>
+          <span class="ititle">모바일 성능 — 연출을 줄일까요, 기준을 조정할까요?</span>
+          <span class="badge">게이트 G4</span>
+        </div>
+        <p>
+          게이트는 <strong>모바일 성능 85점</strong>을 요구하는데 홈이 미달입니다.
+          그런데 원인이 기획서가 <em>요구한 것</em>입니다 — 기획서 §6.1은
+          <em>"전부 같은 방식으로 움직이면 AI로 한 번에 뽑은 티가 난다"</em>며 섹션별로 다른
+          인터랙션을 요구했고, 바로 그 인터랙션이 점수를 깎습니다.
+        </p>
+        <p class="small dim">
+          서버 응답이 늦던 문제(650ms)는 오늘 해결했습니다 — 서버를 미국에서 서울로 옮겨
+          <strong>50~76ms</strong>가 됐습니다. 남은 것은 순수하게 화면 연출의 무게입니다.
+        </p>
+        <ul class="choices">
+          <li><b>안 A</b> — 홈에 한해 기준을 낮춘다 (예: 홈 60 / 상세 85). 연출을 지킵니다</li>
+          <li><b>안 B</b> — 첫 화면 아래 섹션을 나중에 그린다. 스크롤 연동 애니메이션을 손봐야 합니다</li>
+          <li><b>안 C</b> — 히어로의 흐르는 블록 수를 줄인다. 무한 흐름 연출이 짧아집니다</li>
+        </ul>
+        <dl class="need">
+          <dt>먼저 할 일</dt>
+          <dd>최종 점수는 <b>PageSpeed Insights</b>로 다시 재야 합니다. 로컬 측정은 PC 부하에 따라
+              44~66까지 흔들립니다 — 회의 전에 제가 재서 정확한 숫자를 붙이겠습니다</dd>
+        </dl>
+      </div>
+
+      <!-- 5 -->
+      <div class="item warn">
+        <div class="ihead">
+          <span class="inum">05</span>
+          <span class="ititle">조원 명단 (이름 · 이메일)</span>
+          <span class="badge">완성도</span>
+        </div>
+        <p>
+          <code>builders</code> 에 빌더 10명이 있지만 <strong>전부 가짜 주소</strong>(<code>@sample.invalid</code>)라
+          아무도 로그인할 수 없습니다. 화면에는 이름이 보이는데 본인 글을 쓰거나
+          프로필을 고칠 수 없는 상태입니다.
+        </p>
+        <p>
+          <strong>지금 이 플랫폼은 "시연물"이지 "팀이 쓰는 도구"가 아닙니다.</strong>
+          명단 한 장이면 풀리는 항목이고, 승인도 클라이언트도 필요 없습니다.
+        </p>
+        <dl class="need">
+          <dt>필요한 것</dt>
+          <dd>참여 조원의 <b>이름 · 이메일</b> 목록. 초대 메일이 발송되고 각자 비밀번호를 설정합니다</dd>
+          <dt>덤</dt>
+          <dd>있으면 좋은 것 — 한 줄 소개, 주요 기술 스택. 없으면 나중에 각자 채우면 됩니다</dd>
+        </dl>
+      </div>
+
+      <!-- 6 -->
+      <div class="item ok">
+        <div class="ihead">
+          <span class="inum">06</span>
+          <span class="ititle">범위 변경을 문서에 반영할까요?</span>
+          <span class="badge">문서 정합성</span>
+        </div>
+        <p>
+          기획서는 화면 <strong>17개</strong>, 관리자 메뉴 <strong>4개</strong>로 확정했는데
+          실제로는 화면 <strong>20개</strong>, 관리자 메뉴 <strong>7개</strong>입니다.
+          FAQ 관리 · 콘텐츠 관리 · 사이트 설정이 나중에 추가됐고, 이미 <strong>그대로 두기로 승인</strong>된 상태입니다.
+        </p>
+        <p class="small dim">
+          기능은 문제가 없습니다. 다만 기획서에는 아직 <em>"2차로 미룬다"</em>고 적혀 있어,
+          나중에 인수인계할 때 "왜 문서와 다르냐"는 질문이 반드시 나옵니다.
+        </p>
+        <ul class="choices">
+          <li><b>지금 반영</b> — 기획서·백로그를 현재 상태에 맞게 갱신 <em>(권장)</em></li>
+          <li><b>납품 시 일괄</b> — 변경 이력만 모아 두었다가 마지막에 한 번에</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">결정이 아니라 작업 — 반응형 육안 확인</h2>
+    <p>
+      게이트 G3(반응형 3종 깨짐 없음)이 <strong>코드로는 확인됐지만 눈으로는 아직</strong>입니다.
+      CSS 구간과 마크업은 전부 확인했고 가로 스크롤도 0인데, 실제로 보이는 모습은
+      사람이 봐야 합니다.
+    </p>
+    <dl class="need">
+      <dt>방법</dt>
+      <dd>크롬에서 <b>F12 → 기기 모드</b>로 <b>375 · 768 · 1024</b> 폭에서 전 화면을 훑습니다</dd>
+      <dt>왜 제가 못 하나</dt>
+      <dd>자동화 도구가 브라우저 창을 <b>978px 아래로 줄이지 못합니다.</b> 375px 확인이 원천적으로 불가능합니다</dd>
+      <dt>걸리는 시간</dt>
+      <dd>20~30분. 누구든 한 명이면 됩니다</dd>
+    </dl>
+  </section>
+
+  <section>
+    <div class="ask">
+      <h2>정리 — 회의에서 답할 것</h2>
+      <ol>
+        <li><strong>저장소</strong> 비공개 전환할지</li>
+        <li><strong>운영 관리자</strong> 이메일 (2개 이상 권장)</li>
+        <li><strong>CTA</strong> A · B · C</li>
+        <li><strong>모바일 성능</strong> A · B · C</li>
+        <li><strong>조원 명단</strong> 이름 · 이메일</li>
+        <li><strong>범위 문서화</strong> 지금 / 납품 시</li>
+        <li>(작업) <strong>반응형 육안 확인</strong> 담당자</li>
+      </ol>
+      <p class="small dim">
+        1·2·5·6은 답만 주시면 그날 반영됩니다. 3·4는 고른 안에 따라 작업량이 다릅니다 —
+        A·C는 화면이 안 바뀌어 재검수가 없고, B는 여러 화면이 바뀌어 반응형 재확인이 필요합니다.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <p>근거 문서 — <code>06-검수/검수-체크리스트.md</code> · <code>06-검수/이관-체크리스트.md</code> · <code>03-백로그/추후작업.md</code></p>
+    <p>클라이언트에게 받아야 하는 5건(pluug · GA4 · 서치콘솔 · 도메인 · 개인정보처리방침)은 별도 문서입니다.</p>
+  </footer>
+
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement, btn = document.getElementById('themeBtn');
+    try {
+      var s = localStorage.getItem('team-doc-theme');
+      if (s === 'dark' || s === 'light') root.setAttribute('data-theme', s);
+    } catch (e) {}
+    btn.addEventListener('click', function () {
+      var now = root.getAttribute('data-theme');
+      var next = now === 'dark' ? 'light' : now === 'light' ? 'dark'
+        : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark');
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('team-doc-theme', next); } catch (e) {}
+    });
+  })();
+</script>
+
+</body>
+</html>
