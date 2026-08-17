@@ -336,7 +336,12 @@ export default function WorkView({
                     {(b.avatar || !builders.length) && <img src={b.avatar ?? `/assets/img/av-${b.slug}.jpg`} alt={`${b.name} 프로필 사진`} />}
                     {b.badge && <span className={b.badge.cls}>{b.badge.label}</span>}
                     {/* 수행 건수는 이 카드에서 유일한 실적 근거다 — 알약으로 세워 먼저 읽히게 한다 */}
-                    <div className="ct"><span className="cnt">수행 <b className="num">{b.cnt}</b>건</span><span className="go">Profile →</span></div>
+                    {/* 수행 건수는 이 카드에서 유일한 실적 근거다 — 0건이면 아예 감춘다.
+                        "수행 0건" 을 띄우면 실적이 없다는 사실만 강조된다. */}
+                    <div className="ct">
+                      {b.cnt > 0 && <span className="cnt">수행 <b className="num">{b.cnt}</b>건</span>}
+                      <span className="go">Profile →</span>
+                    </div>
                     <div className="slot__spec"><b>Asset — 빌더 인물 사진</b><span>상반신 인물 컷 · 밝은 배경 통일</span><em>800×1000px · 4:5 @2x</em></div>
                   </div>
                   <div className="meta">

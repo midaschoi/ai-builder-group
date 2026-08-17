@@ -134,7 +134,11 @@ export default function ProfilePanel({
           <label htmlFor="bd-one-liner">한 줄 소개</label>
           <textarea id="bd-one-liner" name="one_liner" value={oneLiner} rows={2} maxLength={80}
             onChange={e => setOneLiner(e.target.value)} />
-          <small className="adm-dim">{oneLiner.length}/80</small>
+          <small className="adm-dim">
+            {oneLiner.length}/80 · 공개 사이트의 빌더 카드에 나오는 문장입니다.
+            <br />⚠ <b>비어 있으면 공개 목록에 나오지 않습니다</b> — 운영용 계정이 사람 목록에
+            섞이지 않게 하는 기준입니다.
+          </small>
         </div>
 
         {/* ── 공개 프로필 (/builder) ─────────────────────────

@@ -281,13 +281,21 @@ function toBuilderCard(r: any, workCount: number): BuilderCard {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-/** 공개 목록에 쓰는 빌더 카드. 회수된 계정은 나가지 않는다 */
+/** 공개 목록에 쓰는 빌더 카드.
+ *
+ *  ⛔ 두 가지를 거른다 —
+ *    · 회수된 계정 (is_active = false)
+ *    · **한 줄 소개가 비어 있는 계정.** 운영용으로만 쓰는 계정(예: 최초 관리자)까지
+ *      "검증된 빌더" 카드로 나가면 사람 목록 사이에 계정이 섞인다.
+ *      소개를 채우는 순간 공개 목록에 올라온다 — A-06 프로필에 그렇게 적어 두었다. */
 export const getBuilders = unstable_cache(
   async (): Promise<BuilderCard[]> => {
     if (!SUPABASE_READY) return []
     const db = createPublicClient()
     const [{ data }, { data: joins }] = await Promise.all([
-      db.from('builders').select(BUILDER_FIELDS).eq('is_active', true).order('sort').order('name'),
+      db.from('builders').select(BUILDER_FIELDS)
+        .eq('is_active', true).not('one_liner', 'is', null).neq('one_liner', '')
+        .order('sort').order('name'),
       db.from('work_builders').select('builder_id'),
     ])
     const count = new Map<string, number>()

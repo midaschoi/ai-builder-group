@@ -216,7 +216,7 @@ export default function BuilderView({
     q('bio')!.textContent = b.bio
     q('focus')!.textContent = b.focus
     q('stack')!.textContent = b.stack.join(' · ')
-    q('done')!.textContent = b.done + '건'
+    q('done')!.textContent = b.done > 0 ? b.done + '건' : '—'
     q('sheetno')!.textContent = b.no
     q('prno')!.textContent = b.no
     q('fname')!.textContent = b.fname
@@ -244,7 +244,8 @@ export default function BuilderView({
 
     /* 작업물 그리드 */
     q('pcnt')!.textContent = '( ' + String(b.works.length).padStart(2, '0') + ' )'
-    q('pnote')!.textContent = '※ 공개 가능한 프로젝트만 게재합니다 · 전체 수행 ' + b.done + '건'
+    q('pnote')!.textContent = '※ 공개 가능한 프로젝트만 게재합니다'
+      + (b.done > 0 ? ' · 전체 수행 ' + b.done + '건' : '')
     q('plist')!.innerHTML = b.works.map((p, i) =>
       '<a class="wcard rv d' + (i % 4) + '" href="' + p.href + '" data-cursor="VIEW →">' +
       '<div class="slot mask">' +
