@@ -8,7 +8,13 @@
    ⚠ 여러 번 돌려도 안전하다 — 같은 값이면 갱신만 한다.
 */
 import { readFileSync } from 'node:fs'
-import { createClient } from '@supabase/supabase-js'
+import { createRequire } from 'node:module'
+
+/* ⚠ 이 파일은 supabase/ 에 있고 node_modules 는 05-서비스-nextjs/ 에 있다.
+   ESM 의 패키지 해석은 실행 위치(cwd)가 아니라 **파일 자신의 위치**에서 위로 올라가므로
+   그냥 import 하면 ERR_MODULE_NOT_FOUND 가 난다. 앱 폴더를 기준으로 잡아 준다. */
+const require = createRequire(new URL('../05-서비스-nextjs/package.json', import.meta.url))
+const { createClient } = require('@supabase/supabase-js')
 
 const ENV = new URL('../05-서비스-nextjs/.env.local', import.meta.url)
 const env = {}

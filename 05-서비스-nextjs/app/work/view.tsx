@@ -215,7 +215,7 @@ export default function WorkView({
             <div className="panel__head">
               <div>
                 <div className="panel__no"><i>01</i>직접 탐색</div>
-                <h2>수행 프로젝트 <span className="head-cnt num" data-cnt>( 09 )</span></h2>
+                <h2>수행 프로젝트 <span className="head-cnt num" data-cnt>( {String(projects.length).padStart(2, '0')} )</span></h2>
                 <p className="panel__sub">비슷한 결과물을 먼저 찾으세요 — 담당 빌더가 함께 보입니다.</p>
               </div>
               <div className="panel__side"><span>고르기 어렵다면</span><a href="#match">02 빠른 매칭 <i>↓</i></a></div>
@@ -324,7 +324,7 @@ export default function WorkView({
             <div className="panel__head">
               <div>
                 <div className="panel__no"><i>03</i>만드는 사람들</div>
-                <h2>검증된 빌더 <span className="head-cnt num">( 10 )</span></h2>
+                <h2>검증된 빌더 <span className="head-cnt num">( {String(people.length).padStart(2, '0')} )</span></h2>
                 <p className="panel__sub">카드를 누르면 빌더의 프로필과 수행한 작업물을 볼 수 있습니다.</p>
               </div>
               <div className="panel__side"><span>누구에게 맡길지 고민된다면</span><a className="up" href="#match">02 빠른 매칭 <i>↑</i></a></div>
