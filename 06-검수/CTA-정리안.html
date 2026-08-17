@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>CTA 12종 정리안 — AI 빌더 그룹</title>
+<style>
+  :root {
+    --ink: #0E0E0C;
+    --paper: #F4F1EA;
+    --surface: #FBFAF6;
+    --lime: #D8FF3D;
+    --mut: #6B6960;
+    --faint: #918E83;
+    --ln: #DCD9CC;
+    --wrong: #A63D1B;
+    --wrong-bg: rgba(166, 61, 27, .07);
+    --keep: #2E6249;
+    --keep-bg: rgba(46, 98, 73, .07);
+    --hl: rgba(216, 255, 61, .55);
+    --shadow: 0 1px 2px rgba(14, 14, 12, .05), 0 8px 24px -16px rgba(14, 14, 12, .18);
+
+    --sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+            "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    --mono: "SFMono-Regular", "JetBrains Mono", Consolas, "D2Coding", ui-monospace, monospace;
+  }
+
+  /* 다크 — 토큰만 다시 정의한다. 색을 이 블록 안에서만 선언하지 않는다. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #ECE9DF;
+      --paper: #121210;
+      --surface: #1B1B17;
+      --mut: #9C998E;
+      --faint: #7A776D;
+      --ln: #32312A;
+      --wrong: #E08A64;
+      --wrong-bg: rgba(224, 138, 100, .12);
+      --keep: #7FC3A2;
+      --keep-bg: rgba(127, 195, 162, .12);
+      /* 밝은 라임 위에 밝은 글자가 오면 읽히지 않는다 — 어두운 바탕에서는 훨씬 옅게 깐다 */
+      --hl: rgba(216, 255, 61, .20);
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -16px rgba(0, 0, 0, .7);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #ECE9DF;
+    --paper: #121210;
+    --surface: #1B1B17;
+    --mut: #9C998E;
+    --faint: #7A776D;
+    --ln: #32312A;
+    --wrong: #E08A64;
+    --wrong-bg: rgba(224, 138, 100, .12);
+    --keep: #7FC3A2;
+    --keep-bg: rgba(127, 195, 162, .12);
+    --hl: rgba(216, 255, 61, .20);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -16px rgba(0, 0, 0, .7);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.78;
+    letter-spacing: -.011em;
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+  }
+
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 56px 24px 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 52px;
+  }
+
+  /* ── 밝게·어둡게 전환 (단독 파일이라 직접 붙인다) ── */
+  .theme-btn {
+    position: fixed; top: 14px; right: 14px; z-index: 10;
+    font: inherit; font-size: 12px; font-weight: 600;
+    color: var(--mut); background: var(--surface);
+    border: 1px solid var(--ln); border-radius: 999px;
+    padding: 6px 13px; cursor: pointer;
+    line-height: 1;
+  }
+  .theme-btn:hover { color: var(--ink); }
+  .theme-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  /* ── 머리말 ─────────────────────────────── */
+  .top { display: flex; flex-direction: column; gap: 18px; }
+
+  .kicker {
+    font-size: 12px; font-weight: 700; letter-spacing: .13em;
+    color: var(--faint); text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: clamp(30px, 6vw, 42px);
+    font-weight: 800;
+    letter-spacing: -.035em;
+    line-height: 1.18;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .standfirst {
+    font-size: 18px; line-height: 1.7; color: var(--mut);
+    max-width: 60ch; margin: 0;
+  }
+
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px 20px;
+    font-size: 13px; color: var(--faint);
+    border-top: 1px solid var(--ln); padding-top: 16px;
+  }
+  .meta b { color: var(--mut); font-weight: 600; }
+
+  /* ── 요약 상자 ───────────────────────────── */
+  .tldr {
+    background: var(--surface);
+    border: 1px solid var(--ln);
+    border-radius: 14px;
+    padding: 24px 26px;
+    box-shadow: var(--shadow);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .tldr h2 {
+    font-size: 13px; font-weight: 700; letter-spacing: .1em;
+    color: var(--faint); text-transform: uppercase; margin: 0;
+  }
+  .tldr p { margin: 0; }
+  .tldr p + p { color: var(--mut); font-size: 15px; }
+
+  /* ── 섹션 ────────────────────────────────── */
+  section { display: flex; flex-direction: column; gap: 18px; }
+
+  h2.sec {
+    font-size: 23px; font-weight: 800; letter-spacing: -.028em;
+    line-height: 1.32; margin: 0;
+    padding-top: 22px; border-top: 1px solid var(--ln);
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-size: 16px; font-weight: 700; letter-spacing: -.02em;
+    margin: 0; line-height: 1.5;
+  }
+
+  p { margin: 0; max-width: 68ch; }
+  .dim { color: var(--mut); }
+  .small { font-size: 14.5px; }
+
+  strong { font-weight: 700; }
+  em { font-style: normal; background: linear-gradient(transparent 62%, var(--hl) 62%); }
+
+  code {
+    font-family: var(--mono);
+    font-size: .875em;
+    background: var(--surface);
+    border: 1px solid var(--ln);
+    border-radius: 5px;
+    padding: .1em .4em;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
+  /* ── 인용 (기획서 원문) ──────────────────── */
+  blockquote {
+    margin: 0;
+    padding: 14px 0 14px 20px;
+    border-left: 3px solid var(--ln);
+    color: var(--mut);
+    font-size: 15px;
+  }
+  blockquote p + p { margin-top: 8px; }
+
+  /* ── 표 ──────────────────────────────────── */
+  .tw { overflow-x: auto; margin: 0 -2px; padding: 2px; }
+  table {
+    width: 100%; min-width: 460px;
+    border-collapse: collapse;
+    font-size: 14.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  th {
+    text-align: left; font-weight: 700; font-size: 12px;
+    letter-spacing: .07em; color: var(--faint); text-transform: uppercase;
+    padding: 0 14px 9px 0; border-bottom: 1px solid var(--ln);
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 14px 11px 0;
+    border-bottom: 1px solid var(--ln);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.who { color: var(--mut); }
+  td.txt { font-weight: 600; }
+
+  /* ── 두 덩어리 대비 ──────────────────────── */
+  .split { display: grid; gap: 18px; }
+  @media (min-width: 720px) { .split { grid-template-columns: 1fr 1fr; } }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--ln);
+    border-left-width: 4px;
+    border-radius: 12px;
+    padding: 22px 22px 24px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .panel.bad { border-left-color: var(--wrong); }
+  .panel.ok  { border-left-color: var(--keep); }
+
+  .tag {
+    align-self: flex-start;
+    font-size: 11.5px; font-weight: 700; letter-spacing: .07em;
+    padding: 4px 9px; border-radius: 999px; text-transform: uppercase;
+  }
+  .panel.bad .tag { background: var(--wrong-bg); color: var(--wrong); }
+  .panel.ok  .tag { background: var(--keep-bg);  color: var(--keep); }
+
+  .panel p { font-size: 14.5px; line-height: 1.72; }
+  .panel ul { margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .panel li { font-size: 14px; display: flex; gap: 9px; align-items: baseline; }
+  .panel li::before { content: '—'; color: var(--faint); flex: none; }
+
+  /* ── 선택지 ──────────────────────────────── */
+  .opts { display: flex; flex-direction: column; gap: 14px; }
+
+  .opt {
+    background: var(--surface);
+    border: 1px solid var(--ln);
+    border-radius: 14px;
+    padding: 22px 24px;
+    display: flex; flex-direction: column; gap: 14px;
+    box-shadow: var(--shadow);
+  }
+  .opt.rec { border-color: var(--ink); }
+
+  .opt-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .opt-key {
+    font-size: 12px; font-weight: 800; letter-spacing: .06em;
+    border: 1px solid var(--ln); border-radius: 6px;
+    padding: 3px 9px; color: var(--mut); flex: none;
+  }
+  .opt.rec .opt-key { background: var(--lime); color: #0E0E0C; border-color: transparent; }
+  .opt-title { font-size: 17px; font-weight: 700; letter-spacing: -.022em; }
+  .opt-rec {
+    font-size: 11.5px; font-weight: 700; letter-spacing: .06em;
+    color: var(--mut); border: 1px dashed var(--ln); border-radius: 999px; padding: 2px 9px;
+  }
+
+  .spec { display: grid; gap: 10px 18px; font-size: 14px; margin: 0; }
+  @media (min-width: 620px) { .spec { grid-template-columns: auto 1fr; } }
+  .spec dt {
+    font-size: 12px; font-weight: 700; letter-spacing: .06em;
+    color: var(--faint); text-transform: uppercase; padding-top: 3px;
+    white-space: nowrap;
+  }
+  .spec dd { margin: 0; color: var(--mut); }
+  .spec dd b { color: var(--ink); font-weight: 600; }
+
+  /* ── 결정 요청 ───────────────────────────── */
+  .ask {
+    border: 2px solid var(--ink);
+    border-radius: 16px;
+    padding: 28px 26px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .ask h2 {
+    font-size: 20px; font-weight: 800; letter-spacing: -.028em; margin: 0;
+  }
+  .ask ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 9px; }
+  .ask li { font-size: 15px; }
+  .ask li b { font-weight: 700; }
+
+  .note {
+    font-size: 13.5px; color: var(--faint);
+    border-top: 1px solid var(--ln); padding-top: 14px;
+  }
+
+  footer {
+    font-size: 13px; color: var(--faint);
+    border-top: 1px solid var(--ln); padding-top: 20px;
+  }
+  footer p { margin: 0; }
+  footer p + p { margin-top: 6px; }
+
+  /* ── 인쇄 · PDF 저장 ─────────────────────── */
+  @media print {
+    :root {
+      --paper: #fff; --surface: #fff; --ink: #000;
+      --mut: #333; --faint: #555; --ln: #bbb;
+      --shadow: none; --hl: transparent;
+    }
+    .theme-btn { display: none; }
+    .page { max-width: none; padding: 0; gap: 30px; }
+    body { font-size: 11pt; line-height: 1.6; }
+    h1 { font-size: 22pt; }
+    h2.sec { font-size: 14pt; }
+    .tldr, .panel, .opt, .ask { break-inside: avoid; page-break-inside: avoid; }
+    table { min-width: 0; }
+    em { text-decoration: underline; }
+    @page { margin: 18mm; }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-btn" type="button" id="themeBtn" aria-live="polite">밝게 · 어둡게</button>
+
+<div class="page">
+
+  <header class="top">
+    <div class="kicker">결정 요청 · 릴리스 게이트 G1</div>
+    <h1>CTA 12종 정리안</h1>
+    <p class="standfirst">
+      기획서는 문의 CTA를 5곳으로 못박았는데, 실제 사이트에는 12종이 박혀 있습니다.
+      릴리스 전 남은 <strong>유일한 P0 미통과 항목</strong>이라 팀 결정이 필요합니다.
+    </p>
+    <div class="meta">
+      <span><b>대상</b> AI 빌더 그룹 랜딩·관리자 플랫폼</span>
+      <span><b>관련 요구사항</b> FR-C-07 · FR-P01-06</span>
+      <span><b>작성</b> 2026-08-17</span>
+    </div>
+  </header>
+
+  <div class="tldr">
+    <h2>한 줄 요약</h2>
+    <p>
+      초과된 7종 중 <strong>2종은 문의 버튼이 아닌데 문의로 집계되는 계측 오류</strong>이고,
+      나머지 <strong>5종은 정상 작동하는 진짜 문의 버튼</strong>입니다. 성격이 달라서 한 번에 처리하면 안 됩니다.
+    </p>
+    <p>
+      결정할 것은 하나입니다 — <strong>기획서에 코드를 맞출 것인가, 코드에 기획서를 맞출 것인가.</strong>
+    </p>
+  </div>
+
+  <section>
+    <h2 class="sec">먼저, "CTA 5곳"이 무슨 뜻인가</h2>
+    <p>
+      버튼을 5개만 두라는 뜻이 아닙니다. 문의 버튼을 누를 때 GA4로 보내는
+      <strong>위치 이름표</strong>(<code>location</code>)가 5종이라는 뜻입니다.
+      이 이름표로 "문의가 어느 화면에서 나왔는가"를 셉니다.
+    </p>
+    <blockquote>
+      <p><strong>FR-C-07</strong> — CTA는 지정된 5곳에만 배치한다. gnb / hero / footer_cta / work_detail / insight_detail<br>
+      판정 기준: <em>전 화면 CTA 실사 카운트 = 5종</em></p>
+      <p><strong>FR-P01-06</strong> — 홈 CTA는 hero · footer_cta 2곳뿐이다 (GNB 제외)</p>
+    </blockquote>
+
+    <h3>기획서가 정한 5종</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>이름표</th><th>위치</th><th>버튼 문구</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>gnb</code></td><td class="who">전 화면 상단</td><td class="txt">프로젝트 문의</td></tr>
+          <tr><td><code>hero</code></td><td class="who">홈 첫 화면</td><td class="txt">프로젝트 문의</td></tr>
+          <tr><td><code>footer_cta</code></td><td class="who">홈 맨 아래</td><td class="txt">프로젝트 문의</td></tr>
+          <tr><td><code>work_detail</code></td><td class="who">Work 상세 하단</td><td class="txt">프로젝트 문의</td></tr>
+          <tr><td><code>insight_detail</code></td><td class="who">Insight 상세 하단</td><td class="txt">프로젝트 문의</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">실제로는 12종. 그런데 초과분 7종은 두 덩어리다</h2>
+    <p>
+      이게 이 문서의 핵심입니다. 7종을 뭉뚱그려 "스펙 위반"으로 보면 잘못된 결정을 하게 됩니다.
+      한쪽은 <strong>고쳐야 할 오류</strong>고, 다른 쪽은 <strong>멀쩡히 일하고 있는 버튼</strong>입니다.
+    </p>
+
+    <div class="split">
+      <div class="panel bad">
+        <span class="tag">① 계측 오류 · 2종</span>
+        <h3>애초에 문의 버튼이 아니다</h3>
+        <p>둘 다 문의 페이지로 가지 않습니다. 사이트 안에서 이동하는 링크인데 문의 전환 이벤트로 잘못 태깅돼 있습니다.</p>
+        <ul>
+          <li><code>hero_secondary</code> — "작업물 먼저 보기" → <code>/work</code></li>
+          <li><code>match_section</code> — "어떤 빌더들인지 보러가기" → <code>/work#builders</code></li>
+        </ul>
+      </div>
+
+      <div class="panel ok">
+        <span class="tag">② 판단 필요 · 5종</span>
+        <h3>전부 진짜 문의 버튼이다</h3>
+        <p>모두 문의 페이지로 정상 연결됩니다. 지우면 해당 화면에서 문의할 방법이 사라집니다.</p>
+        <ul>
+          <li><code>floating</code> — 하단 떠다니는 문의 바 <strong>(5개 화면)</strong></li>
+          <li><code>work_match</code> — 빌더 매칭 결과 "이 구성으로 문의하기"</li>
+          <li><code>faq_bottom</code> — FAQ 하단 "찾으시는 답이 없나요?"</li>
+          <li><code>builder_profile</code> — "이 빌더와 프로젝트 문의"</li>
+          <li><code>builder_profile_bottom</code> — 빌더 페이지 하단 배너</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>①이 왜 문제인가 — 전환율이 부풀려집니다</h3>
+    <p>
+      GA4에 "문의 CTA 클릭 100건"이 찍혀도, 그중 상당수는 실제로는
+      <em>작업물을 구경하러 간 사람</em>입니다. 문의한 적이 없는 클릭이 문의 전환으로 집계됩니다.
+      성과 보고와 광고 최적화가 모두 이 숫자를 봅니다.
+    </p>
+    <p class="small dim">
+      디자인 문제가 아니라 태그 문제라서, 고쳐도 화면은 1픽셀도 바뀌지 않습니다.
+    </p>
+
+    <h3>덤으로 발견된 것 하나</h3>
+    <p>
+      Work <strong>목록</strong> 페이지 하단 배너도 <code>work_detail</code>로 찍힙니다.
+      승인된 이름표를 쓰고 있어 개수에는 안 걸리지만, GA4에서
+      <strong>목록에서 온 문의와 상세에서 온 문의를 구분할 수 없습니다.</strong>
+      어느 안을 고르든 같이 정리하기를 권합니다.
+    </p>
+  </section>
+
+  <section>
+    <h2 class="sec">왜 기획서는 5곳이라고 썼을까</h2>
+    <p>
+      요구사항 문구에 힌트가 있습니다 — <em>"소개서 다운받기류 금지"</em>.
+      문의 말고 다른 목적지로 사람을 흩뜨리지 말라는 뜻입니다.
+      그리고 이름표가 많아지면 "어디서 문의가 오는가"가 흐려집니다.
+    </p>
+    <p>
+      그 취지에 비춰 보면, <strong>실제로 취지를 어기고 있는 건 ①의 2종뿐</strong>입니다.
+      ②의 5종은 전부 문의로 보내는 버튼이고, 서로 다른 화면에 있어서 오히려 구분해서 세는 게 맞습니다.
+    </p>
+    <p>
+      기획서가 5곳을 확정한 <strong>8월 11일 시점에는 FAQ 페이지 · 빌더 페이지 · 빌더 매칭 기능이
+      아직 화면 목록에 없었습니다.</strong> 화면이 17개에서 20개로 늘어난 것과 같은 뿌리의 문제입니다.
+      스펙이 틀렸다기보다, 그 뒤에 늘어난 화면을 스펙이 아직 따라잡지 못한 상태입니다.
+    </p>
+  </section>
+
+  <section>
+    <h2 class="sec">선택지</h2>
+
+    <div class="opts">
+
+      <div class="opt rec">
+        <div class="opt-head">
+          <span class="opt-key">안 A</span>
+          <span class="opt-title">①만 고치고, ②는 기획서를 개정한다</span>
+          <span class="opt-rec">개발 추천</span>
+        </div>
+        <dl class="spec">
+          <dt>코드</dt><dd>네비게이션 링크 2곳에서 문의 전환 태그만 제거. <b>화면 변화 없음</b></dd>
+          <dt>문서</dt><dd>FR-C-07 · FR-P01-06을 현재 화면 구성에 맞게 개정</dd>
+          <dt>결과</dt><dd>이름표 <b>10종</b>. 전부 실제 문의 버튼이고 GA4 집계가 정확해짐</dd>
+          <dt>비용</dt><dd><b>PRD 개정 승인</b>이 필요합니다 (요구사항 2건)</dd>
+        </dl>
+      </div>
+
+      <div class="opt">
+        <div class="opt-head">
+          <span class="opt-key">안 B</span>
+          <span class="opt-title">기획서대로 7종을 전부 제거한다</span>
+        </div>
+        <dl class="spec">
+          <dt>코드</dt><dd>플로팅 문의 바(5개 화면) · FAQ 하단 · 빌더 문의 2곳 · 매칭 결과 문의 <b>삭제</b></dd>
+          <dt>문서</dt><dd>개정 없음. 기획서 그대로 통과</dd>
+          <dt>결과</dt><dd>이름표 <b>5종</b>. FR-C-07 · FR-P01-06 모두 통과</dd>
+          <dt>비용</dt><dd>FAQ · 빌더 · 매칭 화면에서 <b>문의할 방법이 사라집니다</b></dd>
+        </dl>
+      </div>
+
+      <div class="opt">
+        <div class="opt-head">
+          <span class="opt-key">안 C</span>
+          <span class="opt-title">①만 고치고 나머지는 보류한다</span>
+        </div>
+        <dl class="spec">
+          <dt>코드</dt><dd>안 A와 동일 (태그 2곳 제거)</dd>
+          <dt>문서</dt><dd>개정 없음</dd>
+          <dt>결과</dt><dd>이름표 <b>10종</b>. GA4는 정확해지지만 <b>G1은 계속 미통과</b></dd>
+          <dt>비용</dt><dd>릴리스 판정을 오픈 이후로 미루게 됩니다</dd>
+        </dl>
+      </div>
+
+    </div>
+
+    <p class="small dim">
+      세 안 모두 코드 반영은 결정 당일 가능합니다. 안 A · C는 화면이 바뀌지 않아 재검수 부담이 없고,
+      안 B는 5개 화면의 레이아웃이 바뀌므로 반응형 재확인이 필요합니다.
+    </p>
+  </section>
+
+  <section>
+    <div class="ask">
+      <h2>결정해 주셔야 할 것</h2>
+      <ol>
+        <li><b>세 안 중 하나를 골라 주세요.</b> A · B · C</li>
+        <li>안 A를 고르는 경우, <b>PRD 개정 승인자</b>가 누구인지 정해 주세요 (FR-C-07 · FR-P01-06 2건).</li>
+        <li>Work 목록 배너의 이름표 분리는 <b>어느 안이든 함께 진행</b>해도 될지 확인해 주세요.</li>
+      </ol>
+      <p class="note">
+        참고 — 이 항목은 릴리스 게이트 G1(P0 요구사항 전건 통과)에서 <strong>코드로 막힌 마지막 한 건</strong>입니다.
+        나머지 미통과 항목은 외부 권한(pluug · GA4 측정 ID)이나 사람의 육안 확인을 기다리는 것들입니다.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <p>근거: <code>data-track="cta_click"</code>이 붙은 요소를 저장소 전체에서 전수 조사한 결과입니다. 유튜브 채널 클릭(<code>youtube_channel_click</code>)은 별도 이벤트라 집계에서 제외했습니다.</p>
+    <p>목업 화면 <code>/work-detail</code> · <code>/insight-detail</code>의 CTA는 이관 전 삭제 예정이라 집계에 포함하지 않았습니다.</p>
+  </footer>
+
+</div>
+
+<script>
+  /* 단독 파일이라 테마를 알려줄 호스트가 없다. 버튼으로 직접 뒤집는다.
+     아무것도 고르지 않으면 OS 설정(prefers-color-scheme)을 그대로 따른다. */
+  (function () {
+    var root = document.documentElement;
+    var btn = document.getElementById('themeBtn');
+    try {
+      var saved = localStorage.getItem('cta-doc-theme');
+      if (saved === 'dark' || saved === 'light') root.setAttribute('data-theme', saved);
+    } catch (e) { /* 파일을 직접 열면 localStorage 가 막히는 브라우저가 있다 — 무시하고 계속 */ }
+
+    btn.addEventListener('click', function () {
+      var now = root.getAttribute('data-theme');
+      var next = now === 'dark' ? 'light'
+        : now === 'light' ? 'dark'
+        : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark');
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('cta-doc-theme', next); } catch (e) {}
+    });
+  })();
+</script>
+
+</body>
+</html>
