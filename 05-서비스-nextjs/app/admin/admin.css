@@ -86,7 +86,15 @@
 .adm-nav a[aria-current='page'] em { background: var(--ink); color: var(--lime); }
 
 /* ── 본문 ─────────────────────────────────────────────── */
-.adm-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; padding-bottom: 40px; }
+/* ⚠ padding-top 을 반드시 다시 지정한다.
+   .adm-main 은 <main> 태그라서 공개 웹 style.css 의 `main { padding-top: 72px }` 를 물려받는다.
+   그 값은 fixed GNB(72px) 를 피하려고 둔 것인데, 관리자에는 GNB 가 없어서
+   화면 위에 이유 없는 빈 칸 72px 이 생긴다.
+   16px 은 사이드바 브랜드와 계정 버튼의 윗줄을 맞춘 값이다 (사이드바 padding 20px 기준). */
+.adm-main {
+  display: flex; flex-direction: column; gap: 16px; min-width: 0;
+  padding-top: 16px; padding-bottom: 40px;
+}
 .adm-top {
   display: flex; align-items: center; justify-content: space-between;
   gap: 16px; padding: 4px 2px 0;
