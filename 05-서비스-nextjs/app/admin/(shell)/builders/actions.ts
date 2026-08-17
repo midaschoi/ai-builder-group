@@ -22,10 +22,12 @@ export type IssueState = {
   ok?: boolean
   /** 임시 비밀번호 방식일 때만. 모달에 한 번만 보여주고 다시 조회할 수 없다 (A-06 §계정 발급) */
   tempPassword?: string
+  /** 초대 링크 방식일 때만. 마찬가지로 한 번만 보여준다 */
+  inviteLink?: string
   invitedEmail?: string
   name?: string
 }
-export type RowState = { error?: string; ok?: boolean; notice?: string }
+export type RowState = { error?: string; ok?: boolean; notice?: string; link?: string }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -84,6 +86,7 @@ export async function issueBuilder(_prev: IssueState, form: FormData): Promise<I
   const origin = await siteOrigin()
   let authUserId: string
   let password: string | undefined
+  let inviteLink: string | undefined
 
   if (method === 'temp') {
     password = tempPassword()
@@ -96,17 +99,24 @@ export async function issueBuilder(_prev: IssueState, form: FormData): Promise<I
     if (error || !data.user) return { error: `계정을 만들지 못했습니다. ${error?.message ?? ''}` }
     authUserId = data.user.id
   } else {
-    const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `${origin}/admin/auth/callback?next=/admin/reset`,
+    /* ⚠ 메일을 보내지 않고 **링크만 만든다.**
+       Supabase 는 커스텀 SMTP 를 붙이기 전에는 메일 템플릿을 고칠 수 없다
+       ("Set up custom SMTP to edit templates"). 기본 템플릿은 토큰을 주소의 # 뒤에 붙여 보내는데,
+       # 뒤는 서버로 전송되지 않아 우리 콜백이 읽을 수 없다 (PRD DR-02 — 브라우저에서 Supabase 직접 호출 금지).
+       generateLink 는 hashed_token 을 그대로 돌려주므로, 그것으로 우리가 읽을 수 있는 주소를 만든다.
+       발송 한도에도 걸리지 않고, 운영자가 원하는 경로(슬랙·문자 등)로 전달하면 된다. */
+    const { data, error } = await admin.auth.admin.generateLink({
+      type: 'invite',
+      email,
+      options: { redirectTo: `${origin}/admin/auth/callback?next=/admin/reset` },
     })
     if (error || !data.user) {
-      /* 무료 티어 기본 SMTP 는 시간당 발송 수가 매우 적다. 원인을 감추면 운영자가 못 찾는다. */
-      return {
-        error: `초대 메일을 보내지 못했습니다. ${error?.message ?? ''}` +
-          ' — Supabase 발송 한도에 걸렸을 수 있습니다. 임시 비밀번호 방식을 쓰거나 잠시 후 다시 시도하세요.',
-      }
+      return { error: `초대 링크를 만들지 못했습니다. ${error?.message ?? ''}` }
     }
     authUserId = data.user.id
+    inviteLink = `${origin}/admin/auth/callback` +
+      `?token_hash=${encodeURIComponent(data.properties.hashed_token)}` +
+      `&type=invite&next=/admin/reset`
   }
 
   /* ── builders 행 ──────────────────────────────────────────────── */
@@ -133,7 +143,7 @@ export async function issueBuilder(_prev: IssueState, form: FormData): Promise<I
 
   return method === 'temp'
     ? { ok: true, name, tempPassword: password }
-    : { ok: true, name, invitedEmail: email }
+    : { ok: true, name, invitedEmail: email, inviteLink }
 }
 
 
@@ -179,11 +189,17 @@ export async function setActive(_prev: RowState, form: FormData): Promise<RowSta
 }
 
 
-/* ── 초대 메일 다시 보내기 · 비밀번호 재설정 메일 ────────────────── */
+/* ── 비밀번호 재설정 링크 만들기 ─────────────────────────────────── */
 
-export async function resendInvite(_prev: RowState, form: FormData): Promise<RowState> {
+/* ⚠ 메일을 보내지 않고 링크를 만들어 돌려준다. 이유는 issueBuilder 의 초대 경로 주석과 같다 —
+   커스텀 SMTP 를 붙이기 전에는 메일 템플릿을 고칠 수 없고, 기본 템플릿이 보내는 링크는
+   토큰이 주소의 # 뒤에 있어 서버가 읽지 못한다.
+
+   ⓘ 본인이 /admin/reset 에서 직접 요청하는 재설정 메일은 지금도 동작한다.
+     그쪽은 요청한 브라우저에 검증자가 남아 다른 방식(PKCE)이 성립하기 때문이다. */
+export async function createResetLink(_prev: RowState, form: FormData): Promise<RowState> {
   const me = await requireAdmin()
-  if (!me) return { error: '운영 관리자만 보낼 수 있습니다.' }
+  if (!me) return { error: '운영 관리자만 만들 수 있습니다.' }
 
   const email = String(form.get('email') ?? '').trim().toLowerCase()
   if (!EMAIL.test(email)) return { error: '이메일이 올바르지 않습니다.' }
@@ -191,14 +207,22 @@ export async function resendInvite(_prev: RowState, form: FormData): Promise<Row
   const origin = await siteOrigin()
   const admin = createAdminClient()
 
-  /* 이미 만들어진 계정이라 inviteUserByEmail 은 거부된다.
-     같은 목적(본인이 비밀번호를 직접 정하게 하기)은 복구 메일로 달성한다. */
-  const { error } = await admin.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/admin/auth/callback?next=/admin/reset`,
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: 'recovery',
+    email,
+    options: { redirectTo: `${origin}/admin/auth/callback?next=/admin/reset` },
   })
-  if (error) return { error: `보내지 못했습니다. ${error.message}` }
+  if (error || !data.properties) return { error: `링크를 만들지 못했습니다. ${error?.message ?? ''}` }
 
-  return { ok: true, notice: `${email} 로 비밀번호 설정 메일을 보냈습니다. 링크는 1시간 뒤 만료됩니다.` }
+  const link = `${origin}/admin/auth/callback` +
+    `?token_hash=${encodeURIComponent(data.properties.hashed_token)}` +
+    `&type=recovery&next=/admin/reset`
+
+  return {
+    ok: true,
+    link,
+    notice: '이 링크를 본인에게 전달하세요. 한 번만 쓸 수 있고 1시간 뒤 만료됩니다.',
+  }
 }
 
 

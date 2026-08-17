@@ -268,9 +268,20 @@ function IssueModal({ onClose }: { onClose: () => void }) {
                     </p>
                   </>
                 ) : (
-                  <p className="adm-notice" style={{ background: '#DBF3E4', color: '#14663C' }}>
-                    {issue.invitedEmail} 로 초대 메일을 보냈습니다. 링크에서 본인이 비밀번호를 정합니다.
-                  </p>
+                  <>
+                    <p className="adm-error" style={{ background: '#FFEDD0', color: '#9A5B00' }}>
+                      초대 링크는 <b>지금 한 번만</b> 표시됩니다. 창을 닫으면 다시 볼 수 없습니다.
+                    </p>
+                    <div className="bd-secret">
+                      <code>{issue.inviteLink}</code>
+                      <button type="button" className="adm-btn adm-btn--ghost"
+                        onClick={() => navigator.clipboard?.writeText(issue.inviteLink!)}>복사</button>
+                    </div>
+                    <p className="adm-dim" style={{ fontSize: 12.5 }}>
+                      {issue.invitedEmail} 님에게 이 링크를 전달하세요. 열면 본인이 비밀번호를 정합니다.
+                      한 번만 쓸 수 있고 1시간 뒤 만료됩니다.
+                    </p>
+                  </>
                 )}
                 <div className="bd-modal-foot">
                   <button type="button" className="adm-btn"
@@ -321,9 +332,9 @@ function IssueModal({ onClose }: { onClose: () => void }) {
                     <input type="radio" name="method" value="invite"
                       checked={f.method === 'invite'} onChange={() => set('method')('invite')} />
                     <span>
-                      <b>초대 메일</b>
+                      <b>초대 링크 생성</b>
                       <em>본인이 비밀번호를 직접 설정합니다</em>
-                      <em>⚠ Supabase 메일 템플릿 설정이 먼저 필요합니다 (supabase/EMAIL-TEMPLATES.md)</em>
+                      <em>메일은 보내지 않습니다 — 링크를 복사해 전달하세요</em>
                     </span>
                   </label>
                 </fieldset>

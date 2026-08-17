@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState, useCallback, useState } from 'react'
-import { saveProfile, uploadAvatar, resendInvite, type ProfileState, type RowState } from './actions'
+import { saveProfile, uploadAvatar, createResetLink, type ProfileState, type RowState } from './actions'
 
 const P: ProfileState = {}
 const R: RowState = {}
@@ -39,7 +39,7 @@ export default function ProfilePanel({
   onClose?: () => void
 }) {
   const [state, action, pending] = useActionState(saveProfile, P)
-  const [mail, mailAction, mailPending] = useActionState(resendInvite, R)
+  const [mail, mailAction, mailPending] = useActionState(createResetLink, R)
 
   const [name, setName] = useState(profile.name)
   const [slug, setSlug] = useState(profile.slug)
@@ -230,10 +230,24 @@ export default function ProfilePanel({
         <form action={mailAction} className="bd-panel-mail">
           <input type="hidden" name="email" value={profile.email} />
           {mail.error && <p className="adm-error" role="alert">{mail.error}</p>}
-          {mail.ok && <p className="adm-notice" role="status">{mail.notice}</p>}
+          {mail.ok && mail.link && (
+            <>
+              <p className="adm-notice" role="status">{mail.notice}</p>
+              {/* ⚠ 이 링크는 곧 비밀번호다. 한 번만 보여주고 다시 조회할 수 없다 */}
+              <div className="bd-secret">
+                <code>{mail.link}</code>
+                <button type="button" className="adm-btn adm-btn--ghost"
+                  onClick={() => navigator.clipboard?.writeText(mail.link!)}>복사</button>
+              </div>
+            </>
+          )}
           <button className="adm-btn adm-btn--ghost" type="submit" disabled={mailPending}>
-            {mailPending ? '보내는 중…' : '비밀번호 재설정 메일 보내기'}
+            {mailPending ? '만드는 중…' : '비밀번호 재설정 링크 만들기'}
           </button>
+          <small className="adm-dim" style={{ fontSize: 11.5 }}>
+            메일은 보내지 않습니다 — 링크를 만들어 드리면 슬랙·문자 등 편한 경로로 전달하세요.
+            <br />본인이 로그인 화면의 <b>비밀번호를 잊으셨나요?</b> 로 직접 요청하면 메일도 갑니다.
+          </small>
         </form>
       )}
     </div>
