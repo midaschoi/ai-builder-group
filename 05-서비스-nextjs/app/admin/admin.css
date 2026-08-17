@@ -49,7 +49,16 @@
 .adm-shell {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
-  gap: 14px;
+
+  /* 사이드바(검정)와 본문 사이 간격.
+     14px 이었을 때는 제목과 카드가 검은 면에 바로 붙어 답답했다 —
+     본문 요소에는 좌측 여백이 따로 없어서 이 간격이 곧 여백이다.
+     여기서 벌리면 제목 · 상단바 · 카드가 한꺼번에 같이 밀린다.
+     ⚠ row-gap 은 따로 둔다. 767px 아래에서는 사이드바가 위로 올라가 한 줄이 되는데,
+       그때 이 값이 세로 간격이 되므로 같이 키우면 위쪽만 뻥 뜬다. */
+  column-gap: 30px;
+  row-gap: 12px;
+
   padding: 12px;
   min-height: 100vh;
 
@@ -337,15 +346,16 @@
 /* 900~1279px — 사이드바만 좁힌다. 라벨은 남긴다.
    1280 미만을 전부 아이콘 레일로 접으면 창을 최대화하지 않은 노트북(1000px 안팎)에서
    메뉴 이름이 통째로 사라진다. 레일은 진짜 좁을 때만 쓴다. */
+/* 화면이 좁아질수록 간격도 같이 줄인다 — 폭이 아쉬운데 여백만 넓으면 본문이 눌린다 */
 @media (max-width: 1279px) {
-  .adm-shell { grid-template-columns: 184px minmax(0, 1fr); }
+  .adm-shell { grid-template-columns: 184px minmax(0, 1fr); column-gap: 24px; }
   .adm-side { padding: 20px 10px; }
   .adm-nav a { gap: 10px; padding: 9px 9px; }
 }
 
 /* ~899px — 아이콘 레일 (A-00 §태블릿). 라벨은 title 툴팁으로 남는다 */
 @media (max-width: 899px) {
-  .adm-shell { grid-template-columns: 64px minmax(0, 1fr); }
+  .adm-shell { grid-template-columns: 64px minmax(0, 1fr); column-gap: 18px; }
   .adm-side { padding: 20px 8px; }
   .adm-brand { justify-content: center; padding: 0; }
   .adm-brand b, .adm-nav a > span { display: none; }
