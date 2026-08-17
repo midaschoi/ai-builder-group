@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>빌더 계정 운영 — AI 빌더 그룹</title>
+<style>
+  :root {
+    --ink: #0E0E0C; --paper: #F4F1EA; --surface: #FBFAF6; --lime: #D8FF3D;
+    --mut: #6B6960; --faint: #918E83; --ln: #DCD9CC;
+    --stop: #A63D1B; --stop-bg: rgba(166, 61, 27, .07);
+    --warn: #8A6212; --warn-bg: rgba(138, 98, 18, .08);
+    --ok: #2E6249; --ok-bg: rgba(46, 98, 73, .07);
+    --hl: rgba(216, 255, 61, .55);
+    --shadow: 0 1px 2px rgba(14,14,12,.05), 0 8px 24px -16px rgba(14,14,12,.18);
+    --sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+            "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    --mono: "SFMono-Regular", "JetBrains Mono", Consolas, "D2Coding", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #ECE9DF; --paper: #121210; --surface: #1B1B17;
+      --mut: #9C998E; --faint: #7A776D; --ln: #32312A;
+      --stop: #E08A64; --stop-bg: rgba(224,138,100,.12);
+      --warn: #D9AE55; --warn-bg: rgba(217,174,85,.12);
+      --ok: #7FC3A2; --ok-bg: rgba(127,195,162,.12);
+      --hl: rgba(216,255,61,.20);
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #ECE9DF; --paper: #121210; --surface: #1B1B17;
+    --mut: #9C998E; --faint: #7A776D; --ln: #32312A;
+    --stop: #E08A64; --stop-bg: rgba(224,138,100,.12);
+    --warn: #D9AE55; --warn-bg: rgba(217,174,85,.12);
+    --ok: #7FC3A2; --ok-bg: rgba(127,195,162,.12);
+    --hl: rgba(216,255,61,.20);
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--sans); font-size: 16px; line-height: 1.78;
+    letter-spacing: -.011em; -webkit-font-smoothing: antialiased; word-break: keep-all;
+  }
+  .page { max-width: 800px; margin: 0 auto; padding: 56px 24px 120px;
+          display: flex; flex-direction: column; gap: 48px; }
+
+  .theme-btn {
+    position: fixed; top: 14px; right: 14px; z-index: 10;
+    font: inherit; font-size: 12px; font-weight: 600; line-height: 1;
+    color: var(--mut); background: var(--surface);
+    border: 1px solid var(--ln); border-radius: 999px; padding: 6px 13px; cursor: pointer;
+  }
+  .theme-btn:hover { color: var(--ink); }
+  .theme-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .top { display: flex; flex-direction: column; gap: 18px; }
+  .kicker { font-size: 12px; font-weight: 700; letter-spacing: .13em;
+            color: var(--faint); text-transform: uppercase; }
+  h1 { font-size: clamp(30px,6vw,42px); font-weight: 800; letter-spacing: -.035em;
+       line-height: 1.18; text-wrap: balance; margin: 0; }
+  .standfirst { font-size: 18px; line-height: 1.7; color: var(--mut); max-width: 60ch; margin: 0; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: var(--faint);
+          border-top: 1px solid var(--ln); padding-top: 16px; }
+  .meta b { color: var(--mut); font-weight: 600; }
+
+  p { margin: 0; max-width: 68ch; }
+  .dim { color: var(--mut); }
+  .small { font-size: 14.5px; }
+  strong { font-weight: 700; }
+  em { font-style: normal; background: linear-gradient(transparent 62%, var(--hl) 62%); }
+  code { font-family: var(--mono); font-size: .875em; background: var(--surface);
+         border: 1px solid var(--ln); border-radius: 5px; padding: .1em .4em;
+         letter-spacing: 0; }
+  pre { margin: 0; padding: 14px 16px; border-radius: 10px; background: var(--ink);
+        overflow-x: auto; }
+  pre code { background: none; border: 0; padding: 0; color: #ECE9DF; font-size: 13px;
+             line-height: 1.7; white-space: pre; }
+
+  h2.sec { font-size: 23px; font-weight: 800; letter-spacing: -.028em; line-height: 1.32;
+           margin: 0; padding-top: 22px; border-top: 1px solid var(--ln); text-wrap: balance; }
+  h3 { font-size: 16px; font-weight: 700; letter-spacing: -.02em; margin: 0; line-height: 1.5; }
+  section { display: flex; flex-direction: column; gap: 18px; }
+
+  .tldr { background: var(--surface); border: 1px solid var(--ln); border-radius: 14px;
+          padding: 24px 26px; box-shadow: var(--shadow);
+          display: flex; flex-direction: column; gap: 12px; }
+  .tldr h2 { font-size: 13px; font-weight: 700; letter-spacing: .1em; color: var(--faint);
+             text-transform: uppercase; margin: 0; }
+  .tldr p { margin: 0; }
+
+  /* 순서가 있는 절차 — 번호가 정보다 */
+  .steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px;
+           counter-reset: s; }
+  .steps > li { counter-increment: s; display: flex; gap: 14px; align-items: flex-start; }
+  .steps > li::before {
+    content: counter(s); flex: none;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--ink); color: var(--paper);
+    font-size: 12px; font-weight: 800; line-height: 24px; text-align: center;
+    margin-top: 2px;
+  }
+  .steps .body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .steps b { font-weight: 700; }
+  .steps p { font-size: 14.5px; color: var(--mut); }
+
+  .card { background: var(--surface); border: 1px solid var(--ln); border-left-width: 4px;
+          border-radius: 12px; padding: 20px 22px;
+          display: flex; flex-direction: column; gap: 11px; box-shadow: var(--shadow); }
+  .card.stop { border-left-color: var(--stop); }
+  .card.warn { border-left-color: var(--warn); }
+  .card.ok   { border-left-color: var(--ok); }
+  .card > b { font-size: 15.5px; font-weight: 800; letter-spacing: -.02em; }
+  .card p { font-size: 14.5px; }
+
+  .tw { overflow-x: auto; margin: 0 -2px; padding: 2px; }
+  table { width: 100%; min-width: 440px; border-collapse: collapse;
+          font-size: 14.5px; font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-weight: 700; font-size: 12px; letter-spacing: .07em;
+       color: var(--faint); text-transform: uppercase;
+       padding: 0 14px 9px 0; border-bottom: 1px solid var(--ln); white-space: nowrap; }
+  td { padding: 11px 14px 11px 0; border-bottom: 1px solid var(--ln); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td.who { color: var(--mut); }
+  .yes { color: var(--ok); font-weight: 700; }
+  .no  { color: var(--stop); font-weight: 700; }
+
+  .safety { border: 1px solid var(--stop); background: var(--stop-bg);
+            border-radius: 12px; padding: 20px 22px; display: flex; flex-direction: column; gap: 9px; }
+  .safety h3 { color: var(--stop); font-weight: 800; }
+  .safety p, .safety li { font-size: 14.5px; }
+  .safety ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+
+  footer { font-size: 13px; color: var(--faint); border-top: 1px solid var(--ln); padding-top: 20px; }
+  footer p { margin: 0; }
+  footer p + p { margin-top: 6px; }
+
+  @media print {
+    :root { --paper:#fff; --surface:#fff; --ink:#000; --mut:#333; --faint:#555;
+            --ln:#bbb; --shadow:none; --hl:transparent; }
+    .theme-btn { display: none; }
+    .page { max-width: none; padding: 0; gap: 28px; }
+    body { font-size: 11pt; line-height: 1.6; }
+    h1 { font-size: 22pt; } h2.sec { font-size: 14pt; }
+    pre { background: #f3f3f3; border: 1px solid #ccc; }
+    pre code { color: #000; }
+    .tldr, .card, .safety, .steps > li { break-inside: avoid; page-break-inside: avoid; }
+    table { min-width: 0; }
+    em { text-decoration: underline; }
+    @page { margin: 18mm; }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-btn" type="button" id="themeBtn">밝게 · 어둡게</button>
+
+<div class="page">
+
+  <header class="top">
+    <div class="kicker">팀 내부 · 운영 안내</div>
+    <h1>빌더 계정 운영</h1>
+    <p class="standfirst">
+      팀원 계정을 만들고, 권한을 정하고, 필요할 때 잠그는 방법입니다.
+      <strong>계정 발급은 관리자 화면에서 되고, 관리자 권한을 주는 것만 DB에서 합니다.</strong>
+      그 차이가 실수가 아니라 설계라는 점이 이 문서의 요점입니다.
+    </p>
+    <div class="meta">
+      <span><b>대상</b> AI 빌더 그룹 관리자 플랫폼</span>
+      <span><b>읽는 사람</b> 팀 내부 · 운영 관리자</span>
+      <span><b>작성</b> 2026-08-17</span>
+    </div>
+  </header>
+
+  <div class="tldr">
+    <h2>지금 상태</h2>
+    <p>
+      관리자 화면에 들어갈 수 있는 계정은 <code>builder@test.kr</code> <strong>하나뿐</strong>이고,
+      테스트용 주소입니다. <strong>이 계정을 잃으면 관리자 화면에 들어갈 방법이 없습니다.</strong>
+    </p>
+    <p class="dim small">
+      <code>builders</code> 목록에는 빌더 10명이 있지만 전부 가짜 주소(<code>@sample.invalid</code>)라
+      아무도 로그인할 수 없습니다. 화면에 이름만 있고 본인 글을 쓰거나 프로필을 고칠 수 없는 상태입니다.
+      <strong>조원 명단(이름·이메일)만 나오면 바로 실제 계정으로 바꿀 수 있습니다.</strong>
+    </p>
+  </div>
+
+  <section>
+    <h2 class="sec">계정 발급 — 관리자 화면에서 됩니다</h2>
+    <p><strong>관리자 → 빌더 관리 → <code>+ 계정 발급</code></strong></p>
+
+    <ol class="steps">
+      <li><div class="body">
+        <b>이름 · 이메일 · 슬러그 · 역할 라벨을 입력합니다</b>
+        <p>슬러그는 공개 프로필 주소가 됩니다 (<code>/builders/dohyun</code>). 영문 소문자·숫자·하이픈만 씁니다.
+           역할 라벨은 <em>표시용 문구</em>일 뿐 권한과 무관합니다 — "플랫폼 · 어드민" 같은 소개말입니다.</p>
+      </div></li>
+      <li><div class="body">
+        <b>발급 방식을 고릅니다</b>
+        <p><strong>임시 비밀번호</strong> — 그 자리에서 비밀번호를 만들어 보여줍니다. 지금 기본값입니다.<br>
+           <strong>초대 링크</strong> — 링크를 만들어 보여줍니다. 슬랙·문자 등 원하는 경로로 전달합니다.</p>
+      </div></li>
+      <li><div class="body">
+        <b>화면에 뜬 값을 옮겨 적고 닫습니다</b>
+        <p>⚠ <strong>임시 비밀번호와 초대 링크는 "지금 한 번만" 표시됩니다.</strong>
+           창을 닫으면 다시 볼 수 없습니다. 놓쳤다면 아래 §비밀번호 재설정으로 다시 만들면 됩니다.</p>
+      </div></li>
+      <li><div class="body">
+        <b>본인이 첫 로그인 후 비밀번호를 바꿉니다</b>
+        <p>임시 비밀번호로 발급된 계정은 로그인하면 비밀번호 변경 화면으로 넘어갑니다.</p>
+      </div></li>
+    </ol>
+
+    <div class="card warn">
+      <b>메일은 자동으로 가지 않습니다</b>
+      <p>
+        지금은 링크·비밀번호를 <strong>화면에 보여주기만</strong> 합니다. 직접 전달하셔야 합니다.
+      </p>
+      <p class="dim">
+        이유 — Supabase 기본 메일은 인증 토큰을 주소의 <code>#</code> 뒤에 붙여 보내는데,
+        <code>#</code> 뒤는 서버로 전달되지 않아 우리 쪽에서 읽을 수 없습니다.
+        커스텀 SMTP를 붙이면 초대 메일 방식으로 바꿀 수 있습니다.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">빌더는 무엇을 할 수 있나</h2>
+    <p>발급된 계정은 <strong>항상 일반 빌더</strong>입니다. 관리자가 아닙니다.</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>메뉴 · 동작</th><th>빌더</th><th>운영 관리자</th></tr></thead>
+        <tbody>
+          <tr><td>Insight 관리 — <span class="who">본인 글만 보임</span></td><td class="yes">O</td><td class="yes">O</td></tr>
+          <tr><td>Work 관리 — <span class="who">본인이 참여한 프로젝트만</span></td><td class="yes">O</td><td class="yes">O</td></tr>
+          <tr><td>내 프로필 수정</td><td class="yes">O</td><td class="yes">O</td></tr>
+          <tr><td><b>발행</b> — 공개 사이트에 올리기</td><td class="no">X</td><td class="yes">O</td></tr>
+          <tr><td>승인 요청 (작성 후 제출)</td><td class="yes">O</td><td class="yes">O</td></tr>
+          <tr><td>승인 대기 · 승인 · 반려</td><td class="no">X</td><td class="yes">O</td></tr>
+          <tr><td>빌더 관리 (계정 발급 · 비활성화)</td><td class="no">X</td><td class="yes">O</td></tr>
+          <tr><td>FAQ 관리 · 콘텐츠 관리 · 사이트 설정</td><td class="no">X</td><td class="yes">O</td></tr>
+          <tr><td>남의 프로필 수정</td><td class="no">X</td><td class="yes">O</td></tr>
+          <tr><td>배지 달기 (<span class="who">✳ 이달의 빌더</span>)</td><td class="no">X</td><td class="yes">O</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="small dim">
+      빌더가 쓴 글은 <strong>바로 공개되지 않습니다.</strong> 작성 → 승인 요청 → 관리자 승인 → 발행 순서입니다.
+      한 번 승인 요청을 보낸 글은 관리자가 처리하기 전까지 빌더가 고칠 수 없습니다.
+    </p>
+    <p class="small dim">
+      메뉴를 숨기는 것은 편의일 뿐입니다 — 주소를 직접 쳐도 서버에서 다시 막습니다.
+      빌더 계정으로 실제 접근을 시도해 <strong>차단을 확인해 두었습니다</strong>(릴리스 게이트 G7 통과).
+    </p>
+  </section>
+
+  <section>
+    <h2 class="sec">관리자 권한 주기 — 화면에는 없습니다</h2>
+
+    <div class="card stop">
+      <b>일부러 막아 두었습니다. 버그가 아닙니다.</b>
+      <p>
+        화면에도, 서버에도 <strong>역할을 바꾸는 경로가 없습니다.</strong>
+        기획서 §2.2가 <em>"관리자 승격은 DB 직접 변경으로만"</em> 이라고 정한 대로입니다.
+      </p>
+      <p class="dim">
+        이유 — 계정별 접근 제어는 <strong>행 단위</strong>라 "내 것이면 수정 가능"까지만 막습니다.
+        그래서 빌더가 우리 화면을 거치지 않고 자기 계정의 역할을 직접 <code>admin</code>으로
+        바꿀 수 있었습니다. DB에서 그 권한 자체를 회수해 경로를 닫았습니다.
+      </p>
+    </div>
+
+    <h3>올리는 방법</h3>
+    <p>Supabase → SQL Editor 에서 실행합니다.</p>
+    <pre><code>update public.builders
+   set role = 'admin'
+ where email = '올릴사람@주소';</code></pre>
+    <p class="small dim">되돌릴 때는 <code>'builder'</code> 로 바꿉니다. 본인 계정도 같은 방법으로 내릴 수 있으니
+       <strong>마지막 관리자를 내리지 않도록</strong> 주의하세요 — 그러면 아무도 못 들어옵니다.</p>
+
+    <div class="card ok">
+      <b>관리자는 두 명 이상 두시기를 권합니다</b>
+      <p>
+        한 명뿐이면 그 사람이 자리를 비우거나 계정을 잃는 순간 운영이 멈춥니다.
+        계정 발급 · 승인 · 사이트 설정이 전부 관리자 전용이라 대신할 사람이 없습니다.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">그 밖에 할 수 있는 것</h2>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>상황</th><th>어떻게</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>비밀번호를 잊었다</b></td>
+            <td class="who">빌더 관리 → 해당 줄 → 재설정 링크 발급.
+                본인이 로그인 화면의 "비밀번호를 잊으셨나요?"로 직접 요청해도 됩니다</td>
+          </tr>
+          <tr>
+            <td><b>임시 비밀번호를 놓쳤다</b></td>
+            <td class="who">위와 같습니다. 재설정 링크를 새로 만들면 됩니다</td>
+          </tr>
+          <tr>
+            <td><b>퇴사·이탈로 접근을 막아야 한다</b></td>
+            <td class="who">빌더 관리 → <b>비활성화</b>. 로그인이 막히고, 공개 사이트의 참여 빌더 표시에
+                <b>(비활성)</b> 이 붙습니다. 계정과 글은 남으므로 되돌릴 수 있습니다</td>
+          </tr>
+          <tr>
+            <td><b>이메일을 바꿔야 한다</b></td>
+            <td class="who">화면에서는 안 됩니다 — 이메일이 로그인 주체라 바꾸면 재인증이 필요합니다.
+                새 계정을 발급하는 편이 안전합니다</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">주의</h2>
+
+    <div class="safety">
+      <h3>⚠ 비밀번호와 링크를 단톡방에 올리지 마세요</h3>
+      <ul>
+        <li><strong>초대 링크와 재설정 링크는 비밀번호와 같습니다.</strong> 링크를 가진 사람이 곧 그 계정입니다</li>
+        <li>단톡방·공용 채널은 나중에 들어온 사람도 지난 대화를 볼 수 있습니다. <strong>1:1로 전달</strong>하세요</li>
+        <li>전달한 뒤에는 본인에게 <strong>바로 비밀번호를 바꾸도록</strong> 안내하세요</li>
+        <li>Supabase의 <strong>Secret key</strong>(<code>service_role</code>)는 어떤 경우에도 공유하지 마세요.
+            이 키 하나면 모든 보안 정책을 우회해 DB 전체를 읽고 지울 수 있습니다</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">지금 필요한 것</h2>
+    <ol class="steps">
+      <li><div class="body">
+        <b>조원 명단 (이름 · 이메일)</b>
+        <p>지금 등록된 빌더 10명은 전부 가짜 주소라 아무도 로그인할 수 없습니다.
+           명단이 나오면 실제 계정으로 교체합니다.</p>
+      </div></li>
+      <li><div class="body">
+        <b>운영 관리자로 쓸 실제 이메일 — 2개 이상</b>
+        <p>현재 <code>builder@test.kr</code> 하나뿐이고 테스트 주소입니다.
+           정해지면 계정 발급 후 위 SQL로 올리고, 로그인과 권한까지 확인해 드립니다.</p>
+      </div></li>
+    </ol>
+    <p class="small dim">
+      비밀번호는 각자 본인이 설정합니다. <strong>문서나 메신저에 적어 보내실 필요가 없습니다.</strong>
+    </p>
+  </section>
+
+  <footer>
+    <p>근거 — <code>app/admin/(shell)/builders/actions.ts</code> · <code>supabase/migrations/0004</code> · <code>0007</code> · PRD §2.2 · 화면설계 A-06</p>
+    <p>권한 차단은 빌더 계정으로 실제 접근을 시도해 확인했습니다 (릴리스 게이트 G7).</p>
+  </footer>
+
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement, btn = document.getElementById('themeBtn');
+    try {
+      var s = localStorage.getItem('acct-doc-theme');
+      if (s === 'dark' || s === 'light') root.setAttribute('data-theme', s);
+    } catch (e) {}
+    btn.addEventListener('click', function () {
+      var now = root.getAttribute('data-theme');
+      var next = now === 'dark' ? 'light' : now === 'light' ? 'dark'
+        : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark');
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('acct-doc-theme', next); } catch (e) {}
+    });
+  })();
+</script>
+
+</body>
+</html>
