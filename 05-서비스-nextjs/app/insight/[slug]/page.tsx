@@ -3,8 +3,6 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { pageMeta } from '@/app/_meta'
 import { getCategories, getInsight, getInsights, getRedirect } from '@/lib/content'
 import { ArticleLd, BreadcrumbLd } from '@/components/JsonLd'
-import PreviewBar from '@/components/PreviewBar'
-import { previewInsight } from '@/lib/preview'
 import '../insight.css'
 import '../../insight-detail/insight-detail.css'
 import InsightView from '../view'
@@ -104,18 +102,7 @@ export default async function InsightSlugPage(
     )
   }
 
-  /* ③ 발행 전 미리보기 (FR-A07-02). 로그인한 사람에게만 보인다 — RLS 가 판정한다 */
-  const draft = await previewInsight(slug)
-  if (draft) {
-    return (
-      <>
-        <PreviewBar status={draft.status} editHref={`/admin/insight/${draft.post.id}`} />
-        <InsightArticle post={draft.post} related={[]} />
-      </>
-    )
-  }
-
-  /* ④ 옮겨간 주소 (SR-06 · DR-08) */
+  /* ③ 옮겨간 주소 (SR-06 · DR-08) */
   const to = await getRedirect(`/insight/${slug}`)
   if (to) permanentRedirect(to)
 

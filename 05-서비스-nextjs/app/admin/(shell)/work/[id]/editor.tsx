@@ -377,7 +377,7 @@ export default function WorkEditor({
           )}
         {/* 공개 화면 그대로 보여준다 — 로그인한 사람에게만 열린다 (FR-A07-02) */}
         {slug && (
-          <a className="adm-manage" href={`/work/${slug}`} target="_blank" rel="noreferrer">미리보기 ↗</a>
+          <a className="adm-manage" href={`/work/${slug}/preview`} target="_blank" rel="noreferrer">미리보기 ↗</a>
         )}
         <span style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           {buttons.map(b => (

@@ -35,7 +35,8 @@ export default function RowMenu({
   const [del, delAction, delPending] = useActionState(deleteContent, S)
 
   const base = `/admin/${kind}`
-  const publicPath = slug ? `/${kind}/${slug}` : null
+  /* 발행분은 실제 공개 주소, 아직 발행 전이면 미리보기로 보낸다 */
+  const publicPath = slug ? (status === 'published' ? `/${kind}/${slug}` : `/${kind}/${slug}/preview`) : null
   const busy = archPending || restPending || delPending
 
   /* 네이티브 <details> 는 바깥을 눌러도 닫히지 않는다 — acct.tsx 와 같은 처리 */
@@ -90,8 +91,10 @@ export default function RowMenu({
           <Link href={`${base}/${id}`}>편집</Link>
 
           {/* 발행된 것만 공개 주소가 있다. 없는 주소로 보내면 404 를 보게 된다 */}
-          {status === 'published' && publicPath && (
-            <a href={publicPath} target="_blank" rel="noreferrer">미리보기 ↗</a>
+          {publicPath && (
+            <a href={publicPath} target="_blank" rel="noreferrer">
+              {status === 'published' ? '공개 화면 ↗' : '미리보기 ↗'}
+            </a>
           )}
 
           {isAdmin && status === 'published' && (
