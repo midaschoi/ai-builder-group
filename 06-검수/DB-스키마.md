@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | 대상 | Supabase PostgreSQL — 스키마 `public` + `storage` |
-| 원본 | `supabase/migrations/0001` ~ `0006` (합본: `supabase/setup-all.sql`) |
-| 마지막 갱신 | 2026-08-17 |
+| 원본 | `supabase/migrations/0001` ~ `0008` (합본: `supabase/setup-all.sql`) |
+| 마지막 갱신 | 2026-08-18 |
 
 > 이 문서는 마이그레이션을 **사람이 읽는 형태**로 옮긴 것이다.
 > 진실은 항상 SQL 파일이다. 스키마를 바꿨으면 **새 마이그레이션을 추가**하고 이 문서도 갱신한다.
@@ -139,10 +139,28 @@ builder_role   = admin | builder
 `site_settings` 는 **항상 1행**이다. `id smallint PK check (id = 1)` 로 두 번째 행을 막고,
 빈 행을 미리 넣어 두어 화면이 insert/update 를 분기하지 않아도 된다.
 
-담는 값: `pluug_form_url` · `ga4_measurement_id` · `google_site_verification` ·
-`naver_site_verification` · `channel_plugin_key` · `hero_title` · `hero_sub` · `stat_rating`
+담는 값: `pluug_form_url` · `ga4_measurement_id` · **`gtm_container_id`**(0008) ·
+`google_site_verification` · `naver_site_verification` · `channel_plugin_key` ·
+`hero_title` · `hero_sub` · `stat_rating`
 
 > `google_site_verification` 은 **`content` 속성 값만** 넣는다. `<meta …>` 를 통째로 넣으면 태그가 이중으로 나간다.
+
+### ⛔ `ga4_measurement_id` 와 `gtm_container_id` 는 둘 중 하나만
+
+GA4 에 도달하는 길이 둘인데 **둘 다 열면 같은 이벤트가 두 번 집계된다.**
+방문자 1명이 2명으로, 문의 1건이 2건으로 보인다.
+
+| 칸 | 값 | 무엇 |
+|---|---|---|
+| `ga4_measurement_id` | `G-…` | 측정 그 자체. 이 값만 넣으면 이벤트 6종이 코드에서 바로 나간다 |
+| `gtm_container_id` | `GTM-…` | 태그를 담는 **그릇**. 이것만 넣으면 **아무 데이터도 안 쌓인다** — GTM 안에서 GA4 태그를 또 만들어야 한다 |
+
+**2026-08-18 현재 — 직접 연결을 쓴다.** `ga4_measurement_id = G-MLTHLRP8WX`,
+`gtm_container_id` 는 비어 있다. GTM 컨테이너(`GTM-P34M2DFC`)는 계정에 만들어만 두었다.
+
+관리 화면(A-08)의 입력칸 아래에도 같은 경고를 붙여 두었다 —
+문서만 알고 있으면 다음 사람이 둘 다 채운다.
+
 > `stat_rating` 은 비우면 화면에서 그 지표를 **아예 뺀다** (기획서 C2 근거 없는 수치 금지).
 
 ---
@@ -243,5 +261,5 @@ grant update (bio, focus, stack, principles, link_label, link_url)
 Supabase SQL Editor → supabase/setup-all.sql 전체 붙여넣기 → Run
 ```
 
-0001~0006 이 순서대로 들어 있고 전부 멱등(`if not exists` / `drop policy if exists`)이라
+0001~0008 이 순서대로 들어 있고 전부 멱등(`if not exists` / `drop policy if exists`)이라
 여러 번 실행해도 안전하다. 이후 절차는 `06-검수/이관-체크리스트.md`.
