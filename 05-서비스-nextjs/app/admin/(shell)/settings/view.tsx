@@ -8,6 +8,7 @@ const INITIAL: SettingsState = {}
 export type SettingsForm = {
   pluug_form_url: string
   ga4_measurement_id: string
+  gtm_container_id: string
   google_site_verification: string
   naver_site_verification: string
   channel_plugin_key: string
@@ -103,6 +104,21 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
           />
           <small className="adm-dim" style={{ fontSize: 12 }}>
             비워두면 분석 스크립트를 아예 넣지 않습니다. 값을 넣는 순간부터 수집이 시작됩니다.
+          </small>
+        </div>
+
+        <div className="adm-field">
+          <label htmlFor="gtm_container_id">태그 관리자(GTM) 컨테이너 ID</label>
+          <input
+            id="gtm_container_id" name="gtm_container_id" type="text"
+            value={form.gtm_container_id} onChange={set('gtm_container_id')}
+            placeholder="GTM-ABC1234" spellCheck={false}
+          />
+          <small className="adm-dim" style={{ fontSize: 12 }}>
+            ⛔ <b>위 GA4 측정 ID 와 둘 중 하나만</b> 채우세요. 둘 다 GA4 를 연결하면
+            같은 이벤트가 두 번 집계됩니다.
+            <br />GTM 은 태그를 담는 그릇일 뿐이라, 이 값만 넣으면 아무 데이터도 쌓이지 않습니다 —
+            GTM 안에서 GA4 태그를 따로 만들어야 합니다.
           </small>
         </div>
       </section>

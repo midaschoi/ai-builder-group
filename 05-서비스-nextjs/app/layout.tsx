@@ -5,6 +5,7 @@ import Gnb from '@/components/Gnb'
 import Footer from '@/components/Footer'
 import SiteFx from '@/components/SiteFx'
 import ChannelTalk from '@/components/ChannelTalk'
+import GoogleTagManager from '@/components/GoogleTagManager'
 import ChromeGate from '@/components/ChromeGate'
 import Analytics from '@/components/Analytics'
 import { OrganizationLd } from '@/components/JsonLd'
@@ -73,6 +74,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <OrganizationLd />
           {/* 측정 ID·플러그인 키는 관리자 화면(A-08)에서 온다. 없으면 아무것도 하지 않는다 */}
           <Analytics measurementId={s.ga4MeasurementId} />
+          <GoogleTagManager containerId={s.gtmContainerId} />
           <ChannelTalk pluginKey={s.channelPluginKey} />
         </ChromeGate>
       </body>

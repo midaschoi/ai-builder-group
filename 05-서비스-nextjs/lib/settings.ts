@@ -16,6 +16,7 @@ export const SETTINGS_TAG = 'site-settings'
 export type SiteSettings = {
   pluugFormUrl: string
   ga4MeasurementId: string
+  gtmContainerId: string
   googleSiteVerification: string
   naverSiteVerification: string
   channelPluginKey: string
@@ -31,6 +32,7 @@ export type SiteSettings = {
 const FALLBACK: SiteSettings = {
   pluugFormUrl: process.env.NEXT_PUBLIC_PLUUG_FORM_URL ?? '',
   ga4MeasurementId: process.env.NEXT_PUBLIC_GA4_ID ?? '',
+  gtmContainerId: '',
   googleSiteVerification: '',
   naverSiteVerification: '',
   channelPluginKey: process.env.NEXT_PUBLIC_CHANNEL_PLUGIN_KEY ?? '',
@@ -42,6 +44,7 @@ const FALLBACK: SiteSettings = {
 type Row = {
   pluug_form_url: string | null
   ga4_measurement_id: string | null
+  gtm_container_id: string | null
   google_site_verification: string | null
   naver_site_verification: string | null
   channel_plugin_key: string | null
@@ -57,7 +60,7 @@ async function read(): Promise<SiteSettings> {
     const supabase = createPublicClient()
     const { data } = await supabase
       .from('site_settings')
-      .select('pluug_form_url, ga4_measurement_id, google_site_verification, naver_site_verification, channel_plugin_key, hero_title, hero_sub, stat_rating')
+      .select('pluug_form_url, ga4_measurement_id, gtm_container_id, google_site_verification, naver_site_verification, channel_plugin_key, hero_title, hero_sub, stat_rating')
       .eq('id', 1)
       .maybeSingle<Row>()
 
@@ -67,6 +70,7 @@ async function read(): Promise<SiteSettings> {
     return {
       pluugFormUrl: data.pluug_form_url?.trim() || FALLBACK.pluugFormUrl,
       ga4MeasurementId: data.ga4_measurement_id?.trim() || FALLBACK.ga4MeasurementId,
+      gtmContainerId: data.gtm_container_id?.trim() || '',
       googleSiteVerification: data.google_site_verification?.trim() || '',
       naverSiteVerification: data.naver_site_verification?.trim() || '',
       channelPluginKey: data.channel_plugin_key?.trim() || FALLBACK.channelPluginKey,

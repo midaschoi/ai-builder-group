@@ -281,6 +281,10 @@ create table if not exists public.site_settings (
 
   ga4_measurement_id        text,
 
+  -- 태그 관리자(0008). ⛔ ga4_measurement_id 와 둘 중 하나만 쓴다 —
+  -- 둘 다 GA4 를 연결하면 같은 이벤트가 두 번 집계된다.
+  gtm_container_id          text,
+
   google_site_verification  text,
 
   naver_site_verification   text,

@@ -49,12 +49,18 @@ export async function saveSettings(_prev: SettingsState, form: FormData): Promis
     return { error: 'GA4 측정 ID 형식이 아닙니다. G- 로 시작하는 값입니다. (예: G-ABCD1234)' }
   }
 
+  const gtm = String(form.get('gtm_container_id') ?? '').trim().toUpperCase()
+  if (gtm && !/^GTM-[A-Z0-9]{4,}$/.test(gtm)) {
+    return { error: 'GTM 컨테이너 ID 형식이 아닙니다. GTM- 으로 시작하는 값입니다. (예: GTM-ABC1234)' }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from('site_settings')
     .update({
       pluug_form_url: pluug || null,
       ga4_measurement_id: ga4 || null,
+      gtm_container_id: gtm || null,
       google_site_verification: unwrapVerification(String(form.get('google_site_verification') ?? '')) || null,
       naver_site_verification: unwrapVerification(String(form.get('naver_site_verification') ?? '')) || null,
       channel_plugin_key: String(form.get('channel_plugin_key') ?? '').trim() || null,

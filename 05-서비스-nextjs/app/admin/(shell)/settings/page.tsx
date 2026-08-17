@@ -9,6 +9,7 @@ import SettingsView, { type SettingsForm } from './view'
 const EMPTY: SettingsForm = {
   pluug_form_url: '',
   ga4_measurement_id: '',
+  gtm_container_id: '',
   google_site_verification: '',
   naver_site_verification: '',
   channel_plugin_key: '',
@@ -25,13 +26,14 @@ export default async function SettingsPage() {
   const supabase = await createClient()
   const { data } = await supabase
     .from('site_settings')
-    .select('pluug_form_url, ga4_measurement_id, google_site_verification, naver_site_verification, channel_plugin_key, hero_title, hero_sub, stat_rating')
+    .select('pluug_form_url, ga4_measurement_id, gtm_container_id, google_site_verification, naver_site_verification, channel_plugin_key, hero_title, hero_sub, stat_rating')
     .eq('id', 1)
     .maybeSingle<Partial<Record<keyof SettingsForm, string | null>>>()
 
   const current: SettingsForm = {
     pluug_form_url: data?.pluug_form_url ?? '',
     ga4_measurement_id: data?.ga4_measurement_id ?? '',
+    gtm_container_id: data?.gtm_container_id ?? '',
     google_site_verification: data?.google_site_verification ?? '',
     naver_site_verification: data?.naver_site_verification ?? '',
     channel_plugin_key: data?.channel_plugin_key ?? '',
