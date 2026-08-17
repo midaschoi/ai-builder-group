@@ -24,6 +24,13 @@ export type BuilderRow = {
   last_sign_in: string | null
   published_posts: number
   joined_works: number
+  bio: string | null
+  focus: string | null
+  stack: string[] | null
+  principles: { title: string; body: string }[] | null
+  badge: string | null
+  link_label: string | null
+  link_url: string | null
 }
 
 function day(iso: string | null) {

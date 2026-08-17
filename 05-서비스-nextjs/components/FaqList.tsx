@@ -12,14 +12,19 @@ import type { FaqTopic } from '@/app/_faq'
 export default function FaqList({
   topics,
   defaultOpen,
+  defaultTopic,
   expandAll = false,
 }: {
   topics: FaqTopic[]
   defaultOpen?: string
+  /** 처음 열릴 주제. /faq/[topic] 이 경로로 들어올 때 쓴다 */
+  defaultTopic?: string
   /** '모두 펼치기' 버튼 노출. 문항이 많은 전용 페이지에서만 켠다 */
   expandAll?: boolean
 }) {
-  const [topic, setTopic] = useState(topics[0]?.key ?? '')
+  const [topic, setTopic] = useState(
+    topics.some(t => t.key === defaultTopic) ? defaultTopic! : (topics[0]?.key ?? ''),
+  )
   const [open, setOpen] = useState<Set<string>>(() => new Set(defaultOpen ? [defaultOpen] : []))
   const current = topics.find(t => t.key === topic) ?? topics[0]
 

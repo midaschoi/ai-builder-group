@@ -4,6 +4,7 @@ import { updateTag, revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase'
 import { requireAdmin } from '@/lib/session'
 import { SETTINGS_TAG } from '@/lib/settings'
+import { CONTENT_TAG } from '@/lib/content'
 
 /* A-08 사이트 설정 저장 (260812 2차 미팅).
 
@@ -57,6 +58,10 @@ export async function saveSettings(_prev: SettingsState, form: FormData): Promis
       google_site_verification: unwrapVerification(String(form.get('google_site_verification') ?? '')) || null,
       naver_site_verification: unwrapVerification(String(form.get('naver_site_verification') ?? '')) || null,
       channel_plugin_key: String(form.get('channel_plugin_key') ?? '').trim() || null,
+      hero_title: String(form.get('hero_title') ?? '').trim() || null,
+      hero_sub: String(form.get('hero_sub') ?? '').trim() || null,
+      /* 비우면 화면에서 지표를 아예 뺀다 — 근거 없는 수치를 기본값으로 두지 않는다 (기획서 C2) */
+      stat_rating: String(form.get('stat_rating') ?? '').trim() || null,
       updated_by: me.id,
     })
     .eq('id', 1)
@@ -69,6 +74,8 @@ export async function saveSettings(_prev: SettingsState, form: FormData): Promis
        받는 형태로 바뀌었고, 서버 액션에서 "저장한 값을 곧바로 다시 읽는" 용도는 updateTag 다.
        revalidateTag 를 쓰면 저장 직후 화면에 옛 값이 한 번 더 보인다. */
   updateTag(SETTINGS_TAG)
+  /* 홈 지표는 공개 콘텐츠 캐시도 함께 본다 */
+  updateTag(CONTENT_TAG)
   revalidatePath('/', 'layout')
 
   return { ok: true }

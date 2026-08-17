@@ -1,6 +1,7 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
+import { CONTENT_TAG } from '@/lib/content'
 import { headers } from 'next/headers'
 import { createClient, createAdminClient } from '@/lib/supabase'
 import { getCurrentBuilder, requireAdmin } from '@/lib/session'
@@ -222,6 +223,30 @@ export async function saveProfile(_prev: ProfileState, form: FormData): Promise<
   const oneLiner = String(form.get('one_liner') ?? '').trim()
   const avatarUrl = String(form.get('avatar_url') ?? '').trim()
 
+  /* 공개 프로필(/builder) 이 쓰는 값 — 0006 에서 추가했다 */
+  const bio = String(form.get('bio') ?? '').trim()
+  const focus = String(form.get('focus') ?? '').trim()
+  const badge = String(form.get('badge') ?? '').trim()
+  const linkLabel = String(form.get('link_label') ?? '').trim()
+  const linkUrl = String(form.get('link_url') ?? '').trim()
+  const stack = String(form.get('stack') ?? '')
+    .split(',').map(x => x.trim()).filter(Boolean)
+    .filter((x, i, a) => a.indexOf(x) === i)
+
+  /* [{title, body}] — 화면이 JSON 으로 직렬화해 보낸다 */
+  let principles: { title: string; body: string }[] = []
+  try {
+    const parsed = JSON.parse(String(form.get('principles') ?? '[]'))
+    if (Array.isArray(parsed)) {
+      principles = parsed
+        .map((x: unknown) => {
+          const o = (x ?? {}) as Record<string, unknown>
+          return { title: String(o.title ?? '').trim(), body: String(o.body ?? '').trim() }
+        })
+        .filter(x => x.title || x.body)
+    }
+  } catch { principles = [] }
+
   if (!name) return { error: '이름을 입력해 주세요.' }
 
   const checked = checkSlug(rawSlug)
@@ -242,10 +267,19 @@ export async function saveProfile(_prev: ProfileState, form: FormData): Promise<
     role_label: roleLabel || null,
     one_liner: oneLiner || null,
     avatar_url: avatarUrl || null,
+    bio: bio || null,
+    focus: focus || null,
+    badge: badge || null,
+    link_label: linkLabel || null,
+    link_url: linkUrl || null,
+    stack,
+    principles,
   }).eq('id', id)
 
   if (error) return { error: `저장하지 못했습니다. ${error.message}` }
 
+  /* 공개 프로필도 이 값을 읽는다 */
+  updateTag(CONTENT_TAG)
   revalidatePath('/admin/builders')
   return { ok: true }
 }

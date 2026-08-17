@@ -159,14 +159,54 @@ const BUILDERS: Record<string, BuilderDef> = {
   },
 }
 
-export default function BuilderView() {
+/* 관리자(A-06)가 채운 값이 있으면 그것을, 없으면 아래 하드코딩을 쓴다.
+   렌더는 원래대로 data-el 슬롯에 직접 넣는다 — 원작자 코드를 통째로 갈아엎지 않는다. */
+export type Profile = {
+  no: string; name: string; fname: string; lv: string; lead: boolean; fresh: boolean
+  role: string; img: string; bio: string; focus: string; stack: string[]; done: number
+  principles: { title: string; body: string }[]
+  extra: { label: string; href: string } | null
+  works: { href: string; img: string; tag: string; yr: string; title: string; desc: string }[]
+}
+export type Other = { slug: string; name: string; role: string; img: string }
+
+/** 하드코딩 정의를 DB 와 같은 모양으로 맞춘다 */
+function legacy(id: string): { profile: Profile; others: Other[] } {
+  const key = BUILDERS[id] ? id : 'josh'
+  const b = BUILDERS[key]
+  return {
+    profile: {
+      no: b.no, name: b.name, fname: b.fname, lv: b.lv, lead: b.lead, fresh: Boolean(b.fresh),
+      role: b.role, img: b.img, bio: b.bio, focus: b.focus, stack: b.stack, done: b.done,
+      principles: b.principles.map(([title, body]) => ({ title, body })),
+      extra: b.extra,
+      works: b.projects.map(k => {
+        const p = PROJECTS[k]
+        return { href: '/work-detail', img: p.img, tag: p.tag, yr: p.yr, title: p.t, desc: p.d }
+      }),
+    },
+    others: Object.keys(BUILDERS).filter(k => k !== key).map(k => ({
+      slug: k, name: BUILDERS[k].name, role: BUILDERS[k].role, img: BUILDERS[k].img,
+    })),
+  }
+}
+
+export default function BuilderView({
+  profile, others,
+}: {
+  profile?: Profile | null
+  others?: Other[]
+}) {
   useEffect(() => {
     const esc = (s: string) => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML }
     const q = (sel: string) => document.querySelector<HTMLElement>('[data-el="' + sel + '"]')
 
-    let id = new URLSearchParams(location.search).get('b') || ''
-    const b = BUILDERS[id] || BUILDERS.josh
-    if (!BUILDERS[id]) id = 'josh'
+    const id = new URLSearchParams(location.search).get('b') || ''
+    /* ⚠ 예전에는 못 찾으면 조용히 조쉬를 보여줬다. 실제 발행한 프로젝트의 빌더를 눌러도
+       엉뚱한 사람이 떠서, DB 값이 있으면 그쪽을 먼저 쓴다. */
+    const fb = legacy(id)
+    const b = profile ?? fb.profile
+    const list = (others && others.length > 0) ? others : fb.others
 
     document.title = b.name + ' — 빌더 프로필 | AI 빌더 그룹'
     q('crumb')!.textContent = b.name
@@ -183,8 +223,9 @@ export default function BuilderView() {
     q('fname2')!.textContent = b.fname
     const lvEl = q('lv')!
     lvEl.textContent = b.lv
+    lvEl.hidden = !b.lv          /* 배지를 비워두면 아예 달지 않는다 */
     lvEl.classList.toggle('lv--lead', b.lead)
-    lvEl.classList.toggle('lv--new', !!b.fresh)
+    lvEl.classList.toggle('lv--new', b.fresh)
     const ph = q('photo') as HTMLImageElement
     ph.src = b.img
     ph.alt = b.name + ' 프로필 사진'
@@ -195,31 +236,31 @@ export default function BuilderView() {
       ex.innerHTML = esc(b.extra.label) + ' <span class="arr">→</span>'
     }
 
-    /* 일하는 원칙 */
-    q('principles')!.innerHTML = b.principles.map((p, i) =>
-      '<div class="pr-card rv d' + i + '"><span class="no">0' + (i + 1) + '</span><b>' + esc(p[0]) + '</b><p>' + esc(p[1]) + '</p></div>').join('')
+    /* 일하는 원칙 — 비어 있으면 영역을 통째로 감춘다 */
+    const prWrap = q('principles')!
+    prWrap.innerHTML = b.principles.map((p, i) =>
+      '<div class="pr-card rv d' + i + '"><span class="no">0' + (i + 1) + '</span><b>' + esc(p.title) + '</b><p>' + esc(p.body) + '</p></div>').join('')
+    prWrap.hidden = b.principles.length === 0
 
     /* 작업물 그리드 */
-    q('pcnt')!.textContent = '( 0' + b.projects.length + ' )'
+    q('pcnt')!.textContent = '( ' + String(b.works.length).padStart(2, '0') + ' )'
     q('pnote')!.textContent = '※ 공개 가능한 프로젝트만 게재합니다 · 전체 수행 ' + b.done + '건'
-    q('plist')!.innerHTML = b.projects.map((key, i) => {
-      const p = PROJECTS[key]
-      return '<a class="wcard rv d' + (i % 4) + '" href="/work-detail" data-cursor="VIEW →">' +
-        '<div class="slot mask"><img class="cover" src="' + p.img + '" alt="' + esc(p.t) + ' 화면" loading="lazy"></div>' +
-        '<div class="meta"><div class="mrow"><span class="tag">' + esc(p.tag) + '</span><span class="yr num">' + p.yr + '</span></div>' +
-        '<h3>' + esc(p.t) + '</h3><p>' + esc(p.d) + '</p>' +
-        '<div class="builders">' + (p.w ? 'with 똑똑한개발자 · ' : '') + esc(b.name) + '</div></div></a>'
-    }).join('')
+    q('plist')!.innerHTML = b.works.map((p, i) =>
+      '<a class="wcard rv d' + (i % 4) + '" href="' + p.href + '" data-cursor="VIEW →">' +
+      '<div class="slot mask">' +
+      (p.img ? '<img class="cover" src="' + p.img + '" alt="' + esc(p.title) + ' 화면" loading="lazy">' : '') +
+      '</div>' +
+      '<div class="meta"><div class="mrow"><span class="tag">' + esc(p.tag) + '</span><span class="yr num">' + p.yr + '</span></div>' +
+      '<h3>' + esc(p.title) + '</h3><p>' + esc(p.desc) + '</p>' +
+      '<div class="builders">' + esc(b.name) + '</div></div></a>').join('')
 
     /* 다른 빌더 */
-    q('others')!.innerHTML = Object.keys(BUILDERS).filter(k => k !== id).map((k, i) => {
-      const o = BUILDERS[k]
-      return '<a class="ocard rv d' + i + '" href="/builder?b=' + k + '">' +
-        '<img src="' + o.img + '" alt="' + esc(o.name) + ' 프로필 사진">' +
-        '<span><b>' + esc(o.name) + '</b><span>' + esc(o.role) + '</span></span>' +
-        '<span class="arr">→</span></a>'
-    }).join('')
-  }, [])
+    q('others')!.innerHTML = list.map((o, i) =>
+      '<a class="ocard rv d' + i + '" href="/builder?b=' + encodeURIComponent(o.slug) + '">' +
+      (o.img ? '<img src="' + o.img + '" alt="' + esc(o.name) + ' 프로필 사진">' : '<img alt="">') +
+      '<span><b>' + esc(o.name) + '</b><span>' + esc(o.role) + '</span></span>' +
+      '<span class="arr">→</span></a>').join('')
+  }, [profile, others])
 
   return (
     <main id="main">

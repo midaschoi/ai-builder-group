@@ -1,4 +1,4 @@
--- AI 빌더 그룹 관리자 DB 설치 (0001~0005 를 주석만 빼고 합친 것)
+-- AI 빌더 그룹 관리자 DB 설치 (0001~0006 을 주석만 빼고 합친 것)
 -- 설명이 붙은 원본은 supabase/migrations/ 에 있습니다.
 
 create extension if not exists "pgcrypto";
@@ -362,3 +362,107 @@ on conflict (type, slug) do update
 delete from public.categories
  where type = 'insight'
    and slug in ('methodology', 'ai-ax', 'growth', 'dev');
+
+alter table public.builders
+  add column if not exists bio          text,        -- 긴 소개 (프로필 상단)
+  add column if not exists focus        text,        -- "어드민 · 정산 · 권한 설계"
+  add column if not exists stack        text[] not null default '{}',
+  add column if not exists principles   jsonb  not null default '[]'::jsonb,
+  add column if not exists badge        text,        -- "✳ 이달의 빌더" · "NEW" · 없으면 null
+  add column if not exists link_label   text,        -- 프로필 하단 부가 링크
+  add column if not exists link_url     text,
+  add column if not exists sort         integer not null default 0;
+
+create table if not exists public.faq_topics (
+  id      uuid primary key default gen_random_uuid(),
+  slug    text unique not null,
+  label   text not null,
+  sort    integer not null default 0
+);
+
+create table if not exists public.faqs (
+  id            uuid primary key default gen_random_uuid(),
+  topic_id      uuid not null references public.faq_topics(id) on delete cascade,
+  question      text not null,
+  answer        text not null,
+  show_on_home  boolean not null default false,
+  is_active     boolean not null default true,
+  sort          integer not null default 0,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+drop trigger if exists faqs_touch on public.faqs;
+create trigger faqs_touch before update on public.faqs
+  for each row execute function public.touch_updated_at();
+
+create index if not exists faqs_topic_idx on public.faqs(topic_id, sort);
+
+create table if not exists public.video_channels (
+  id     uuid primary key default gen_random_uuid(),
+  slug   text unique not null,
+  name   text not null,
+  url    text not null,
+  sort   integer not null default 0
+);
+
+create table if not exists public.videos (
+  id           uuid primary key default gen_random_uuid(),
+  youtube_id   text not null,
+  title        text not null,
+  subtitle     text,                 -- "조회 44만" · "브이로그" 같은 보조 문구
+  channel_name text not null,
+  duration     text,                 -- "11:11"
+  is_active    boolean not null default true,
+  sort         integer not null default 0,
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+drop trigger if exists videos_touch on public.videos;
+create trigger videos_touch before update on public.videos
+  for each row execute function public.touch_updated_at();
+
+alter table public.site_settings
+  add column if not exists hero_title text,
+  add column if not exists hero_sub   text,
+  add column if not exists stat_rating text;
+
+alter table public.faq_topics     enable row level security;
+alter table public.faqs           enable row level security;
+alter table public.video_channels enable row level security;
+alter table public.videos         enable row level security;
+
+drop policy if exists faq_topics_read      on public.faq_topics;
+drop policy if exists faq_topics_admin     on public.faq_topics;
+drop policy if exists faqs_read            on public.faqs;
+drop policy if exists faqs_admin           on public.faqs;
+drop policy if exists video_channels_read  on public.video_channels;
+drop policy if exists video_channels_admin on public.video_channels;
+drop policy if exists videos_read          on public.videos;
+drop policy if exists videos_admin         on public.videos;
+
+create policy faq_topics_read  on public.faq_topics for select using (true);
+create policy faq_topics_admin on public.faq_topics for all
+  using (public.is_admin()) with check (public.is_admin());
+
+create policy faqs_read  on public.faqs for select using (true);
+create policy faqs_admin on public.faqs for all
+  using (public.is_admin()) with check (public.is_admin());
+
+create policy video_channels_read  on public.video_channels for select using (true);
+create policy video_channels_admin on public.video_channels for all
+  using (public.is_admin()) with check (public.is_admin());
+
+create policy videos_read  on public.videos for select using (true);
+create policy videos_admin on public.videos for all
+  using (public.is_admin()) with check (public.is_admin());
+
+insert into public.faq_topics (slug, label, sort) values
+  ('inquiry', '외주 문의', 1),
+  ('process', '진행 방식', 2)
+on conflict (slug) do update set label = excluded.label, sort = excluded.sort;
+
+insert into public.video_channels (slug, name, url, sort) values
+  ('seo-jangwon',   'AI 서대표',        'https://www.youtube.com/@AISeoceo', 1),
+  ('kim-iesop',     '김이솝의 AI 가이드', 'https://www.youtube.com/@%EA%B9%80%EC%9D%B4%EC%86%9D%EC%9D%98AI%EA%B0%80%EC%9D%B4%EB%93%9C', 2),
+  ('toktokhan-dev', '똑똑한개발자',      'https://www.youtube.com/@toktokhandev', 3)
+on conflict (slug) do update set name = excluded.name, url = excluded.url, sort = excluded.sort;

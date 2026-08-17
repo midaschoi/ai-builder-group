@@ -11,6 +11,9 @@ export type SettingsForm = {
   google_site_verification: string
   naver_site_verification: string
   channel_plugin_key: string
+  hero_title: string
+  hero_sub: string
+  stat_rating: string
 }
 
 export default function SettingsView({ current }: { current: SettingsForm }) {
@@ -104,6 +107,41 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
         </div>
       </section>
 
+      {/* ── 홈 카피 (범위 변경분 · 백로그 §1.8) ────────────────── */}
+      <section className="adm-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>홈 첫 화면</h2>
+          <p className="adm-dim" style={{ margin: '4px 0 0', fontSize: 12.5 }}>
+            홈 전체가 아니라 <b>첫 화면 문구와 지표</b>만 엽니다. 나머지 카피는 코드에서 바꿉니다 —
+            홈 전체를 편집 가능하게 만들면 CMS 를 짓는 일이 됩니다.
+          </p>
+        </div>
+
+        <div className="adm-field">
+          <label htmlFor="hero_title">헤드라인</label>
+          <input id="hero_title" name="hero_title" type="text" maxLength={80}
+            value={form.hero_title} onChange={set('hero_title')}
+            placeholder="아이디어만 가져오세요 — 나머지는 검증된 빌더의 일입니다." />
+          <small className="adm-dim" style={{ fontSize: 12 }}>비우면 기존 문구를 씁니다.</small>
+        </div>
+
+        <div className="adm-field">
+          <label htmlFor="hero_sub">보조 문구</label>
+          <input id="hero_sub" name="hero_sub" type="text" maxLength={120}
+            value={form.hero_sub} onChange={set('hero_sub')} />
+        </div>
+
+        <div className="adm-field">
+          <label htmlFor="stat_rating">평균 만족도 지표</label>
+          <input id="stat_rating" name="stat_rating" type="text" maxLength={12}
+            value={form.stat_rating} onChange={set('stat_rating')} placeholder="4.9" />
+          <small className="adm-dim" style={{ fontSize: 12 }}>
+            ⚠ <b>근거가 있을 때만 채우세요.</b> 기획서 절대 규칙이 근거 없는 수치를 금지합니다 (C2).
+            <br />비워두면 홈·Work 에서 이 지표를 <b>아예 표시하지 않습니다.</b>
+            <br />빌더 수·프로젝트 수는 DB 에서 자동으로 셉니다 — 여기서 입력하지 않습니다.
+          </small>
+        </div>
+      </section>
       {/* ── 상담 ──────────────────────────────────────────────── */}
       <section className="adm-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>

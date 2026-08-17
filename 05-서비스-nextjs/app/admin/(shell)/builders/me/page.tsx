@@ -18,7 +18,7 @@ export default async function MyProfilePage() {
 
   const { data } = await supabase
     .from('builders')
-    .select('id, name, email, slug, role, role_label, one_liner, avatar_url')
+    .select('id, name, email, slug, role, role_label, one_liner, avatar_url, bio, focus, stack, principles, badge, link_label, link_url')
     .eq('id', me.id)
     .maybeSingle<Profile>()
 

@@ -19,6 +19,11 @@ export type SiteSettings = {
   googleSiteVerification: string
   naverSiteVerification: string
   channelPluginKey: string
+  /* 홈 히어로 문구 (0006). 비어 있으면 화면이 기본 문구를 쓴다 */
+  heroTitle: string
+  heroSub: string
+  /* ⚠ 근거 없는 수치 금지(기획서 C2) — 비어 있으면 그 지표를 화면에서 아예 뺀다 */
+  statRating: string
 }
 
 /* DB 가 아직 없거나 값이 비었을 때 돌아갈 자리.
@@ -29,6 +34,9 @@ const FALLBACK: SiteSettings = {
   googleSiteVerification: '',
   naverSiteVerification: '',
   channelPluginKey: process.env.NEXT_PUBLIC_CHANNEL_PLUGIN_KEY ?? '',
+  heroTitle: '',
+  heroSub: '',
+  statRating: '',
 }
 
 type Row = {
@@ -37,6 +45,9 @@ type Row = {
   google_site_verification: string | null
   naver_site_verification: string | null
   channel_plugin_key: string | null
+  hero_title: string | null
+  hero_sub: string | null
+  stat_rating: string | null
 }
 
 async function read(): Promise<SiteSettings> {
@@ -46,7 +57,7 @@ async function read(): Promise<SiteSettings> {
     const supabase = createPublicClient()
     const { data } = await supabase
       .from('site_settings')
-      .select('pluug_form_url, ga4_measurement_id, google_site_verification, naver_site_verification, channel_plugin_key')
+      .select('pluug_form_url, ga4_measurement_id, google_site_verification, naver_site_verification, channel_plugin_key, hero_title, hero_sub, stat_rating')
       .eq('id', 1)
       .maybeSingle<Row>()
 
@@ -59,6 +70,9 @@ async function read(): Promise<SiteSettings> {
       googleSiteVerification: data.google_site_verification?.trim() || '',
       naverSiteVerification: data.naver_site_verification?.trim() || '',
       channelPluginKey: data.channel_plugin_key?.trim() || FALLBACK.channelPluginKey,
+      heroTitle: data.hero_title?.trim() || '',
+      heroSub: data.hero_sub?.trim() || '',
+      statRating: data.stat_rating?.trim() || '',
     }
   } catch {
     /* 설정을 못 읽었다고 사이트가 죽으면 안 된다. 연동만 꺼진 상태로 계속 뜬다. */

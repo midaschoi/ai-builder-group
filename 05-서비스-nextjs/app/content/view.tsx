@@ -26,7 +26,17 @@ const CHANNELS = [
   { name: '똑똑한개발자', href: 'https://www.youtube.com/@toktokhandev', slug: 'toktokhan-dev' },
 ] as const
 
-export default function ContentView() {
+/* 영상·채널은 관리자(A-10)에서 온다. 비어 있으면 아래 상수로 되돌아간다 —
+   0006 을 실행하기 전에도 화면이 그대로 뜬다. */
+export default function ContentView({
+  videos, channels,
+}: {
+  videos?: { yt: string; ch: string; dur: string; title: string; sub: string }[]
+  channels?: { name: string; href: string; slug: string }[]
+} = {}) {
+  const vids = videos && videos.length > 0 ? videos : VIDEOS
+  const chs = channels && channels.length > 0 ? channels : CHANNELS
+
   /* 다크 전환은 CSS 가 body:has(.content-dark) 로 판정한다 (아래 main 의 클래스).
      전에는 여기서 body.dark 를 붙였다 뗐는데, 정작 content.css 는 body { … } 를 그냥
      덮어쓰고 있어서 클래스는 아무 역할도 못 했다. 라우트 CSS 는 클라이언트 이동 때
@@ -90,7 +100,7 @@ export default function ContentView() {
             </a>
 
             <div className="vg">
-              {VIDEOS.map(v => (
+              {vids.map(v => (
                 <a className="vcell" href="#" data-yt data-utm="grid" key={v.yt}>
                   {/* 그리드는 전부 첫 화면 아래 — 외부(i.ytimg.com) 이미지 6장을 선점하지 않게 */}
                   <img className="vimg" src={`https://i.ytimg.com/vi/${v.yt}/hqdefault.jpg`} alt="" loading="lazy" decoding="async" />
@@ -109,7 +119,7 @@ export default function ContentView() {
                 <p>세 채널에서 매주 실전 바이브 코딩 콘텐츠가 올라옵니다.</p>
               </div>
               <nav className="channel-tabs" aria-label="유튜브 채널">
-                {CHANNELS.map(channel => (
+                {chs.map(channel => (
                   <a className="channel-tab" href={channel.href} target="_blank" rel="noopener noreferrer" data-track="youtube_channel_click" data-location={`content_${channel.slug}`} key={channel.slug}>
                     {channel.name}<span aria-hidden="true">↗</span>
                   </a>

@@ -49,6 +49,15 @@ export default function AdminNav({
       href: '/admin/builders', label: '빌더 관리', adminOnly: true,
       icon: <Icon><path d="M15 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-4A3.5 3.5 0 0 0 4 18.5V20" /><circle cx="9.5" cy="8" r="3.5" /><path d="M20 20v-1.5a3.5 3.5 0 0 0-2.6-3.4" /><path d="M15.5 4.6a3.5 3.5 0 0 1 0 6.8" /></Icon>,
     },
+    /* A-09 · A-10 — 범위 변경분 (백로그 §1.8). 기획서 §5.6 이 정한 네 개 밖이다. */
+    {
+      href: '/admin/faq', label: 'FAQ 관리', adminOnly: true,
+      icon: <Icon><circle cx="12" cy="12" r="9" /><path d="M9.2 9.3a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.2-2.8 4" /><path d="M12 17.5h.01" /></Icon>,
+    },
+    {
+      href: '/admin/videos', label: '콘텐츠 관리', adminOnly: true,
+      icon: <Icon><rect x="2.5" y="5" width="19" height="14" rx="3" /><path d="m10 9.5 5 2.5-5 2.5z" /></Icon>,
+    },
     /* A-08 — 260812 2차 미팅에서 추가된 화면. 클라이언트가 pluug 주소·GA4·서치콘솔 코드를
        직접 바꿔야 한다는 요구라 운영 관리자 전용이다. */
     {

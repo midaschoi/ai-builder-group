@@ -128,3 +128,17 @@
   .bd-overlay { padding: 0; }
   .bd-panel { max-width: none; border-radius: 16px 16px 0 0; }
 }
+
+/* 공개 프로필 구역 구분 — 계정 정보와 공개되는 값을 눈으로 나눈다 */
+.bd-sep {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 11.5px; font-weight: 700; color: var(--mut);
+  margin: 6px 0 2px;
+}
+.bd-sep::after { content: ''; flex: 1; height: 1px; background: var(--ln); }
+
+.bd-principle {
+  border: 1px solid var(--ln); border-radius: 9px; padding: 9px;
+  display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px;
+}
+.bd-principle .adm-manage { align-self: flex-end; }

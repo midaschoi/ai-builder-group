@@ -23,6 +23,13 @@ type Row = {
   avatar_url: string | null
   is_active: boolean
   must_change_password: boolean
+  bio: string | null
+  focus: string | null
+  stack: string[] | null
+  principles: { title: string; body: string }[] | null
+  badge: string | null
+  link_label: string | null
+  link_url: string | null
 }
 
 export default async function BuildersPage({
@@ -38,7 +45,7 @@ export default async function BuildersPage({
 
   let query = supabase
     .from('builders')
-    .select('id, auth_user_id, name, email, slug, role, role_label, one_liner, avatar_url, is_active, must_change_password')
+    .select('id, auth_user_id, name, email, slug, role, role_label, one_liner, avatar_url, is_active, must_change_password, bio, focus, stack, principles, badge, link_label, link_url')
     .order('is_active', { ascending: false })
     .order('name')
 

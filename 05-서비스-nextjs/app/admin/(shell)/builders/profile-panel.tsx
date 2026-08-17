@@ -15,6 +15,14 @@ export type Profile = {
   role_label: string | null
   one_liner: string | null
   avatar_url: string | null
+  /* 아래는 공개 프로필(/builder)이 쓰는 값 — 0006 에서 추가했다 */
+  bio: string | null
+  focus: string | null
+  stack: string[] | null
+  principles: { title: string; body: string }[] | null
+  badge: string | null
+  link_label: string | null
+  link_url: string | null
 }
 
 /* A-06 §프로필 편집 (FR-A06-04).
@@ -39,6 +47,19 @@ export default function ProfilePanel({
   const [oneLiner, setOneLiner] = useState(profile.one_liner ?? '')
   const [avatar, setAvatar] = useState(profile.avatar_url ?? '')
   const [uploadError, setUploadError] = useState('')
+
+  /* 공개 프로필용 */
+  const [bio, setBio] = useState(profile.bio ?? '')
+  const [focus, setFocus] = useState(profile.focus ?? '')
+  const [badge, setBadge] = useState(profile.badge ?? '')
+  const [stack, setStack] = useState((profile.stack ?? []).join(', '))
+  const [linkLabel, setLinkLabel] = useState(profile.link_label ?? '')
+  const [linkUrl, setLinkUrl] = useState(profile.link_url ?? '')
+  const [principles, setPrinciples] = useState<{ title: string; body: string }[]>(
+    profile.principles ?? [],
+  )
+  const setP = (i: number, p: Partial<{ title: string; body: string }>) =>
+    setPrinciples(principles.map((x, idx) => (idx === i ? { ...x, ...p } : x)))
 
   const pickAvatar = useCallback(async (file: File) => {
     setUploadError('')
@@ -115,6 +136,73 @@ export default function ProfilePanel({
             onChange={e => setOneLiner(e.target.value)} />
           <small className="adm-dim">{oneLiner.length}/80</small>
         </div>
+
+        {/* ── 공개 프로필 (/builder) ─────────────────────────
+            여기 값이 곧 공개 페이지다. 비워두면 그 항목이 화면에서 빠진다. */}
+        <input type="hidden" name="stack" value={stack} />
+        <input type="hidden" name="principles" value={JSON.stringify(principles)} />
+
+        <div className="bd-sep"><span>공개 프로필</span></div>
+
+        <div className="adm-field">
+          <label htmlFor="bd-bio">소개</label>
+          <textarea id="bd-bio" name="bio" value={bio} rows={4} maxLength={400}
+            onChange={e => setBio(e.target.value)}
+            placeholder="어떻게 일하는 사람인지 서너 문장으로" />
+          <small className="adm-dim">{bio.length}/400 · 프로필 페이지 상단에 나옵니다.</small>
+        </div>
+
+        <div className="adm-field">
+          <label htmlFor="bd-focus">주력 분야</label>
+          <input id="bd-focus" name="focus" value={focus} maxLength={60}
+            onChange={e => setFocus(e.target.value)} placeholder="어드민 · 정산 · 권한 설계" />
+        </div>
+
+        <div className="adm-field">
+          <label htmlFor="bd-stack">기술 스택</label>
+          <input id="bd-stack" value={stack} maxLength={120}
+            onChange={e => setStack(e.target.value)} placeholder="Next.js, Supabase, RBAC" />
+          <small className="adm-dim">쉼표로 구분합니다.</small>
+        </div>
+
+        <div className="adm-field">
+          <label htmlFor="bd-badge">배지</label>
+          <input id="bd-badge" name="badge" value={badge} maxLength={20}
+            onChange={e => setBadge(e.target.value)} placeholder="✳ 이달의 빌더 · NEW" />
+          <small className="adm-dim">비우면 배지를 달지 않습니다.</small>
+        </div>
+
+        <div className="adm-field">
+          <label>일하는 원칙</label>
+          {principles.map((p, i) => (
+            <div className="bd-principle" key={i}>
+              <input value={p.title} placeholder="제목" maxLength={30}
+                onChange={e => setP(i, { title: e.target.value })} />
+              <textarea value={p.body} placeholder="설명" rows={2} maxLength={200}
+                onChange={e => setP(i, { body: e.target.value })} />
+              <button type="button" className="adm-manage"
+                onClick={() => setPrinciples(principles.filter((_, x) => x !== i))}>제거</button>
+            </div>
+          ))}
+          {principles.length < 5 && (
+            <button type="button" className="adm-manage"
+              onClick={() => setPrinciples([...principles, { title: '', body: '' }])}>
+              + 원칙 추가
+            </button>
+          )}
+          <small className="adm-dim">비워두면 이 영역이 화면에서 빠집니다. 3개 정도가 적당합니다.</small>
+        </div>
+
+        <div className="adm-field">
+          <label htmlFor="bd-link-label">부가 링크</label>
+          <input id="bd-link-label" name="link_label" value={linkLabel} maxLength={40}
+            onChange={e => setLinkLabel(e.target.value)} placeholder="인터뷰 보기" />
+          <input name="link_url" value={linkUrl} maxLength={200} type="url"
+            onChange={e => setLinkUrl(e.target.value)} placeholder="https://…" />
+          <small className="adm-dim">둘 다 채워야 표시됩니다.</small>
+        </div>
+
+        <div className="bd-sep"><span>변경할 수 없는 것</span></div>
 
         {/* 읽기 전용 두 가지 — 왜 못 바꾸는지도 함께 적는다 */}
         <dl className="bd-locked">

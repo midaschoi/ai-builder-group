@@ -1,0 +1,72 @@
+/* A-09 FAQ · A-10 콘텐츠 — 목록 전체를 한 화면에서 고치는 형태.
+   admin.css 의 토큰 위에서 동작한다. */
+
+.sc { display: flex; flex-direction: column; gap: 14px; }
+
+.sc-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+
+.sc-group { padding: 0; display: flex; flex-direction: column; }
+.sc-group-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 14px 18px; border-bottom: 1px solid var(--ln); background: var(--bg);
+}
+.sc-group-head b { font-size: 13.5px; font-weight: 800; }
+.sc-group-head code {
+  font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--mut);
+  background: var(--card); border: 1px solid var(--ln); border-radius: 5px; padding: 1px 6px;
+}
+.sc-group-head .adm-dim { font-size: 12px; }
+
+.sc-empty { padding: 22px 18px; margin: 0; font-size: 12.5px; }
+
+/* ── 한 줄 ─────────────────────────────────────────────── */
+.sc-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 18px; border-bottom: 1px solid var(--ln);
+}
+.sc-row:last-of-type { border-bottom: 0; }
+/* 비공개는 흐리게 — 체크박스 하나로는 훑을 때 눈에 안 들어온다 */
+.sc-row[data-off] { opacity: .5; }
+.sc-row[data-off]:focus-within { opacity: 1; }
+
+.sc-no {
+  font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; color: var(--mut);
+  flex: none; width: 18px; padding-top: 10px; text-align: right;
+}
+
+.sc-thumb {
+  width: 96px; height: 54px; border-radius: 7px; flex: none; object-fit: cover;
+  background: var(--bg); border: 1px solid var(--ln);
+}
+.sc-thumb[data-empty] { border-style: dashed; }
+
+.sc-fields { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+.sc-fields input[type='text'], .sc-fields input:not([type]), .sc-fields textarea {
+  width: 100%; border: 1px solid var(--ln); border-radius: 8px; background: var(--card);
+  padding: 8px 10px; font-size: 13px; font-family: inherit; color: var(--ink);
+}
+.sc-fields textarea { resize: vertical; line-height: 1.6; }
+.sc-fields input:focus, .sc-fields textarea:focus, .sc-fields select:focus {
+  border-color: var(--ink); outline: none;
+}
+
+.sc-flags { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12px; }
+.sc-flags label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; white-space: nowrap; }
+.sc-flags select {
+  border: 1px solid var(--ln); border-radius: 7px; background: var(--card);
+  padding: 5px 8px; font-size: 12px; color: var(--ink);
+}
+.sc-flags .sc-sm { width: auto; flex: 1 1 130px; min-width: 0; padding: 6px 9px; font-size: 12px; }
+
+.sc-btns { display: flex; gap: 2px; flex: none; padding-top: 6px; }
+.sc-btns button {
+  border: 0; background: none; border-radius: 6px;
+  width: 24px; height: 24px; font-size: 12px; color: var(--mut); line-height: 1;
+}
+.sc-btns button:hover { background: var(--hover); color: var(--ink); }
+
+@media (max-width: 767px) {
+  .sc-row { flex-wrap: wrap; }
+  .sc-thumb { width: 72px; height: 40px; }
+  .sc-btns { padding-top: 0; }
+}

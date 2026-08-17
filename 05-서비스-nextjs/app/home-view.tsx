@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, type CSSProperties } from 'react'
 import { useRibbonFlow, useReplayOnView, useAccordion } from '@/components/fx'
 import FaqList from '@/components/FaqList'
-import { FAQ_HOME } from './_faq'
+import type { FaqTopic } from './_faq'
 
 /* 스테퍼 점등 순서를 CSS 변수로 넘긴다 (CSS 커스텀 속성이라 캐스트가 필요하다) */
 const step = (i: number) => ({ '--i': i }) as CSSProperties
@@ -118,7 +118,19 @@ function Bset({ brands }: { brands: [string, string][] }) {
   )
 }
 
-export default function HomeView() {
+/* FAQ·히어로 문구·지표는 서버(page.tsx)가 DB 에서 읽어 넘긴다.
+   값이 없으면 기존 문구를 그대로 쓴다 — 관리자 화면을 안 채워도 사이트가 그대로 뜬다. */
+export default function HomeView({
+  faq, heroTitle, heroSub, builderCount, workCount, statRating,
+}: {
+  faq: FaqTopic[]
+  heroTitle: string
+  heroSub: string
+  builderCount: number
+  workCount: number
+  /** 근거 없는 수치는 기본값을 두지 않는다 (기획서 C2) — 비면 지표를 아예 뺀다 */
+  statRating: string
+}) {
   /* v19.5 이음새 리본 — 문구 덱 로테이션(페이드 전환) + 곡선 흐름.
      구현은 components/fx.ts 의 useRibbonFlow 한 곳으로 모았다 — 전에는 같은 스크립트가
      여기에 통째로 복제돼 있어서 성능 수정을 두 군데 해야 했다. */
@@ -329,13 +341,21 @@ export default function HomeView() {
           <div className="wrap hero__in">
             <span className="h1-over"><i>✓</i><em>검증된</em></span>
             <h1 className="st st1"><span className="w300">바이브 코딩으로,</span><br /><mark>외주</mark>를 해드립니다</h1>
-            <p className="st st2">기획부터 개발, 검수까지 한 팀이 끝까지 맡습니다.<br />
-              아이디어만 가져오세요 — 나머지는 검증된 빌더의 일입니다.</p>
+            {/* 관리자(A-08)에서 바꾼 문구가 있으면 그것을 쓰고, 없으면 원래 문구를 그대로 둔다 */}
+            <p className="st st2">
+              {heroSub || '기획부터 개발, 검수까지 한 팀이 끝까지 맡습니다.'}<br />
+              {heroTitle || '아이디어만 가져오세요 — 나머지는 검증된 빌더의 일입니다.'}
+            </p>
             <div className="st st3 hero-ctas">
               <Link className="btn btn--ink btn--pulse" href="/contact" data-track="cta_click" data-location="hero">프로젝트 문의 <span className="arr">→</span></Link>
               <Link className="cta-sub" href="/work" data-track="cta_click" data-location="hero_secondary">작업물 먼저 보기 <span className="arr">→</span></Link>
             </div>
-            <p className="st st3 hero-proof"><a className="proof-link" href="#builders">검증된 빌더 <b className="num">10</b>인</a><i></i><a className="proof-link" href="#work">공개 프로젝트 <b className="num">9</b>건</a><i></i><a className="proof-link" href="#system"><b>검수 시스템</b> 운영</a></p>
+            {/* 숫자는 DB 를 센 값이다. 손으로 적어두면 발행할 때마다 사실과 어긋난다 */}
+            <p className="st st3 hero-proof">
+              <a className="proof-link" href="#builders">검증된 빌더 <b className="num">{builderCount}</b>인</a><i></i>
+              <a className="proof-link" href="#work">공개 프로젝트 <b className="num">{workCount}</b>건</a><i></i>
+              <a className="proof-link" href="#system"><b>검수 시스템</b> 운영</a>
+            </p>
           </div>
           <div className="hero__scroll">SCROLL</div>
         </section>
@@ -718,7 +738,7 @@ export default function HomeView() {
             </div>
             <p className="t-lead">문의 전에 가장 많이 받는 질문을 모았습니다.</p>
             {/* 데이터는 app/_faq.ts 한 곳에서 온다 — /faq 페이지와 같은 원본 */}
-            <FaqList topics={FAQ_HOME} />
+            <FaqList topics={faq} />
           </div>
         </section>
 

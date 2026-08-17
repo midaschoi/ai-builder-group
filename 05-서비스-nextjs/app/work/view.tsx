@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect } from 'react'
 import { useRibbonFlow, useDock, useCountUp } from '@/components/fx'
-import type { WorkCard } from '@/lib/content'
+import type { BuilderCard, WorkCard } from '@/lib/content'
 
 /* ── 수행 프로젝트 데이터 ──
 
@@ -29,7 +29,7 @@ const PROJECTS: Project[] = [
 ]
 
 /* ── 빌더 프로필 데이터 ── */
-type Builder = { slug: string; box: string; name: string; role: string; desc: string; stk: [string, string]; cnt: number; badge?: { cls: string; label: string } }
+type Builder = { slug: string; box: string; name: string; role: string; desc: string; stk: [string, string]; cnt: number; badge?: { cls: string; label: string }; avatar?: string | null }
 const BUILDERS: Builder[] = [
   { slug: 'josh', box: 'bcard rv', name: '빌더 조쉬', role: '프로덕트 빌더 · 기획+개발', desc: '기획자·디자이너·개발자를 합친 원맨 프로덕트 빌더. AI 네이티브 운영법 인터뷰의 그 사람.', stk: ['Next.js', 'LLM API'], cnt: 14, badge: { cls: 'lv lv--lead', label: '✳ 이달의 빌더' } },
   { slug: 'ria', box: 'bcard rv d1', name: '빌더 리아', role: '랜딩 · 인터랙션', desc: '디자인 감도와 전환 설계가 강점. 수주용 랜딩과 브랜드 사이트를 주로 맡습니다.', stk: ['Interaction', 'GA4 설계'], cnt: 9 },
@@ -59,10 +59,33 @@ function fromDb(list: WorkCard[]): Project[] {
   }))
 }
 
-export default function WorkView({ works = [] }: { works?: WorkCard[] }) {
+export default function WorkView({
+  works = [], builders = [], statRating = '',
+}: {
+  works?: WorkCard[]
+  builders?: BuilderCard[]
+  /* 근거 없는 수치는 기본값을 두지 않는다 (기획서 C2) — 비면 지표를 아예 뺀다 */
+  statRating?: string
+}) {
   /* 발행된 것이 하나라도 있으면 DB 를 쓰고, 없으면 샘플로 화면을 유지한다.
      둘을 섞지 않는다 — 섞으면 어느 것이 실제인지 화면에서 구분되지 않는다. */
   const projects = works.length > 0 ? fromDb(works) : PROJECTS
+
+  /* 등록된 빌더가 있으면 DB, 없으면 샘플 (A-06 에서 채우면 그때 바뀐다) */
+  const people: Builder[] = builders.length > 0
+    ? builders.map((b, i) => ({
+      slug: b.slug,
+      /* rv/d1~d4 는 스크롤 리빌 지연 클래스다 — 카드가 한꺼번에 뜨지 않게 어긋 낸다 */
+      box: i === 0 ? 'bcard rv' : `bcard rv d${i % 5}`,
+      name: b.name,
+      role: b.roleLabel,
+      desc: b.oneLiner,
+      stk: [b.stack[0] ?? '', b.stack[1] ?? ''],
+      cnt: b.workCount,
+      badge: b.badge ? { cls: b.badge.toUpperCase() === 'NEW' ? 'lv lv--new' : 'lv lv--lead', label: b.badge } : undefined,
+      avatar: b.avatarUrl,
+    }))
+    : BUILDERS
 
   useRibbonFlow({
     rsW: [
@@ -157,11 +180,18 @@ export default function WorkView({ works = [] }: { works?: WorkCard[] }) {
             <p>추천받고 싶다면 30초 매칭으로, 직접 둘러보고 싶다면 작업물부터.</p>
             {/* 숫자는 최종 표기 그대로 둔다 — useCountUp 이 형식만 읽어 0부터 센다 */}
             <div className="head-stats rv">
-              <div className="hstat"><b className="num" data-count>10</b><i className="unit">명</i><span>검증된 빌더</span></div>
+              {/* 숫자는 DB 를 센 값이다. 손으로 적어두면 발행할 때마다 사실과 어긋난다 */}
+              <div className="hstat"><b className="num" data-count>{people.length}</b><i className="unit">명</i><span>검증된 빌더</span></div>
               <span className="hstat-sep" aria-hidden="true">✳</span>
-              <div className="hstat"><b className="num" data-count>09</b><i className="unit">건</i><span>공개 프로젝트</span></div>
-              <span className="hstat-sep" aria-hidden="true">✳</span>
-              <div className="hstat"><b className="num" data-count>4.9</b><i className="unit">/5</i><span>평균 만족도</span></div>
+              <div className="hstat"><b className="num" data-count>{String(projects.length).padStart(2, '0')}</b><i className="unit">건</i><span>공개 프로젝트</span></div>
+              {/* ⚠ 만족도는 근거가 있을 때만 보여준다 (기획서 C2 — 근거 없는 수치 금지).
+                  A-08 에서 비워두면 이 지표가 화면에서 통째로 빠진다. */}
+              {statRating && (
+                <>
+                  <span className="hstat-sep" aria-hidden="true">✳</span>
+                  <div className="hstat"><b className="num" data-count>{statRating}</b><i className="unit">/5</i><span>평균 만족도</span></div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -300,10 +330,10 @@ export default function WorkView({ works = [] }: { works?: WorkCard[] }) {
               <div className="panel__side"><span>누구에게 맡길지 고민된다면</span><a className="up" href="#match">02 빠른 매칭 <i>↑</i></a></div>
             </div>
             <div className="bld__grid">
-              {BUILDERS.map(b => (
+              {people.map(b => (
                 <Link className={b.box} href={`/builder?b=${b.slug}`} data-cursor="PROFILE →" data-track="builder_click" data-slug={b.slug} key={b.slug}>
                   <div className="slot mask">
-                    <img src={`/assets/img/av-${b.slug}.jpg`} alt={`${b.name} 프로필 사진`} />
+                    {(b.avatar || !builders.length) && <img src={b.avatar ?? `/assets/img/av-${b.slug}.jpg`} alt={`${b.name} 프로필 사진`} />}
                     {b.badge && <span className={b.badge.cls}>{b.badge.label}</span>}
                     {/* 수행 건수는 이 카드에서 유일한 실적 근거다 — 알약으로 세워 먼저 읽히게 한다 */}
                     <div className="ct"><span className="cnt">수행 <b className="num">{b.cnt}</b>건</span><span className="go">Profile →</span></div>
@@ -313,7 +343,7 @@ export default function WorkView({ works = [] }: { works?: WorkCard[] }) {
                     <b>{b.name}</b>
                     <span className="role">{b.role}</span>
                     <p>{b.desc}</p>
-                    <div className="stk"><i>{b.stk[0]}</i><i>{b.stk[1]}</i></div>
+                    <div className="stk">{b.stk.filter(Boolean).map(t => <i key={t}>{t}</i>)}</div>
                   </div>
                 </Link>
               ))}

@@ -234,3 +234,170 @@ export const getRedirect = unstable_cache(
   },
   ['public-redirect-v1'], { tags: [CONTENT_TAG], revalidate: TTL },
 )
+
+
+/* ══════════════════════════════════════════════════════════════════
+   0006 — 공개 웹에 하드코딩돼 있던 것들
+   ══════════════════════════════════════════════════════════════════ */
+
+export type BuilderCard = {
+  slug: string
+  name: string
+  roleLabel: string
+  oneLiner: string
+  avatarUrl: string | null
+  stack: string[]
+  badge: string | null
+  /** work_builders 를 센 값. 저장하지 않는다 — 저장하면 발행마다 손으로 맞춰야 한다 */
+  workCount: number
+}
+
+export type BuilderProfile = BuilderCard & {
+  bio: string
+  focus: string
+  principles: { title: string; body: string }[]
+  linkLabel: string | null
+  linkUrl: string | null
+  /** 참여한 발행 프로젝트 */
+  works: { slug: string; title: string; summary: string; thumb: string | null; category: string; year: string }[]
+}
+
+const BUILDER_FIELDS =
+  'id, slug, name, role_label, one_liner, avatar_url, stack, badge, bio, focus,' +
+  ' principles, link_label, link_url, sort'
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function toBuilderCard(r: any, workCount: number): BuilderCard {
+  return {
+    slug: r.slug,
+    name: r.name,
+    roleLabel: r.role_label ?? '',
+    oneLiner: r.one_liner ?? '',
+    avatarUrl: r.avatar_url ?? null,
+    stack: r.stack ?? [],
+    badge: r.badge ?? null,
+    workCount,
+  }
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+/** 공개 목록에 쓰는 빌더 카드. 회수된 계정은 나가지 않는다 */
+export const getBuilders = unstable_cache(
+  async (): Promise<BuilderCard[]> => {
+    if (!SUPABASE_READY) return []
+    const db = createPublicClient()
+    const [{ data }, { data: joins }] = await Promise.all([
+      db.from('builders').select(BUILDER_FIELDS).eq('is_active', true).order('sort').order('name'),
+      db.from('work_builders').select('builder_id'),
+    ])
+    const count = new Map<string, number>()
+    for (const j of joins ?? []) {
+      const id = (j as { builder_id: string }).builder_id
+      count.set(id, (count.get(id) ?? 0) + 1)
+    }
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    return (data ?? []).map((r: any) => toBuilderCard(r, count.get(r.id) ?? 0))
+  },
+  ['public-builders-v1'], { tags: [CONTENT_TAG], revalidate: TTL },
+)
+
+export const getBuilder = unstable_cache(
+  async (slug: string): Promise<BuilderProfile | null> => {
+    if (!SUPABASE_READY) return null
+    const db = createPublicClient()
+    const { data } = await db.from('builders').select(BUILDER_FIELDS)
+      .eq('slug', slug).eq('is_active', true).maybeSingle()
+    if (!data) return null
+
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    const r = data as any
+
+    /* 참여한 발행 프로젝트. 조인 너머라 id 를 먼저 모은다 */
+    const { data: joins } = await db.from('work_builders').select('work_id').eq('builder_id', r.id)
+    const ids = (joins ?? []).map(j => (j as { work_id: string }).work_id)
+
+    let works: BuilderProfile['works'] = []
+    if (ids.length > 0) {
+      const { data: rows } = await db.from('works')
+        .select('slug, title, summary, thumb_url, hero_url, published_at, category:categories(name)')
+        .in('id', ids).eq('status', 'published').not('slug', 'is', null)
+        .order('published_at', { ascending: false })
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      works = (rows ?? []).map((w: any) => ({
+        slug: w.slug, title: w.title ?? '', summary: w.summary ?? '',
+        thumb: w.thumb_url || w.hero_url || null,
+        category: w.category?.name ?? '',
+        year: w.published_at ? String(new Date(w.published_at).getFullYear()) : '',
+      }))
+    }
+
+    return {
+      ...toBuilderCard(r, works.length),
+      bio: r.bio ?? '',
+      focus: r.focus ?? '',
+      principles: Array.isArray(r.principles) ? r.principles : [],
+      linkLabel: r.link_label ?? null,
+      linkUrl: r.link_url ?? null,
+      works,
+    }
+  },
+  ['public-builder-v1'], { tags: [CONTENT_TAG], revalidate: TTL },
+)
+
+
+/* ── FAQ (P-07) ─────────────────────────────────────────────────── */
+
+export type FaqItem = { id: string; question: string; answer: string; showOnHome: boolean }
+export type FaqTopic = { slug: string; label: string; items: FaqItem[] }
+
+export const getFaq = unstable_cache(
+  async (): Promise<FaqTopic[]> => {
+    if (!SUPABASE_READY) return []
+    const db = createPublicClient()
+    const [{ data: topics }, { data: items }] = await Promise.all([
+      db.from('faq_topics').select('id, slug, label').order('sort'),
+      db.from('faqs').select('id, topic_id, question, answer, show_on_home')
+        .eq('is_active', true).order('sort'),
+    ])
+    return (topics ?? []).map(t => ({
+      slug: (t as { slug: string }).slug,
+      label: (t as { label: string }).label,
+      items: (items ?? [])
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        .filter((i: any) => i.topic_id === (t as { id: string }).id)
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        .map((i: any) => ({ id: i.id, question: i.question, answer: i.answer, showOnHome: i.show_on_home })),
+    }))
+  },
+  ['public-faq-v1'], { tags: [CONTENT_TAG], revalidate: TTL },
+)
+
+
+/* ── 유튜브 (P-06 · IR-08) ──────────────────────────────────────── */
+
+export type VideoItem = {
+  id: string; youtubeId: string; title: string; subtitle: string
+  channel: string; duration: string
+}
+export type VideoChannel = { slug: string; name: string; url: string }
+
+export const getVideos = unstable_cache(
+  async (): Promise<{ videos: VideoItem[]; channels: VideoChannel[] }> => {
+    if (!SUPABASE_READY) return { videos: [], channels: [] }
+    const db = createPublicClient()
+    const [{ data: v }, { data: c }] = await Promise.all([
+      db.from('videos').select('id, youtube_id, title, subtitle, channel_name, duration')
+        .eq('is_active', true).order('sort'),
+      db.from('video_channels').select('slug, name, url').order('sort'),
+    ])
+    return {
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      videos: (v ?? []).map((r: any) => ({
+        id: r.id, youtubeId: r.youtube_id, title: r.title,
+        subtitle: r.subtitle ?? '', channel: r.channel_name, duration: r.duration ?? '',
+      })),
+      channels: (c ?? []) as VideoChannel[],
+    }
+  },
+  ['public-videos-v1'], { tags: [CONTENT_TAG], revalidate: TTL },
+)
