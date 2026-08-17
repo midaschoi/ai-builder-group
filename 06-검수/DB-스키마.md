@@ -202,11 +202,38 @@ grant  update (name, slug, one_liner, role_label, avatar_url)
 ```
 
 > `role` · `is_active` · `email` · `auth_user_id` 는 **목록에 없다** → 어떤 경로로도 못 바꾼다.
-> `service_role` 은 revoke 대상이 아니라 서버 액션은 그대로 동작한다.
+> `service_role` 은 revoke 대상이 아니라 계정 발급·회수 액션은 그대로 동작한다.
+
+### 🔴 0007 — 0004 의 목록을 0006 컬럼까지 넓힌다
+
+앞서 이 문서에 *"0006 이 컬럼을 더했지만 GRANT 목록은 그대로다"* 라고만 적어 두었는데,
+**실제로는 프로필 저장이 아예 되지 않고 있었다.**
+
+```
+저장하지 못했습니다. permission denied for table builders
+```
+
+`saveProfile()` 은 (의도적으로) `service_role` 이 아니라 일반 클라이언트를 쓴다.
+그래서 payload 에 `bio` 하나만 끼어도 **업데이트 전체가 거부된다.**
+앞 문단의 *"지금은 서버 액션(service_role)으로만 저장된다"* 는 틀린 서술이었다 — 바로잡는다.
+
+```sql
+grant update (bio, focus, stack, principles, link_label, link_url)
+  on public.builders to authenticated;
+```
+
+> ⛔ `badge` 는 **주지 않는다.** `✳ 이달의 빌더` 같은 편집자 표식이라 빌더가 스스로 달면
+> 공개 사이트에서 자기를 승격시키는 것과 같다 — 0004 가 `role` 을 막은 것과 같은 이유다.
+> 관리자 화면에서만 칸이 보이고, 서버 액션도 관리자일 때만 payload 에 넣는다.
 >
-> ⚠ 0006 이 `builders` 에 컬럼을 더했지만 GRANT 목록은 그대로다.
-> 빌더가 `bio` · `stack` 등을 직접 고치게 하려면 **GRANT 를 명시적으로 확장**해야 한다.
-> 지금은 서버 액션(service_role)으로만 저장된다.
+> ⛔ `sort` 도 주지 않는다. 공개 목록의 노출 순서라 자기를 맨 앞으로 올릴 수 있다.
+
+**함께 막은 것** — `link_url` 은 공개 프로필의 `<a href>` 에 그대로 들어간다.
+권한을 여는 순간 빌더 계정 하나로 `javascript:` 주소를 심을 수 있게 되므로,
+저장 시(`builders/actions.ts`)와 렌더 시(`app/builder/view.tsx`) 양쪽에서 `http`·`https` 만 통과시킨다.
+
+> 포스트그레스는 **컬럼** 권한이 없을 때도 `permission denied for table` 이라고 말한다.
+> 테이블 권한 문제로 읽고 엉뚱한 데를 뒤지기 쉬워, 화면 오류 문구에 마이그레이션 번호를 넣어 두었다.
 
 ---
 

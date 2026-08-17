@@ -345,7 +345,12 @@ create policy media_delete on storage.objects
 
 revoke update on public.builders from anon, authenticated;
 
-grant update (name, slug, one_liner, role_label, avatar_url)
+-- 프로필 컬럼만 연다 (0004 + 0007).
+--   ⛔ badge · sort 는 주지 않는다 — 편집자 표식과 노출 순서라 빌더가 스스로 달면
+--      공개 사이트에서 자기를 승격시키는 것과 같다.
+--   ⛔ role · is_active · email · auth_user_id 는 어느 롤에도 주지 않는다.
+grant update (name, slug, one_liner, role_label, avatar_url,
+              bio, focus, stack, principles, link_label, link_url)
   on public.builders to authenticated;
 
 alter table public.insights

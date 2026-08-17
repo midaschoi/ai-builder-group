@@ -42,7 +42,7 @@ export default async function MyProfilePage() {
 
       <div className="bd-solo">
         {/* 남에게 재설정 메일을 보내는 버튼은 관리자 화면에만 둔다 */}
-        <ProfilePanel profile={data} canSendReset={false} />
+        <ProfilePanel profile={data} canSendReset={false} isAdmin={me.role === 'admin'} />
       </div>
 
       <p className="adm-dim" style={{ fontSize: 12.5 }}>

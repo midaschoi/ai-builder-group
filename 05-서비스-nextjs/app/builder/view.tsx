@@ -231,9 +231,20 @@ export default function BuilderView({
     ph.alt = b.name + ' 프로필 사진'
     if (b.extra) {
       const ex = q('extra') as HTMLAnchorElement
-      ex.hidden = false
-      ex.href = b.extra.href
-      ex.innerHTML = esc(b.extra.label) + ' <span class="arr">→</span>'
+      /* ⚠ 이 주소는 빌더가 관리자에서 직접 입력한 값이다.
+           라벨은 esc() 로 막고 있었는데 href 는 그대로 꽂히고 있었다 —
+           `javascript:` 를 넣으면 공개 페이지에서 스크립트가 돈다.
+           저장 시에도 검증하지만(builders/actions.ts), 실행되는 자리는 여기라 여기서도 막는다. */
+      let safe = ''
+      try {
+        const u = new URL(b.extra.href, location.origin)
+        if (u.protocol === 'http:' || u.protocol === 'https:') safe = u.href
+      } catch { safe = '' }
+      ex.hidden = !safe
+      if (safe) {
+        ex.href = safe
+        ex.innerHTML = esc(b.extra.label) + ' <span class="arr">→</span>'
+      }
     }
 
     /* 일하는 원칙 — 비어 있으면 영역을 통째로 감춘다 */

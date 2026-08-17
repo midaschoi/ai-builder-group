@@ -31,11 +31,13 @@ export type Profile = {
       이메일은 인증 주체라 바꾸면 재인증이 필요하고, 역할은 DB 직접 변경으로만 바꾼다.
       화면에 입력칸을 두지 않는 것이 요점이다 — 막힌 칸을 두면 언젠가 누가 연다. */
 export default function ProfilePanel({
-  profile, canSendReset, onClose,
+  profile, canSendReset, isAdmin, onClose,
 }: {
   profile: Profile
   /** 관리자만 남에게 재설정 메일을 보낼 수 있다 */
   canSendReset: boolean
+  /** 배지는 편집자 표식이라 관리자만 단다 (0007). DB 에서도 막혀 있다 */
+  isAdmin: boolean
   onClose?: () => void
 }) {
   const [state, action, pending] = useActionState(saveProfile, P)
@@ -169,12 +171,16 @@ export default function ProfilePanel({
           <small className="adm-dim">쉼표로 구분합니다.</small>
         </div>
 
-        <div className="adm-field">
-          <label htmlFor="bd-badge">배지</label>
-          <input id="bd-badge" name="badge" value={badge} maxLength={20}
-            onChange={e => setBadge(e.target.value)} placeholder="✳ 이달의 빌더 · NEW" />
-          <small className="adm-dim">비우면 배지를 달지 않습니다.</small>
-        </div>
+        {/* 배지는 관리자만 단다. 막힌 칸을 두지 않고 아예 감춘다 —
+            빌더에게 보여주면 저장할 때 권한 오류로 떨어진다 (0007). */}
+        {isAdmin && (
+          <div className="adm-field">
+            <label htmlFor="bd-badge">배지</label>
+            <input id="bd-badge" name="badge" value={badge} maxLength={20}
+              onChange={e => setBadge(e.target.value)} placeholder="✳ 이달의 빌더 · NEW" />
+            <small className="adm-dim">비우면 배지를 달지 않습니다. 운영 관리자만 답니다.</small>
+          </div>
+        )}
 
         <div className="adm-field">
           <label>일하는 원칙</label>

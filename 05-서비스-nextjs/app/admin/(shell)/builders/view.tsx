@@ -171,7 +171,8 @@ export default function BuildersView({
       {/* ── 프로필 패널 ─────────────────────────────────────── */}
       {editing && (
         <div className="bd-overlay" onClick={e => { if (e.target === e.currentTarget) router.push(href({ edit: '' })) }}>
-          <ProfilePanel profile={editing} canSendReset onClose={() => router.push(href({ edit: '' }))} />
+          {/* /admin/builders 는 requireAdmin() 을 통과해야 열린다 — 여기 온 사람은 관리자다 */}
+          <ProfilePanel profile={editing} canSendReset isAdmin onClose={() => router.push(href({ edit: '' }))} />
         </div>
       )}
 

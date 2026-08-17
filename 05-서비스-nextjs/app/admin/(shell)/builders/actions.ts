@@ -250,7 +250,6 @@ export async function saveProfile(_prev: ProfileState, form: FormData): Promise<
   /* 공개 프로필(/builder) 이 쓰는 값 — 0006 에서 추가했다 */
   const bio = String(form.get('bio') ?? '').trim()
   const focus = String(form.get('focus') ?? '').trim()
-  const badge = String(form.get('badge') ?? '').trim()
   const linkLabel = String(form.get('link_label') ?? '').trim()
   const linkUrl = String(form.get('link_url') ?? '').trim()
   const stack = String(form.get('stack') ?? '')
@@ -273,6 +272,20 @@ export async function saveProfile(_prev: ProfileState, form: FormData): Promise<
 
   if (!name) return { error: '이름을 입력해 주세요.' }
 
+  /* 부가 링크는 공개 프로필에서 <a href> 에 그대로 들어간다 (builder/view.tsx).
+     ⛔ 검증하지 않으면 `javascript:` 주소로 공개 페이지에 스크립트를 심을 수 있다 —
+        빌더 계정 하나만 있으면 되므로 실제로 위험하다. http · https 만 통과시킨다. */
+  if (linkUrl) {
+    let ok = false
+    try {
+      /* base 는 `/insight/…` 같은 상대 주소를 파싱하기 위한 것일 뿐이다 —
+         우리가 보는 것은 protocol 하나다. 절대 주소는 base 를 무시한다. */
+      const u = new URL(linkUrl, 'https://base.invalid')
+      ok = u.protocol === 'http:' || u.protocol === 'https:'
+    } catch { ok = false }
+    if (!ok) return { error: '링크 주소는 http:// 또는 https:// 로 시작해야 합니다.' }
+  }
+
   const checked = checkSlug(rawSlug)
   if (!checked.ok) return { error: checked.message }
   const slug = checked.value
@@ -283,9 +296,9 @@ export async function saveProfile(_prev: ProfileState, form: FormData): Promise<
     .from('builders').select('id').eq('slug', slug).neq('id', id).limit(1)
   if (dup && dup.length > 0) return { error: '이미 사용 중인 슬러그입니다.' }
 
-  /* 여기서는 일부러 일반 클라이언트를 쓴다 — RLS 와 0004 의 컬럼 권한이 그대로 적용된다.
+  /* 여기서는 일부러 일반 클라이언트를 쓴다 — RLS 와 0004·0007 의 컬럼 권한이 그대로 적용된다.
      ⛔ email · role · is_active 는 payload 에 없다 (A-06 §프로필 편집 표). */
-  const { error } = await supabase.from('builders').update({
+  const patch: Record<string, unknown> = {
     name,
     slug,
     role_label: roleLabel || null,
@@ -293,14 +306,31 @@ export async function saveProfile(_prev: ProfileState, form: FormData): Promise<
     avatar_url: avatarUrl || null,
     bio: bio || null,
     focus: focus || null,
-    badge: badge || null,
     link_label: linkLabel || null,
     link_url: linkUrl || null,
     stack,
     principles,
-  }).eq('id', id)
+  }
 
-  if (error) return { error: `저장하지 못했습니다. ${error.message}` }
+  /* 배지("✳ 이달의 빌더")는 편집자 표식이라 관리자만 손댄다 (0007).
+     빌더에게는 화면에 칸 자체가 없고, 여기서도 payload 에 넣지 않는다 —
+     넣으면 authenticated 에 badge UPDATE 권한이 없어 저장 전체가 거부된다. */
+  if (isAdmin) patch.badge = String(form.get('badge') ?? '').trim() || null
+
+  const { error } = await supabase.from('builders').update(patch).eq('id', id)
+
+  if (error) {
+    /* 포스트그레스는 **컬럼** 권한이 없을 때도 "permission denied for table" 이라고 말한다.
+       그대로 보여주면 테이블 권한 문제로 읽고 엉뚱한 데를 뒤지게 된다 —
+       실제로 0006 이 컬럼을 추가하고 0004 의 GRANT 를 넓히지 않아 이 오류가 났다. */
+    if (/permission denied/i.test(error.message)) {
+      return {
+        error: '저장 권한이 없습니다. DB 마이그레이션 0007 이 적용되지 않은 것 같습니다 — '
+          + 'Supabase SQL Editor 에서 supabase/migrations/0007_builders_profile_grant.sql 을 실행해 주세요.',
+      }
+    }
+    return { error: `저장하지 못했습니다. ${error.message}` }
+  }
 
   /* 공개 프로필도 이 값을 읽는다 */
   updateTag(CONTENT_TAG)
