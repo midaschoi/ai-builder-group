@@ -18,37 +18,45 @@ const shot = (h: number, url: string, img: string, alt: string): Block => ({ kin
 const duo = (h: number, a: string, b: string): Block => ({ kind: 'duo', h, a, b })
 
 const COL1: Block[] = [
-  shot(196, 'toktokhan.dev', 'ref-toktokhan.jpg', '똑똑한개발자 메인 화면'),
-  duo(234, 'm-kream.png', 'm-codle.png'),
-  shot(200, 'toss.im', 'ref-toss.jpg', '토스 메인 화면'),
-  duo(228, 'm-kakaobank.png', 'm-29cm.png'),
-  shot(198, 'kakaobank.com', 'ref-kakaobank.jpg', '카카오뱅크 서비스 화면'),
-  shot(192, 'daangn.com', 'ref-daangn.jpg', '당근 메인 화면'),
+  shot(196, 'toktokhan.dev', 'ref-toktokhan.webp', '똑똑한개발자 메인 화면'),
+  duo(234, 'm-kream.webp', 'm-codle.webp'),
+  shot(200, 'toss.im', 'ref-toss.webp', '토스 메인 화면'),
+  duo(228, 'm-kakaobank.webp', 'm-29cm.webp'),
+  shot(198, 'kakaobank.com', 'ref-kakaobank.webp', '카카오뱅크 서비스 화면'),
+  shot(192, 'daangn.com', 'ref-daangn.webp', '당근 메인 화면'),
 ]
 const COL2: Block[] = [
-  shot(200, 'builderschool.ai', 'ref-builderschool.jpg', 'AI빌더스쿨 메인 화면'),
-  duo(230, 'm-builderschool.png', 'm-aidt.png'),
-  shot(196, '29cm.co.kr', 'ref-29cm.jpg', '29CM 메인 화면'),
-  shot(198, 'ai.codle.io', 'ref-codle.jpg', '코들 메인 화면'),
-  shot(194, 'zigbang.com', 'ref-zigbang.jpg', '직방 메인 화면'),
-  duo(232, 'm-29cm.png', 'm-kream.png'),
+  shot(200, 'builderschool.ai', 'ref-builderschool.webp', 'AI빌더스쿨 메인 화면'),
+  duo(230, 'm-builderschool.webp', 'm-aidt.webp'),
+  shot(196, '29cm.co.kr', 'ref-29cm.webp', '29CM 메인 화면'),
+  shot(198, 'ai.codle.io', 'ref-codle.webp', '코들 메인 화면'),
+  shot(194, 'zigbang.com', 'ref-zigbang.webp', '직방 메인 화면'),
+  duo(232, 'm-29cm.webp', 'm-kream.webp'),
 ]
 const COL3: Block[] = [
-  shot(176, 'zigbang.com', 'ref-zigbang.jpg', '직방 메인 화면'),
-  duo(208, 'm-aidt.png', 'm-kakaobank.png'),
-  shot(172, 'daangn.com', 'ref-daangn.jpg', '당근 메인 화면'),
-  shot(176, '29cm.co.kr', 'ref-29cm.jpg', '29CM 메인 화면'),
-  duo(206, 'm-codle.png', 'm-builderschool.png'),
-  shot(176, 'toss.im', 'ref-toss.jpg', '토스 메인 화면'),
+  shot(176, 'zigbang.com', 'ref-zigbang.webp', '직방 메인 화면'),
+  duo(208, 'm-aidt.webp', 'm-kakaobank.webp'),
+  shot(172, 'daangn.com', 'ref-daangn.webp', '당근 메인 화면'),
+  shot(176, '29cm.co.kr', 'ref-29cm.webp', '29CM 메인 화면'),
+  duo(206, 'm-codle.webp', 'm-builderschool.webp'),
+  shot(176, 'toss.im', 'ref-toss.webp', '토스 메인 화면'),
 ]
 
-function StreamBlock({ b }: { b: Block }) {
+/* 히어로 스트림은 같은 블록을 **두 벌** 이어 붙여 무한 흐름을 만든다.
+   뒤쪽 한 벌은 이음매를 위한 복제라 첫 화면에 절대 보이지 않는다 — 그것만 지연시킨다.
+
+   ⚠ 앞 벌에는 loading="lazy" 를 걸면 안 된다. 한 번 걸어 봤다가 성능이 66 → 61 로 떨어졌다.
+     이 스트림의 이미지가 LCP 요소라서, 지연시키는 순간 Lighthouse 가
+     "LCP image was lazily loaded" 로 감점한다. */
+function StreamBlock({ b, dup }: { b: Block; dup: boolean }) {
+  const defer = dup ? { loading: 'lazy' as const } : {}
+
   if (b.kind === 'shot') {
     return (
       <div className="sc slot" style={{ height: b.h }}>
         <div className="bf">
           <div className="bf__bar"><i></i><i></i><i></i><span className="url">{b.url}</span></div>
-          <img className="shot" src={`/assets/img/${b.img}`} alt={b.alt} />
+          <img className="shot" src={`/assets/img/${b.img}`} alt={b.alt} decoding="async" {...defer} />
         </div>
         <div className="shotshade"></div>
       </div>
@@ -56,8 +64,8 @@ function StreamBlock({ b }: { b: Block }) {
   }
   return (
     <div className="sc sc--duo slot" style={{ height: b.h }}>
-      <img src={`/assets/img/${b.a}`} alt="" />
-      <img src={`/assets/img/${b.b}`} alt="" />
+      <img src={`/assets/img/${b.a}`} alt="" decoding="async" {...defer} />
+      <img src={`/assets/img/${b.b}`} alt="" decoding="async" {...defer} />
     </div>
   )
 }
@@ -66,7 +74,9 @@ function StreamCol({ blocks, cls }: { blocks: Block[]; cls: string }) {
   return (
     <div className={cls}>
       <div className="col-in">
-        {[...blocks, ...blocks].map((b, i) => <StreamBlock key={i} b={b} />)}
+        {[...blocks, ...blocks].map((b, i) => (
+          <StreamBlock key={i} b={b} dup={i >= blocks.length} />
+        ))}
       </div>
     </div>
   )
@@ -112,7 +122,7 @@ function Bset({ brands }: { brands: [string, string][] }) {
   return (
     <div className="bset">
       {brands.map(([file, alt]) => (
-        <img key={file} src={`/assets/img/brands/${file}.png`} alt={alt} loading="lazy" />
+        <img key={file} src={`/assets/img/brands/${file}.webp`} alt={alt} loading="lazy" />
       ))}
     </div>
   )
@@ -390,7 +400,7 @@ export default function HomeView({
               ))}
               <div className="s4x-card rv">
                 <div className="vis2 v2--edu">
-                  <img className="v2-person" src="/assets/img/p-kiesop.png" alt="김이솝" />
+                  <img className="v2-person" src="/assets/img/p-kiesop.webp" alt="김이솝" />
                   <div className="ic-pill ic-pill--side"><span className="spark">✦</span>커리큘럼 수료<span className="ok">✓</span></div>
                 </div>
                 <div className="bd2"><b>교육 — 김이솝 커리큘럼</b><span>그가 설계한 과정을 <mark>수료한 빌더만 투입</mark></span></div>
@@ -407,7 +417,7 @@ export default function HomeView({
               </div>
               <div className="s4x-card rv d2">
                 <div className="vis2 v2--match">
-                  <img className="v2-kmong" src="/assets/img/p-kmong.png" alt="크몽" />
+                  <img className="v2-kmong" src="/assets/img/p-kmong.webp" alt="크몽" />
                   <div className="ic-match ic-match--side">
                     <div className="chip2"><i>유</i><div><b>빌더 유나</b><span>AI 서비스</span></div></div>
                     <span className="done">매칭 완료</span>
@@ -597,13 +607,13 @@ export default function HomeView({
           <div className="wrap">
             <div className="sec-head">
               <h2>완성한 프로젝트</h2>
-              <Link className="more-link" href="/work">전체 보기</Link>
+              <Link className="more-link" href="/work">프로젝트 전체 보기</Link>
             </div>
             <p className="t-lead">실제로 수행한 프로젝트만 올립니다.</p>
             <div className="wg">
               <Link className="wcard" href="/work-detail" data-track="work_card" data-cursor="VIEW →">
                 <div className="slot mask">
-                  <div className="bf"><div className="bf__bar"><i></i><i></i><i></i><span className="url">consult-bot.app</span></div><img className="shot" src="/assets/img/ref-toktokhan.jpg" alt="" /></div>
+                  <div className="bf"><div className="bf__bar"><i></i><i></i><i></i><span className="url">consult-bot.app</span></div><img className="shot" src="/assets/img/ref-toktokhan.webp" alt="" /></div>
                   <div className="par"></div>
                   <div className="slot__spec"><b>Asset — Work Cover</b><span>실서비스 메인 화면 (브라우저 프레임)</span><em>1520×1045px · 16:11 @2x</em></div>
                 </div>
@@ -617,7 +627,7 @@ export default function HomeView({
               </Link>
               <Link className="wcard" href="/work-detail" data-cursor="VIEW →">
                 <div className="slot mask">
-                  <div className="bf"><div className="bf__bar"><i></i><i></i><i></i><span className="url">brand-landing.kr</span></div><img className="shot" src="/assets/img/ref-builderschool.jpg" alt="" /></div>
+                  <div className="bf"><div className="bf__bar"><i></i><i></i><i></i><span className="url">brand-landing.kr</span></div><img className="shot" src="/assets/img/ref-builderschool.webp" alt="" /></div>
                   <div className="par"></div>
                   <div className="slot__spec"><b>Asset — Work Cover</b><span>실서비스 히어로 화면</span><em>1520×1140px @2x</em></div>
                 </div>
@@ -637,7 +647,7 @@ export default function HomeView({
               </Link>
               <Link className="wcard" href="/work-detail" data-cursor="VIEW →">
                 <div className="slot mask">
-                  <div className="bf"><div className="bf__bar"><i></i><i></i><i></i><span className="url">cms.studio.io</span></div><img className="shot" src="/assets/img/ref-codle.jpg" alt="" /></div>
+                  <div className="bf"><div className="bf__bar"><i></i><i></i><i></i><span className="url">cms.studio.io</span></div><img className="shot" src="/assets/img/ref-codle.webp" alt="" /></div>
                   <div className="par"></div>
                   <div className="slot__spec"><b>Asset — Work Cover</b><span>관리자 콘솔 화면</span><em>1520×855px · 16:9 @2x</em></div>
                 </div>
@@ -658,24 +668,24 @@ export default function HomeView({
           <div className="wrap">
             <div className="sec-head">
               <h2>우리의 생각</h2>
-              <Link className="more-link" href="/insight">전체 보기</Link>
+              <Link className="more-link" href="/insight">인사이트 전체 보기</Link>
             </div>
             {/* ⚠ data-sample="thumb" — /insight 목록의 썸네일을 주제가 가까운 것으로 빌려 왔다.
                 그 이미지들에는 각자 다른 글 제목이 박혀 있어서, 이 크기(96×64)에서는 질감으로만
                 읽히지만 확대하면 문구가 어긋난다. 글마다 전용 썸네일이 생기면 교체할 것.
                 찾으려면 grep -rn 'data-sample' app/ */}
             <Link className="irow" href="/insight-detail">
-              <img className="ithumb" data-sample="thumb" src="/assets/img/ins/ins-turnkey.jpg" alt="" loading="lazy" decoding="async" />
+              <img className="ithumb" data-sample="thumb" src="/assets/img/ins/ins-turnkey.webp" alt="" loading="lazy" decoding="async" />
               <span className="t">바이브 코딩 외주, 잘하는 곳과 못하는 곳의 차이</span>
               <span className="meta"><span className="tag">발주 가이드</span><span className="d num">2026.08.11</span></span>
             </Link>
             <Link className="irow" href="/insight-detail">
-              <img className="ithumb" data-sample="thumb" src="/assets/img/ins/ins-native.jpg" alt="" loading="lazy" decoding="async" />
+              <img className="ithumb" data-sample="thumb" src="/assets/img/ins/ins-native.webp" alt="" loading="lazy" decoding="async" />
               <span className="t">우리가 3주 만에 랜딩 페이지를 만드는 순서</span>
               <span className="meta"><span className="tag">일하는 방식</span><span className="d num">2026.08.09</span></span>
             </Link>
             <Link className="irow" href="/insight-detail">
-              <img className="ithumb" data-sample="thumb" src="/assets/img/ins/ins-poc.jpg" alt="" loading="lazy" decoding="async" />
+              <img className="ithumb" data-sample="thumb" src="/assets/img/ins/ins-poc.webp" alt="" loading="lazy" decoding="async" />
               <span className="t">새 AI 툴을 실무에 붙일 때 우리가 확인하는 것들</span>
               <span className="meta"><span className="tag">AI 활용</span><span className="d num">2026.08.07</span></span>
             </Link>
@@ -734,7 +744,7 @@ export default function HomeView({
           <div className="wrap">
             <div className="sec-head">
               <h2>자주 묻는 질문</h2>
-              <Link className="more-link" href="/faq">전체 보기</Link>
+              <Link className="more-link" href="/faq">질문 전체 보기</Link>
             </div>
             <p className="t-lead">문의 전에 가장 많이 받는 질문을 모았습니다.</p>
             {/* 데이터는 app/_faq.ts 한 곳에서 온다 — /faq 페이지와 같은 원본 */}

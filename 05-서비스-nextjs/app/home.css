@@ -215,7 +215,8 @@
   display: grid; place-items: center; font-family: var(--mono); font-size: 16px; font-weight: 700;
   background: var(--paper); flex: none; }
 .fstep .lb2 { font-size: 23px; font-weight: 800; letter-spacing: -0.025em; white-space: nowrap; }
-.fstep .lb2 small { display: block; font-size: 15.5px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 2px; }
+/* --muted(#807E74) 는 이 배경에서 3.47:1 이라 WCAG AA(4.5:1) 에 못 미친다 — 실측에서 걸렸다 */
+.fstep .lb2 small { display: block; font-size: 15.5px; font-weight: 500; color: var(--ink-2); opacity: .72; letter-spacing: 0; margin-top: 2px; }
 .fline { width: clamp(28px, 5vw, 84px); height: 1.5px; background: var(--line-2); margin: 0 16px; }
 .fstep--last .dot { background: radial-gradient(circle at 35% 28%, #3C3C33 0%, #1B1B16 55%, #0E0E0C 100%);
   border-color: var(--ink); color: var(--lime);
@@ -288,7 +289,8 @@
 .s2__grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 64px; align-items: start; }
 .s2__left { position: sticky; top: 72px; padding: 120px 0; }
 .s2__left h2 { font-size: clamp(32px, 4.4vw, 52px); }
-.s2__left .note { margin-top: 20px; color: var(--muted); font-size: 15px; max-width: 38ch; word-break: keep-all; }
+/* --muted 는 이 배경에서 3.87:1 이라 WCAG AA 에 못 미친다 — 본문 텍스트라 색을 올린다 */
+.s2__left .note { margin-top: 20px; color: var(--ink-2); opacity: .78; font-size: 15px; max-width: 38ch; word-break: keep-all; }
 .s2__icons { display: flex; gap: 12px; margin-top: 34px; }
 .s2__icons span { width: 58px; height: 58px; border-radius: 18px; background: var(--paper-2);
   border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink);

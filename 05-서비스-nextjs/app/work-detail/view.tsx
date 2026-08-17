@@ -98,8 +98,8 @@ export default function WorkDetailView() {
             <div className="row"><dt>범위</dt><dd>챗봇 · 관리 콘솔</dd></div>
             <div className="row"><dt>기술</dt><dd>Next.js · Supabase · LLM API</dd></div>
             <div className="row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}><dt>참여 빌더</dt><dd style={{ textAlign: 'left' }}>
-              <Link className="b-chip" href="/builder?b=yuna" style={{ textDecoration: 'none' }}><i style={{ backgroundImage: 'url(/assets/img/av-yuna.jpg)', backgroundSize: 'cover' }}></i>빌더 유나 · 개발</Link>
-              <Link className="b-chip" href="/builder?b=josh" style={{ textDecoration: 'none' }}><i style={{ backgroundImage: 'url(/assets/img/av-josh.jpg)', backgroundSize: 'cover' }}></i>빌더 조쉬 · 설계</Link>
+              <Link className="b-chip" href="/builder?b=yuna" style={{ textDecoration: 'none' }}><i style={{ backgroundImage: 'url(/assets/img/av-yuna.webp)', backgroundSize: 'cover' }}></i>빌더 유나 · 개발</Link>
+              <Link className="b-chip" href="/builder?b=josh" style={{ textDecoration: 'none' }}><i style={{ backgroundImage: 'url(/assets/img/av-josh.webp)', backgroundSize: 'cover' }}></i>빌더 조쉬 · 설계</Link>
             </dd></div>
           </dl>
           <p className="note">빌더 칩을 누르면 프로필과 작업물로 이동합니다.</p>

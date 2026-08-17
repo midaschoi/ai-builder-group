@@ -145,7 +145,7 @@ for (const [i, b] of BUILDERS.entries()) {
     role: 'builder',
     role_label: b.role_label,
     one_liner: b.one_liner,
-    avatar_url: `/assets/img/av-${b.slug}.jpg`,
+    avatar_url: `/assets/img/av-${b.slug}.webp`,
     bio: b.bio,
     focus: b.focus,
     stack: b.stack,

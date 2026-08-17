@@ -9,14 +9,14 @@ import type { Category, InsightCard } from '@/lib/content'
      하나라도 발행되면 목록 전체가 DB 로 바뀐다 (page.tsx 가 넘겨준다). */
 type Article = { c: string; img: string; title: string; cat: string; desc: string; meta: string; href?: string; cover?: string | null }
 const ARTICLES: Article[] = [
-  { c: 'ai-ax', img: 'ins-poc.jpg', title: "AI PoC란? 기업 AI 도입 전 반드시 필요한 'PoC' 알아보기", cat: 'AI · AX', desc: '기업 AI 도입, 전면 구축 전에 PoC로 먼저 검증해야 하는 이유.', meta: '똑똑한개발자 · 2026.08.03' },
-  { c: 'ai-ax', img: 'ins-agent.jpg', title: '우리 회사에도 AI 에이전트가 필요할까? 5분 체크리스트', cat: 'AI · AX', desc: '도입이 필요한 조직의 신호 — 5분 만에 자가진단해 보세요.', meta: '똑똑한개발자 · 2026.07.22' },
-  { c: 'guide', img: 'ins-quote.jpg', title: '500만 원 vs 2,000만 원, 개발 외주 견적 비교 제대로 하는 법', cat: '발주 가이드', desc: '같은 앱인데 견적이 4배 차이 나는 이유를 뜯어봅니다.', meta: '똑똑한개발자 · 2026.07.03' },
-  { c: 'guide', img: 'ins-turnkey.jpg', title: '외주개발, 왜 올인원 턴키 팀과 함께 해야 할까?', cat: '발주 가이드', desc: '기획·디자인·개발을 따로 맡기면 실패하는 구조적 이유.', meta: '똑똑한개발자 · 2026.07.03' },
-  { c: 'ai-ax', img: 'ins-ax.jpg', title: 'AI 도입과 AX는 다르다 — 성과를 만드는 업무 설계 3가지', cat: 'AI · AX', desc: '도입했는데 성과가 없다면, AX와의 결정적 차이를 봐야 합니다.', meta: '똑똑한개발자 · 2026.07.16' },
-  { c: 'project', img: 'ins-toss.jpg', title: '토스 안에서 미니게임을? 똑똑한개발자 × 앱인토스', cat: '프로젝트', desc: '토스와 함께 미니게임을 만든 프로젝트 비하인드.', meta: '똑똑한개발자 · 2026.07.03' },
-  { c: 'how', img: 'ins-native.jpg', title: '기획·디자인·개발을 하나로 — AI 네이티브 에이전시 운영법', cat: '일하는 방식', desc: "'프로덕트 빌더'로 팀을 운영하는 방식, 빌더 조쉬와의 대화.", meta: '똑똑한개발자 · 2026.04.22' },
-  { c: 'ai-ax', img: 'ins-gov.jpg', title: '기업용 AI 도입, 왜 거버넌스가 먼저 필요할까?', cat: 'AI · AX', desc: '데이터 유출·통제 불능을 막는 AI 거버넌스 설계법.', meta: '똑똑한개발자 · 2026.07.14' },
+  { c: 'ai-ax', img: 'ins-poc.webp', title: "AI PoC란? 기업 AI 도입 전 반드시 필요한 'PoC' 알아보기", cat: 'AI · AX', desc: '기업 AI 도입, 전면 구축 전에 PoC로 먼저 검증해야 하는 이유.', meta: '똑똑한개발자 · 2026.08.03' },
+  { c: 'ai-ax', img: 'ins-agent.webp', title: '우리 회사에도 AI 에이전트가 필요할까? 5분 체크리스트', cat: 'AI · AX', desc: '도입이 필요한 조직의 신호 — 5분 만에 자가진단해 보세요.', meta: '똑똑한개발자 · 2026.07.22' },
+  { c: 'guide', img: 'ins-quote.webp', title: '500만 원 vs 2,000만 원, 개발 외주 견적 비교 제대로 하는 법', cat: '발주 가이드', desc: '같은 앱인데 견적이 4배 차이 나는 이유를 뜯어봅니다.', meta: '똑똑한개발자 · 2026.07.03' },
+  { c: 'guide', img: 'ins-turnkey.webp', title: '외주개발, 왜 올인원 턴키 팀과 함께 해야 할까?', cat: '발주 가이드', desc: '기획·디자인·개발을 따로 맡기면 실패하는 구조적 이유.', meta: '똑똑한개발자 · 2026.07.03' },
+  { c: 'ai-ax', img: 'ins-ax.webp', title: 'AI 도입과 AX는 다르다 — 성과를 만드는 업무 설계 3가지', cat: 'AI · AX', desc: '도입했는데 성과가 없다면, AX와의 결정적 차이를 봐야 합니다.', meta: '똑똑한개발자 · 2026.07.16' },
+  { c: 'project', img: 'ins-toss.webp', title: '토스 안에서 미니게임을? 똑똑한개발자 × 앱인토스', cat: '프로젝트', desc: '토스와 함께 미니게임을 만든 프로젝트 비하인드.', meta: '똑똑한개발자 · 2026.07.03' },
+  { c: 'how', img: 'ins-native.webp', title: '기획·디자인·개발을 하나로 — AI 네이티브 에이전시 운영법', cat: '일하는 방식', desc: "'프로덕트 빌더'로 팀을 운영하는 방식, 빌더 조쉬와의 대화.", meta: '똑똑한개발자 · 2026.04.22' },
+  { c: 'ai-ax', img: 'ins-gov.webp', title: '기업용 AI 도입, 왜 거버넌스가 먼저 필요할까?', cat: 'AI · AX', desc: '데이터 유출·통제 불능을 막는 AI 거버넌스 설계법.', meta: '똑똑한개발자 · 2026.07.14' },
 ]
 
 function fromDb(list: InsightCard[]): Article[] {

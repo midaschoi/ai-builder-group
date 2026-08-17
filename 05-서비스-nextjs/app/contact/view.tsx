@@ -66,9 +66,9 @@ export default function ContactView({ formUrl = '' }: { formUrl?: string }) {
 
             <div className="team">
               <div className="avs">
-                <img src="/assets/img/av-josh.jpg" alt="빌더 조쉬" />
-                <img src="/assets/img/av-ria.jpg" alt="빌더 리아" />
-                <img src="/assets/img/av-yuna.jpg" alt="빌더 유나" />
+                <img src="/assets/img/av-josh.webp" alt="빌더 조쉬" />
+                <img src="/assets/img/av-ria.webp" alt="빌더 리아" />
+                <img src="/assets/img/av-yuna.webp" alt="빌더 유나" />
                 {/* 아바타 3장 + 나머지. 합이 Work 의 빌더 수(10)와 맞아야 한다 */}
                 <span className="more">+7</span>
               </div>

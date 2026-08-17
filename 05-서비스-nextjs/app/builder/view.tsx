@@ -15,21 +15,21 @@ type BuilderDef = {
 }
 
 const PROJECTS: Record<string, ProjectDef> = {
-  iloom: { t: 'iloom — 리빙 커머스 리뉴얼', d: '가구 브랜드 일룸의 커머스 경험 개편. 상품 탐색부터 상담 전환까지 여정 재설계.', img: '/assets/img/work-iloom.png', tag: 'Commerce', yr: '2026', w: true },
-  daisy: { t: 'DAISY — 대홍기획', d: '광고 그룹의 AI 업무 플랫폼 구축.', img: '/assets/img/work-daisy.png', tag: 'AI · AX', yr: '2026', w: true },
-  aerokUser: { t: 'Aerok User — 사용자 앱', d: '예약·이용 플로우 전면 구축.', img: '/assets/img/work-aerok-user.jpg', tag: 'O2O', yr: '2025', w: false },
-  nice: { t: 'NICE 정보통신 — 결제 인프라 어드민', d: '결제 데이터 대시보드와 운영 콘솔. 금융 수준 권한·감사 로그 설계 포함.', img: '/assets/img/work-nice.png', tag: 'Finance', yr: '2025', w: true },
-  aerokAdmin: { t: 'Aerok Admin — 운영 콘솔', d: '지점·정산 통합 관리 시스템.', img: '/assets/img/work-aerok-admin.jpg', tag: 'SaaS · Admin', yr: '2025', w: false },
-  btv: { t: 'Btv 우리동네광고 — SK브로드밴드', d: '소상공인 TV 광고 셀프 집행 플랫폼.', img: '/assets/img/work-btv.png', tag: 'Media', yr: '2024', w: true },
-  markspon: { t: '마크스폰 EDK', d: '기업 복지 커머스 운영 시스템.', img: '/assets/img/work-markspon.png', tag: 'SaaS · Admin', yr: '2025', w: false },
-  canape: { t: 'CANAPE — 도다마인드', d: 'AI 심리 분석 서비스.', img: '/assets/img/work-canape.png', tag: 'AI · AX', yr: '2023', w: false },
-  familycare: { t: '패밀리케어 — 키즈노트', d: '가족 돌봄 연결 서비스.', img: '/assets/img/work-familycare.jpg', tag: 'Platform', yr: '2022', w: false },
+  iloom: { t: 'iloom — 리빙 커머스 리뉴얼', d: '가구 브랜드 일룸의 커머스 경험 개편. 상품 탐색부터 상담 전환까지 여정 재설계.', img: '/assets/img/work-iloom.webp', tag: 'Commerce', yr: '2026', w: true },
+  daisy: { t: 'DAISY — 대홍기획', d: '광고 그룹의 AI 업무 플랫폼 구축.', img: '/assets/img/work-daisy.webp', tag: 'AI · AX', yr: '2026', w: true },
+  aerokUser: { t: 'Aerok User — 사용자 앱', d: '예약·이용 플로우 전면 구축.', img: '/assets/img/work-aerok-user.webp', tag: 'O2O', yr: '2025', w: false },
+  nice: { t: 'NICE 정보통신 — 결제 인프라 어드민', d: '결제 데이터 대시보드와 운영 콘솔. 금융 수준 권한·감사 로그 설계 포함.', img: '/assets/img/work-nice.webp', tag: 'Finance', yr: '2025', w: true },
+  aerokAdmin: { t: 'Aerok Admin — 운영 콘솔', d: '지점·정산 통합 관리 시스템.', img: '/assets/img/work-aerok-admin.webp', tag: 'SaaS · Admin', yr: '2025', w: false },
+  btv: { t: 'Btv 우리동네광고 — SK브로드밴드', d: '소상공인 TV 광고 셀프 집행 플랫폼.', img: '/assets/img/work-btv.webp', tag: 'Media', yr: '2024', w: true },
+  markspon: { t: '마크스폰 EDK', d: '기업 복지 커머스 운영 시스템.', img: '/assets/img/work-markspon.webp', tag: 'SaaS · Admin', yr: '2025', w: false },
+  canape: { t: 'CANAPE — 도다마인드', d: 'AI 심리 분석 서비스.', img: '/assets/img/work-canape.webp', tag: 'AI · AX', yr: '2023', w: false },
+  familycare: { t: '패밀리케어 — 키즈노트', d: '가족 돌봄 연결 서비스.', img: '/assets/img/work-familycare.webp', tag: 'Platform', yr: '2022', w: false },
 }
 
 const BUILDERS: Record<string, BuilderDef> = {
   josh: {
     no: 'B—001', name: '빌더 조쉬', fname: '조쉬', lv: '✳ 이달의 빌더', lead: true,
-    role: '프로덕트 빌더 · 기획+개발', img: '/assets/img/av-josh.jpg',
+    role: '프로덕트 빌더 · 기획+개발', img: '/assets/img/av-josh.webp',
     bio: '기획자·디자이너·개발자를 합친 원맨 프로덕트 빌더입니다. 요구사항 정리부터 배포까지 한 사람이 끝까지 책임지는 방식으로 일하며, 전달 과정에서 생기는 손실을 없애는 것이 강점입니다. AI 네이티브 운영법 인터뷰의 그 사람.',
     focus: '프로덕트 전체 · MVP · 검증', stack: ['Next.js', 'LLM API', 'Supabase'], done: 14,
     principles: [
@@ -42,7 +42,7 @@ const BUILDERS: Record<string, BuilderDef> = {
   },
   ria: {
     no: 'B—002', name: '빌더 리아', fname: '리아', lv: 'Builder', lead: false,
-    role: '랜딩 · 인터랙션', img: '/assets/img/av-ria.jpg',
+    role: '랜딩 · 인터랙션', img: '/assets/img/av-ria.webp',
     bio: '디자인 감도와 전환 설계가 강점인 빌더입니다. 수주용 랜딩과 브랜드 사이트를 주로 맡으며, 화면의 인상보다 화면이 만들어내는 행동을 먼저 설계합니다.',
     focus: '수주용 랜딩 · 브랜드 사이트', stack: ['Interaction', 'GA4 설계'], done: 9,
     principles: [
@@ -55,7 +55,7 @@ const BUILDERS: Record<string, BuilderDef> = {
   },
   dohyun: {
     no: 'B—003', name: '빌더 도현', fname: '도현', lv: 'Builder', lead: false,
-    role: '플랫폼 · 어드민', img: '/assets/img/av-dohyun.jpg',
+    role: '플랫폼 · 어드민', img: '/assets/img/av-dohyun.webp',
     bio: '데이터 모델링과 권한 설계 경험이 많은 빌더입니다. 관리자·정산처럼 틀리면 안 되는 시스템을 안정적으로 짓는 것이 전문입니다.',
     focus: '어드민 · 정산 · 권한 설계', stack: ['Supabase', 'RBAC'], done: 11,
     principles: [
@@ -68,7 +68,7 @@ const BUILDERS: Record<string, BuilderDef> = {
   },
   yuna: {
     no: 'B—004', name: '빌더 유나', fname: '유나', lv: 'Builder', lead: false,
-    role: 'AI 서비스 · 에이전트', img: '/assets/img/av-yuna.jpg',
+    role: 'AI 서비스 · 에이전트', img: '/assets/img/av-yuna.webp',
     bio: 'LLM 연동과 프롬프트 설계를 실무로 다루는 빌더입니다. 전면 도입 대신 PoC부터 단계 검증으로 리스크를 줄이며 AI 서비스를 만듭니다.',
     focus: 'LLM 연동 · 에이전트 · PoC', stack: ['Agents', 'RAG'], done: 7,
     principles: [
@@ -81,7 +81,7 @@ const BUILDERS: Record<string, BuilderDef> = {
   },
   hajun: {
     no: 'B—005', name: '빌더 하준', fname: '하준', lv: 'Builder', lead: false,
-    role: '모바일 앱 · 크로스플랫폼', img: '/assets/img/av-hajun.jpg',
+    role: '모바일 앱 · 크로스플랫폼', img: '/assets/img/av-hajun.webp',
     bio: '하나의 코드베이스로 iOS·Android를 함께 짓는 모바일 빌더입니다. 개발에서 끝내지 않고 스토어 심사와 배포, 출시 후 크래시 대응까지를 프로젝트의 범위로 봅니다.',
     focus: '모바일 앱 · 스토어 출시', stack: ['Flutter', '스토어 배포'], done: 6,
     principles: [
@@ -94,7 +94,7 @@ const BUILDERS: Record<string, BuilderDef> = {
   },
   sein: {
     no: 'B—006', name: '빌더 세인', fname: '세인', lv: 'Builder', lead: false,
-    role: '데이터 · 업무 자동화', img: '/assets/img/av-sein.jpg',
+    role: '데이터 · 업무 자동화', img: '/assets/img/av-sein.webp',
     bio: '반복되는 손작업을 파이프라인과 에이전트로 바꾸는 빌더입니다. 흩어진 스프레드시트와 수작업 보고를 자동으로 흐르는 데이터로 만들어, 사람이 판단에만 집중하게 합니다.',
     focus: '데이터 파이프라인 · 자동화', stack: ['Python', 'n8n'], done: 5,
     principles: [
@@ -107,7 +107,7 @@ const BUILDERS: Record<string, BuilderDef> = {
   },
   minseo: {
     no: 'B—007', name: '빌더 민서', fname: '민서', lv: 'Builder', lead: false,
-    role: '브랜드 · 모션 디자인', img: '/assets/img/av-minseo.jpg',
+    role: '브랜드 · 모션 디자인', img: '/assets/img/av-minseo.webp',
     bio: '디자인 시스템과 모션으로 서비스의 인상을 만드는 빌더입니다. 한 장의 예쁜 시안이 아니라, 개발자가 바로 가져다 쓸 수 있는 컴포넌트와 토큰으로 디자인을 전달합니다.',
     focus: '디자인 시스템 · 모션', stack: ['Design System', 'Motion'], done: 4,
     principles: [
@@ -120,7 +120,7 @@ const BUILDERS: Record<string, BuilderDef> = {
   },
   taeo: {
     no: 'B—008', name: '빌더 태오', fname: '태오', lv: 'NEW', lead: false, fresh: true,
-    role: '커머스 · 결제', img: '/assets/img/av-taeo.jpg',
+    role: '커머스 · 결제', img: '/assets/img/av-taeo.webp',
     bio: 'PG·정기결제 연동과 주문·정산 흐름 설계가 전문인 빌더입니다. 돈이 오가는 화면일수록 예외 케이스가 많다는 것을 알고, 그 예외부터 설계합니다.',
     focus: '결제 연동 · 주문·정산', stack: ['PG 연동', '구독 결제'], done: 8,
     principles: [
@@ -133,7 +133,7 @@ const BUILDERS: Record<string, BuilderDef> = {
   },
   eunchae: {
     no: 'B—009', name: '빌더 은채', fname: '은채', lv: 'NEW', lead: false, fresh: true,
-    role: '그로스 · SEO', img: '/assets/img/av-eunchae.jpg',
+    role: '그로스 · SEO', img: '/assets/img/av-eunchae.webp',
     bio: '검색 유입과 콘텐츠 구조를 설계하는 빌더입니다. 잘 만든 서비스가 발견되지 않는 것이 가장 아까운 일이라, 만든 뒤에 발견되게 하는 것까지를 일로 봅니다.',
     focus: '검색 유입 · 콘텐츠 구조', stack: ['SEO', 'Analytics'], done: 5,
     principles: [
@@ -146,7 +146,7 @@ const BUILDERS: Record<string, BuilderDef> = {
   },
   junho: {
     no: 'B—010', name: '빌더 준호', fname: '준호', lv: 'NEW', lead: false, fresh: true,
-    role: '운영 · 인프라', img: '/assets/img/av-junho.jpg',
+    role: '운영 · 인프라', img: '/assets/img/av-junho.webp',
     bio: '배포 자동화와 모니터링으로 서비스를 지키는 빌더입니다. 출시가 끝이 아니라 시작이라는 것을 알기에, 문제가 고객보다 팀에게 먼저 보이게 만듭니다.',
     focus: '배포 자동화 · 모니터링', stack: ['CI/CD', '모니터링'], done: 3,
     principles: [

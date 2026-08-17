@@ -8,6 +8,16 @@ import ChannelTalk from '@/components/ChannelTalk'
 import ChromeGate from '@/components/ChromeGate'
 import Analytics from '@/components/Analytics'
 import { OrganizationLd } from '@/components/JsonLd'
+import { JetBrains_Mono } from 'next/font/google'
+
+/* 빌드 때 받아 우리 도메인에서 내보낸다 — 외부 요청과 렌더 차단이 사라진다.
+   style.css 의 --mono 가 이 변수를 쓴다. */
+const jetbrains = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-jetbrains',
+  display: 'swap',
+})
 import { getSiteSettings } from '@/lib/settings'
 
 /* 배포 주소를 코드에 박아두면 안 된다. 실제로 ai-builder-group-pearl(옛 HTML 목업 배포본)이
@@ -37,7 +47,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const s = await getSiteSettings()
 
   return (
-    <html lang="ko">
+    <html lang="ko" className={jetbrains.variable}>
+      <head>
+        {/* Pretendard 는 Google Fonts 에 없어 CDN 을 쓴다.
+            style.css 안의 @import 는 직렬 대기라 렌더를 3.3초 막았다 —
+            <link> 로 옮겨 style.css 와 **동시에** 받는다.
+            preconnect 는 연결 수립(DNS·TLS)을 미리 끝내 둔다 (실측 360ms). */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css"
+        />
+      </head>
       <body>
         {/* 관리자(/admin/*)에서는 공개 웹 껍데기를 통째로 걷어낸다 — components/ChromeGate.tsx */}
         <ChromeGate>

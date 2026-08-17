@@ -17,15 +17,15 @@ type Project = {
   href?: string; cover?: string | null
 }
 const PROJECTS: Project[] = [
-  { c: 'commerce', tag: 'Commerce', yr: '2026', title: 'iloom — 리빙 커머스 리뉴얼', desc: '가구 브랜드 일룸의 커머스 경험 개편. 상품 탐색부터 상담 전환까지 여정 재설계.', withTeam: 'with 똑똑한개발자 · 빌더 조쉬', img: 'work-iloom.png', alt: 'iloom 리빙 커머스 화면' },
-  { c: 'aiax', tag: 'AI · AX', yr: '2026', title: 'DAISY — 대홍기획', desc: '광고 그룹의 AI 업무 플랫폼 · 빌더 유나', img: 'work-daisy.png', alt: 'DAISY AI 업무 플랫폼 화면' },
-  { c: 'platform', tag: 'O2O', yr: '2025', title: 'Aerok User — 사용자 앱', desc: '예약·이용 플로우 전면 구축 · 빌더 리아', img: 'work-aerok-user.jpg', alt: 'Aerok 사용자 앱 화면' },
-  { c: 'finance', tag: 'Finance', yr: '2025', title: 'NICE 정보통신 — 결제 인프라 어드민', desc: '결제 데이터 대시보드와 운영 콘솔. 금융 수준 권한·감사 로그 설계 포함.', withTeam: 'with 똑똑한개발자 · 빌더 도현', img: 'work-nice.png', alt: 'NICE 정보통신 결제 어드민 화면' },
-  { c: 'platform', tag: 'SaaS · Admin', yr: '2025', title: 'Aerok Admin — 운영 콘솔', desc: '지점·정산 통합 관리 · 빌더 도현', img: 'work-aerok-admin.jpg', alt: 'Aerok 운영 콘솔 화면' },
-  { c: 'commerce', tag: 'Media', yr: '2024', title: 'Btv 우리동네광고 — SK브로드밴드', desc: '소상공인 TV 광고 셀프 집행 플랫폼 · 빌더 조쉬', img: 'work-btv.png', alt: 'Btv 우리동네광고 화면' },
-  { c: 'platform', tag: 'SaaS · Admin', yr: '2025', title: '마크스폰 EDK', desc: '기업 복지 커머스 운영 시스템 · 빌더 도현', img: 'work-markspon.png', alt: '마크스폰 EDK 화면' },
-  { c: 'aiax', tag: 'AI · AX', yr: '2023', title: 'CANAPE — 도다마인드', desc: 'AI 심리 분석 서비스 · 빌더 유나', img: 'work-canape.png', alt: 'CANAPE AI 심리 분석 서비스 화면' },
-  { c: 'platform', tag: 'Platform', yr: '2022', title: '패밀리케어 — 키즈노트', desc: '가족 돌봄 연결 서비스 · 빌더 리아', img: 'work-familycare.jpg', alt: '키즈노트 패밀리케어 화면' },
+  { c: 'commerce', tag: 'Commerce', yr: '2026', title: 'iloom — 리빙 커머스 리뉴얼', desc: '가구 브랜드 일룸의 커머스 경험 개편. 상품 탐색부터 상담 전환까지 여정 재설계.', withTeam: 'with 똑똑한개발자 · 빌더 조쉬', img: 'work-iloom.webp', alt: 'iloom 리빙 커머스 화면' },
+  { c: 'aiax', tag: 'AI · AX', yr: '2026', title: 'DAISY — 대홍기획', desc: '광고 그룹의 AI 업무 플랫폼 · 빌더 유나', img: 'work-daisy.webp', alt: 'DAISY AI 업무 플랫폼 화면' },
+  { c: 'platform', tag: 'O2O', yr: '2025', title: 'Aerok User — 사용자 앱', desc: '예약·이용 플로우 전면 구축 · 빌더 리아', img: 'work-aerok-user.webp', alt: 'Aerok 사용자 앱 화면' },
+  { c: 'finance', tag: 'Finance', yr: '2025', title: 'NICE 정보통신 — 결제 인프라 어드민', desc: '결제 데이터 대시보드와 운영 콘솔. 금융 수준 권한·감사 로그 설계 포함.', withTeam: 'with 똑똑한개발자 · 빌더 도현', img: 'work-nice.webp', alt: 'NICE 정보통신 결제 어드민 화면' },
+  { c: 'platform', tag: 'SaaS · Admin', yr: '2025', title: 'Aerok Admin — 운영 콘솔', desc: '지점·정산 통합 관리 · 빌더 도현', img: 'work-aerok-admin.webp', alt: 'Aerok 운영 콘솔 화면' },
+  { c: 'commerce', tag: 'Media', yr: '2024', title: 'Btv 우리동네광고 — SK브로드밴드', desc: '소상공인 TV 광고 셀프 집행 플랫폼 · 빌더 조쉬', img: 'work-btv.webp', alt: 'Btv 우리동네광고 화면' },
+  { c: 'platform', tag: 'SaaS · Admin', yr: '2025', title: '마크스폰 EDK', desc: '기업 복지 커머스 운영 시스템 · 빌더 도현', img: 'work-markspon.webp', alt: '마크스폰 EDK 화면' },
+  { c: 'aiax', tag: 'AI · AX', yr: '2023', title: 'CANAPE — 도다마인드', desc: 'AI 심리 분석 서비스 · 빌더 유나', img: 'work-canape.webp', alt: 'CANAPE AI 심리 분석 서비스 화면' },
+  { c: 'platform', tag: 'Platform', yr: '2022', title: '패밀리케어 — 키즈노트', desc: '가족 돌봄 연결 서비스 · 빌더 리아', img: 'work-familycare.webp', alt: '키즈노트 패밀리케어 화면' },
 ]
 
 /* ── 빌더 프로필 데이터 ── */
@@ -134,14 +134,14 @@ export default function WorkView({
   /* 빌더 매칭 위저드 — 첫 답변에 따라 추천 빌더가 달라짐 */
   useEffect(() => {
     const MATCH: Record<string, [string, string, string, string, string][]> = {
-      landing: [['리아', '랜딩 · 인터랙션 · 9건 수행', 'av-ria.jpg', 'BEST', 'ria'],
-                ['민서', '브랜드 · 모션 디자인 · 4건 수행', 'av-minseo.jpg', '디자인', 'minseo']],
-      platform: [['도현', '플랫폼 · 어드민 · 11건 수행', 'av-dohyun.jpg', 'BEST', 'dohyun'],
-                 ['조쉬', '프로덕트 빌더 · 14건 수행', 'av-josh.jpg', 'LEAD', 'josh']],
-      ai: [['유나', 'AI 서비스 · 에이전트 · 7건 수행', 'av-yuna.jpg', 'BEST', 'yuna'],
-           ['세인', '데이터 · 업무 자동화 · 5건 수행', 'av-sein.jpg', '자동화', 'sein']],
-      app: [['하준', '모바일 앱 · 크로스플랫폼 · 6건 수행', 'av-hajun.jpg', 'BEST', 'hajun'],
-            ['리아', '랜딩 · 인터랙션 · 9건 수행', 'av-ria.jpg', '디자인', 'ria']],
+      landing: [['리아', '랜딩 · 인터랙션 · 9건 수행', 'av-ria.webp', 'BEST', 'ria'],
+                ['민서', '브랜드 · 모션 디자인 · 4건 수행', 'av-minseo.webp', '디자인', 'minseo']],
+      platform: [['도현', '플랫폼 · 어드민 · 11건 수행', 'av-dohyun.webp', 'BEST', 'dohyun'],
+                 ['조쉬', '프로덕트 빌더 · 14건 수행', 'av-josh.webp', 'LEAD', 'josh']],
+      ai: [['유나', 'AI 서비스 · 에이전트 · 7건 수행', 'av-yuna.webp', 'BEST', 'yuna'],
+           ['세인', '데이터 · 업무 자동화 · 5건 수행', 'av-sein.webp', '자동화', 'sein']],
+      app: [['하준', '모바일 앱 · 크로스플랫폼 · 6건 수행', 'av-hajun.webp', 'BEST', 'hajun'],
+            ['리아', '랜딩 · 인터랙션 · 9건 수행', 'av-ria.webp', '디자인', 'ria']],
     }
     let picked = 'ai'
     const go = (s: string) => {
@@ -333,7 +333,7 @@ export default function WorkView({
               {people.map(b => (
                 <Link className={b.box} href={`/builder?b=${b.slug}`} data-cursor="PROFILE →" data-track="builder_click" data-slug={b.slug} key={b.slug}>
                   <div className="slot mask">
-                    {(b.avatar || !builders.length) && <img src={b.avatar ?? `/assets/img/av-${b.slug}.jpg`} alt={`${b.name} 프로필 사진`} />}
+                    {(b.avatar || !builders.length) && <img src={b.avatar ?? `/assets/img/av-${b.slug}.webp`} alt={`${b.name} 프로필 사진`} />}
                     {b.badge && <span className={b.badge.cls}>{b.badge.label}</span>}
                     {/* 수행 건수는 이 카드에서 유일한 실적 근거다 — 알약으로 세워 먼저 읽히게 한다 */}
                     {/* 수행 건수는 이 카드에서 유일한 실적 근거다 — 0건이면 아예 감춘다.
