@@ -330,12 +330,15 @@ export default function InsightEditor({
                   {slugCheck.state !== 'checking' && slugCheck.state !== 'ok' && slugCheck.message}
                 </small>
               )}
-              <small className="adm-dim">
-                영문 소문자·숫자·하이픈. <b>한글 제목은 자동 변환하지 않습니다</b> — 읽을 수 없는 주소가 됩니다.
-                {record.status === 'published' && (
-                  <><br />⚠ 발행된 글의 주소를 바꾸면 이전 주소를 넘기는 301 을 자동으로 만듭니다.</>
-                )}
-              </small>
+              {/* ⚠ 형식 설명은 뺐다 — 잘못 쓰면 위 실시간 확인이 정확한 문구를 바로 띄운다 */}
+              {(slug || record.status === 'published') && (
+                <small className="adm-dim">
+                  {slug && <code>/insight/{slug}</code>}
+                  {record.status === 'published' && (
+                    <>{slug && <br />}⚠ 주소를 바꾸면 이전 주소를 넘기는 301 을 자동으로 만듭니다.</>
+                  )}
+                </small>
+              )}
             </div>
 
             <div className="adm-field">

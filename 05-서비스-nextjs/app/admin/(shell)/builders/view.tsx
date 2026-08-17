@@ -55,8 +55,11 @@ export default function BuildersView({
 
   const closeIssue = () => { setIssueOpen(false); setIssueSeq(n => n + 1) }
 
-  /* 회수가 끝나면 확인창을 닫는다 */
-  useEffect(() => { if (active.ok) setRevoking(null) }, [active.ok])
+  /* 회수·활성화가 끝나면 확인창을 닫는다.
+     ⚠ 의존성은 active.ok 가 아니라 active 객체다. ok 는 한 번 true 가 되면 계속 true 라
+       두 번째 동작부터 effect 가 다시 돌지 않는다 — 첫 회수만 닫히고 그다음은 창이 남았다.
+       서버 액션은 호출마다 새 객체를 돌려주므로 객체를 보면 매번 걸린다. */
+  useEffect(() => { if (active.ok) setRevoking(null) }, [active])
 
   const href = (patch: Record<string, string>) => {
     const p = new URLSearchParams()

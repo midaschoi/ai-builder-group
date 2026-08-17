@@ -62,13 +62,15 @@ export default function RowMenu({
     }
   }, [])
 
-  /* 동작이 끝나면 메뉴와 확인창을 닫고 목록을 새로 읽는다 */
+  /* 동작이 끝나면 메뉴와 확인창을 닫고 목록을 새로 읽는다.
+     ⚠ 의존성은 .ok 가 아니라 상태 객체다. ok 는 한 번 true 가 되면 계속 true 라
+       두 번째 동작부터 effect 가 다시 돌지 않는다 (builders/view.tsx 와 같은 이유). */
   useEffect(() => {
     if (!arch.ok && !rest.ok && !del.ok) return
     if (ref.current) ref.current.open = false
     setConfirming(null)
     router.refresh()
-  }, [arch.ok, rest.ok, del.ok, router])
+  }, [arch, rest, del, router])
 
   const error = arch.error ?? rest.error ?? del.error
 

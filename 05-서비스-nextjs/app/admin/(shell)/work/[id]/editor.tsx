@@ -461,14 +461,14 @@ export default function WorkEditor({
                   {slugCheck.state !== 'checking' && slugCheck.state !== 'ok' && slugCheck.message}
                 </small>
               )}
+              {/* ⚠ 형식 설명("영문 소문자·숫자·하이픈…")은 뺐다 —
+                  잘못 쓰면 위 실시간 확인이 정확한 문구를 바로 띄우므로 중복이다.
+                  고객사명 안내는 A-05 §슬러그가 "상시 안내"로 못박은 항목이라 남긴다 (Q7 확정). */}
               <small className="adm-dim">
-                {slug && <code>/work/{slug}</code>}
-                {slug && <br />}
-                {/* Q7 확정 — 고객사명 제외. 동의를 받은 건만 사후에 추가한다 */}
-                ⓘ <b>고객사명은 넣지 않습니다.</b> 업종·기술 + 프로젝트 성격으로 씁니다.
-                <br />영문 소문자·숫자·하이픈. <b>한글 제목은 자동 변환하지 않습니다.</b>
+                {slug && <><code>/work/{slug}</code><br /></>}
+                ⓘ <b>고객사명은 넣지 않습니다.</b>
                 {record.status === 'published' && (
-                  <><br />⚠ 발행된 프로젝트의 주소를 바꾸면 이전 주소를 넘기는 301 을 자동으로 만듭니다.</>
+                  <><br />⚠ 주소를 바꾸면 이전 주소를 넘기는 301 을 자동으로 만듭니다.</>
                 )}
               </small>
             </div>
