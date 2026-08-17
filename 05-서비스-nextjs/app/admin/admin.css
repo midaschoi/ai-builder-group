@@ -15,8 +15,13 @@
   --bg: #F7F5F0;
   --card: #FFFFFF;
   --hover: #FAF9F5;
-  /* 파괴적 동작 전용. 원래 .rm-danger 에 직접 박혀 있던 값을 올렸다 — 두 곳이 어긋나면 안 된다 */
+  /* 파괴적 동작 전용. 쓰임이 둘이라 색도 둘이다 — 하나로 합치면 한쪽이 반드시 안 읽힌다.
+       --danger      흰 바탕 위의 **글자** (.rm-danger). 어두워야 읽힌다 — 흰 바탕 대비 7.5:1
+       --danger-fill 버튼 **바탕** (.adm-btn--danger). 그 위에 흰 글자가 올라간다 — 대비 4.83:1
+     ⚠ --danger-fill 을 더 밝히면 흰 글자가 기준(4.5:1) 아래로 떨어진다.
+       #E03131 이 4.51 로 한계선이고 그 위는 전부 미달이다. 밝히려면 글자색부터 다시 잡아야 한다. */
   --danger: #A32318;
+  --danger-fill: #DC2626;
 
   --r: 12px;
   --shadow: 0 1px 2px rgba(14, 14, 12, .06);
@@ -176,9 +181,16 @@
 .adm-btn:disabled { opacity: .5; cursor: not-allowed; }
 .adm-btn--ghost { background: var(--card); border-color: var(--ln); font-weight: 600; }
 .adm-btn--ghost:hover { background: var(--hover); }
-/* 되돌릴 수 없는 동작. 라임(기본 확인색)과 같은 색이면 손이 먼저 움직인다 */
-.adm-btn--danger { background: var(--danger); border-color: var(--danger); color: #FFF; }
-.adm-btn--danger:hover { background: #8C1E14; border-color: #8C1E14; }
+/* 되돌릴 수 없는 동작. 라임(기본 확인색)과 같은 색이면 손이 먼저 움직인다.
+   글자는 순백 + 800 이다 — 밝은 빨강 위에서는 700 보다 한 단계 굵어야 또렷하다. */
+.adm-btn--danger {
+  background: var(--danger-fill);
+  border-color: var(--danger-fill);
+  color: #FFF; font-weight: 800; letter-spacing: .01em;
+}
+.adm-btn--danger:hover { background: #C42020; border-color: #C42020; }
+/* 밝은 바탕이라 기본 검정 아웃라인이 묻힌다 — 흰 테를 한 겹 덧대 어디에 있든 보이게 한다 */
+.adm-btn--danger:focus-visible { outline-color: #FFF; box-shadow: 0 0 0 4px rgba(220, 38, 38, .35); }
 
 /* ── 확인 대화상자 (confirm-dialog.tsx) ────────────────
    ⛔ window.confirm 을 쓰지 않는다 — 브라우저 기본 대화상자는 생김새를 맞출 수 없고,
