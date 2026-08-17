@@ -10,6 +10,28 @@
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   padding: 14px 18px; border-bottom: 1px solid var(--ln); background: var(--bg);
 }
+
+/* ── 토픽별 색 구분 (FAQ) ────────────────────────────────
+   토픽이 여러 개일 때 어디서 어디까지가 한 게시판인지 스크롤 중에 놓치기 쉽다.
+
+   ⚠ 슬러그로 색을 박지 않는다. 토픽은 DB(faq_topics)에서 오고 늘어날 수 있어서,
+     view 가 순서대로 --tone 을 넣어주고 여기서는 그 값만 쓴다.
+
+   본문(입력칸)은 흰색 그대로 둔다 — 색을 깐 바탕 위의 입력칸은 탁해 보인다.
+   머리띠는 진하게, 카드 바탕은 아주 옅게, 왼쪽에 띠 하나. 이 셋이면 충분히 갈린다. */
+.sc-group[style*='--tone'] {
+  border-left: 3px solid var(--tone);
+  background: color-mix(in srgb, var(--tone) 4%, var(--card));
+}
+.sc-group[style*='--tone'] > .sc-group-head {
+  background: color-mix(in srgb, var(--tone) 13%, var(--card));
+  border-bottom-color: color-mix(in srgb, var(--tone) 26%, var(--ln));
+}
+.sc-group[style*='--tone'] > .sc-group-head b {
+  color: color-mix(in srgb, var(--tone) 72%, var(--ink));
+}
+/* 행 사이 실선도 같은 색조로 — 흰 선만 남으면 카드 색이 겉돈다 */
+.sc-group[style*='--tone'] > .sc-row { border-bottom-color: color-mix(in srgb, var(--tone) 14%, var(--ln)); }
 .sc-group-head b { font-size: 13.5px; font-weight: 800; }
 .sc-group-head code {
   font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--mut);
@@ -80,30 +102,47 @@
   bottom: 26px;              /* 화면 밑바닥에 붙어 있으면 창 끝에 걸린 것처럼 보인다 — 띄운다 */
   z-index: 5;
   display: flex; align-items: center; gap: 7px;
-  padding: 6px 7px 6px 14px; /* 바 자체는 얇게 — 본문을 가리는 면적을 줄인다 */
-  border: 1px solid var(--ln); border-radius: 11px;
-  background: var(--card);
-  box-shadow: 0 6px 20px -10px rgba(14, 14, 12, .28), var(--shadow);
+  padding: 6px 7px 6px 15px; /* 바 자체는 얇게 — 본문을 가리는 면적을 줄인다 */
+  border-radius: 12px;
+
+  /* 흰 카드였을 때는 흰 배경 위의 흰 상자라 그냥 묻혔다.
+     사이드바와 같은 ink 로 간다 — 새 색을 만들지 않으면서 밝은 본문 위에서 확실히 뜬다.
+     그림자를 짙게 둬 본문 위에 '떠 있는' 것으로 읽히게 한다. */
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  box-shadow: 0 10px 26px -12px rgba(14, 14, 12, .55), 0 2px 6px rgba(14, 14, 12, .12);
 }
 /* 바 안에서는 버튼도 한 치수 작게 — 바 높이를 결정하는 게 버튼이다 */
 .sc-savebar .adm-btn { padding: 7px 13px; border-radius: 8px; font-size: 12px; }
+/* 어두운 바 위의 보조 버튼(+ 영상 추가). 흰 카드색 그대로면 저장 버튼과 비중이 같아진다 */
+.sc-savebar .adm-btn--ghost {
+  background: transparent; color: var(--paper);
+  border-color: rgba(244, 241, 234, .28);
+}
+.sc-savebar .adm-btn--ghost:hover {
+  background: rgba(244, 241, 234, .1); border-color: rgba(244, 241, 234, .5);
+}
 
 .sc-savebar-msg {
   display: inline-flex; align-items: center; gap: 8px;
   margin-right: auto;
-  font-size: 12.5px; color: var(--mut);
+  font-size: 12.5px; color: rgba(244, 241, 234, .62);
 }
 /* 저장 여부를 글자만으로 알리면 훑을 때 안 읽힌다. 점 하나가 먼저 보인다. */
 .sc-savebar-msg i {
   width: 7px; height: 7px; border-radius: 50%; flex: none;
-  background: var(--ln);
+  background: rgba(244, 241, 234, .3);
 }
-.sc-savebar[data-dirty] .sc-savebar-msg { color: var(--ink); font-weight: 600; }
-.sc-savebar[data-dirty] .sc-savebar-msg i { background: var(--ink); }
+.sc-savebar[data-dirty] .sc-savebar-msg { color: var(--paper); font-weight: 600; }
+/* 저장할 게 남았을 때만 라임이 켜진다 — 늘 켜져 있으면 신호가 아니다 */
+.sc-savebar[data-dirty] .sc-savebar-msg i {
+  background: var(--lime);
+  box-shadow: 0 0 0 3px rgba(216, 255, 61, .22);
+}
 
 @media (max-width: 559px) {
   /* 좁은 화면에서는 안내 문구를 접고 버튼만 남긴다 — 버튼이 밀려나면 의미가 없다 */
-  .sc-savebar { padding: 10px; }
+  .sc-savebar { padding: 7px 8px; }
   .sc-savebar-msg { font-size: 0; gap: 0; }
   .sc-savebar-msg i { margin-right: auto; }
 }

@@ -7,6 +7,13 @@ import ConfirmDialog from '../confirm-dialog'
 
 const INITIAL: SaveState = {}
 
+/* 토픽 구분용 색조. 순서대로 돌려 쓴다 (site-content.css 의 --tone).
+
+   ⛔ 새 색을 지어내지 않는다 — 관리자는 업무 도구다 (A-00 §0).
+     브랜드 라임에서 채도를 낮춘 올리브를 첫 번째로 두고, 그 다음은 따뜻한 종이 바탕과
+     부딪히지 않는 슬레이트 · 오커 순으로 간다. 넷이면 토픽이 늘어도 한동안 버틴다. */
+const TONES = ['#8C9E2B', '#5B7290', '#A8742A', '#6E6A86'] as const
+
 export type Topic = { id: string; slug: string; label: string }
 export type Row = {
   topic_id: string
@@ -88,11 +95,16 @@ export default function FaqView({ topics, rows }: { topics: Topic[]; rows: Row[]
         전부 켜면 홈이 FAQ 페이지가 됩니다.
       </p>
 
-      {topics.map(t => {
+      {topics.map((t, ti) => {
         /* 원래 순서를 유지해야 ↑↓ 가 전체 목록 기준으로 동작한다 */
         const mine = items.map((r, i) => ({ r, i })).filter(x => x.r.topic_id === t.id)
         return (
-          <section className="adm-card sc-group" key={t.id}>
+          <section
+            className="adm-card sc-group"
+            key={t.id}
+            /* 토픽마다 다른 색조. 슬러그로 박지 않고 순서로 돌린다 — 토픽은 DB 에서 오고 늘어난다 */
+            style={{ '--tone': TONES[ti % TONES.length] } as React.CSSProperties}
+          >
             <div className="sc-group-head">
               <b>{t.label}</b>
               <code>/faq/{t.slug}</code>
