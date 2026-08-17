@@ -41,7 +41,7 @@ export default function FaqView({ topics, defaultTopic }: { topics: FaqTopic[]; 
         <section className="faqpage">
           <div className="wrap">
             {/* 데이터는 app/_faq.ts 한 곳에서 온다 — 홈 프리뷰와 같은 원본 */}
-            <FaqList topics={topics} defaultTopic={defaultTopic} expandAll />
+            <FaqList topics={topics} defaultTopic={defaultTopic} routeBase="/faq" expandAll />
 
             <div className="faq-cta">
               <div>

@@ -120,14 +120,21 @@ export default function WorkView({
       if (empty) empty.hidden = shown > 0
       /* '( 0' + shown 은 10건이 넘으면 ( 010 ) 이 된다 — 자리수를 맞춰 채운다 */
       if (cnt) cnt.textContent = '( ' + String(shown).padStart(2, '0') + ' )'
-      if (push) history.replaceState(null, '', cat === 'all' ? '#' : '#category=' + cat)
+      /* FR-P02-01 — 선택 상태를 **쿼리스트링**에 반영한다. 해시는 서버가 못 읽어서
+         나중에 서버 필터로 옮길 때 그대로 쓸 수 없다. */
+      if (push) {
+        const url = cat === 'all' ? location.pathname : location.pathname + '?category=' + cat
+        history.replaceState(null, '', url)
+      }
     }
 
     chips.forEach(ch => ch.addEventListener('click', () => apply(ch.dataset.cat || 'all', true)))
 
     /* 주소에 #category=... 를 써두면서 정작 읽지는 않아서 그 링크로 들어오면
        칩은 '전체'인데 목록만 걸러진 것처럼 보였다 — 진입 시 한 번 맞춰준다. */
-    const initial = new URLSearchParams(location.hash.replace(/^#/, '')).get('category')
+    const initial = new URLSearchParams(location.search).get('category')
+      /* 예전 링크(#category=)로 들어오는 경우도 받아준다 */
+      ?? new URLSearchParams(location.hash.replace(/^#/, '')).get('category')
     if (initial && chips.some(c => c.dataset.cat === initial)) apply(initial, false)
   }, [])
 

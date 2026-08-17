@@ -13,12 +13,15 @@ export default function FaqList({
   topics,
   defaultOpen,
   defaultTopic,
+  routeBase,
   expandAll = false,
 }: {
   topics: FaqTopic[]
   defaultOpen?: string
   /** 처음 열릴 주제. /faq/[topic] 이 경로로 들어올 때 쓴다 */
   defaultTopic?: string
+  /** 주면 탭 전환 시 주소를 <routeBase>/<토픽> 으로 바꾼다 (FR-P07-01) */
+  routeBase?: string
   /** '모두 펼치기' 버튼 노출. 문항이 많은 전용 페이지에서만 켠다 */
   expandAll?: boolean
 }) {
@@ -63,7 +66,13 @@ export default function FaqList({
                   aria-selected={t.key === topic}
                   data-topic={t.key}
                   data-track="faq_topic_change"
-                  onClick={() => setTopic(t.key)}
+                  onClick={() => {
+                    setTopic(t.key)
+                    /* FR-P07-01 — 토픽 전환은 URL 경로에 반영되어야 한다.
+                       라우팅을 새로 하면 아코디언 열림 상태가 날아가므로 주소만 바꾼다.
+                       그 주소로 직접 들어오면 /faq/[topic] 이 서버에서 같은 화면을 그린다. */
+                    if (routeBase) history.replaceState(null, '', routeBase + '/' + t.key)
+                  }}
                 >
                   {t.label}
                 </button>
