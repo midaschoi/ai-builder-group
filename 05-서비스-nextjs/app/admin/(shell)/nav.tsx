@@ -1,6 +1,7 @@
 'use client'
 
-import Link from 'next/link'
+import Link, { useLinkStatus } from 'next/link'
+import { Suspense, use } from 'react'
 import { usePathname } from 'next/navigation'
 
 /* 사이드바 메뉴 (A-00 §1).
@@ -8,7 +9,7 @@ import { usePathname } from 'next/navigation'
    ⚠ 여기서 메뉴를 숨기는 것은 편의일 뿐이다. 차단은 서버에서 한다 (PRD §2.2) —
       숨겨도 URL 을 직접 치면 들어와진다. 각 화면이 requireAdmin() 으로 다시 막는다. */
 
-type Item = { href: string; label: string; icon: React.ReactNode; adminOnly?: boolean; badge?: number }
+type Item = { href: string; label: string; icon: React.ReactNode; adminOnly?: boolean; badge?: boolean }
 
 /* 라인 아이콘 (A-00 §디자인 토큰 — 이모지 ⛔).
    좁은 화면에서 사이드바가 64px 레일로 접히면 라벨이 사라지고 이것만 남는다.
@@ -23,12 +24,30 @@ function Icon({ children }: { children: React.ReactNode }) {
   )
 }
 
+/* 눌린 메뉴에 도는 표시를 띄운다 (Next 16 useLinkStatus).
+
+   loading.tsx 가 있으므로 대개는 프리페치가 끝나 있어 이 표시가 뜨지 않는다.
+   프리페치 전에 눌렀을 때만 잠깐 나타난다 — 그 순간이 바로 "눌렀는데 아무 반응 없는" 구간이었다.
+   ⚠ Link 의 자손 컴포넌트 안에서만 동작한다. Link 와 같은 파일에서 바로 호출하면 항상 false 다. */
+function NavWait() {
+  const { pending } = useLinkStatus()
+  return pending ? <span className="nav-wait" aria-hidden="true" /> : null
+}
+
+/* 서버가 넘긴 Promise 를 여기서 푼다. 셸은 이미 그려진 뒤라 숫자만 나중에 붙는다.
+   0건이면 배지를 숨긴다 — 늘 붙어 있으면 신호가 아니라 장식이 된다. */
+function PendingBadge({ count }: { count: Promise<number> }) {
+  const n = use(count)
+  return n ? <em>{n}</em> : null
+}
+
 export default function AdminNav({
   isAdmin,
   pendingCount,
 }: {
   isAdmin: boolean
-  pendingCount: number
+  /** await 하지 않은 Promise 다 (layout.tsx 주석 참조) */
+  pendingCount: Promise<number>
 }) {
   const pathname = usePathname()
 
@@ -42,7 +61,7 @@ export default function AdminNav({
       icon: <Icon><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5.5A1.5 1.5 0 0 1 9.5 4h5A1.5 1.5 0 0 1 16 5.5V7" /><path d="M3 12h18" /></Icon>,
     },
     {
-      href: '/admin/approvals', label: '승인 대기', adminOnly: true, badge: pendingCount,
+      href: '/admin/approvals', label: '승인 대기', adminOnly: true, badge: true,
       icon: <Icon><path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8.5" /><path d="m8.5 11.5 3 3 8-8.5" /></Icon>,
     },
     {
@@ -78,8 +97,10 @@ export default function AdminNav({
               aria-current={current ? 'page' : undefined}>
               {item.icon}
               <span>{item.label}</span>
-              {/* 0건이면 배지를 숨긴다 — 늘 붙어 있으면 신호가 아니라 장식이 된다 */}
-              {item.badge ? <em>{item.badge}</em> : null}
+              {item.badge && (
+                <Suspense fallback={null}><PendingBadge count={pendingCount} /></Suspense>
+              )}
+              <NavWait />
             </Link>
           )
         })}

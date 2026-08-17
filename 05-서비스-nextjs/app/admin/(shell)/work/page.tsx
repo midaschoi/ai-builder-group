@@ -68,13 +68,9 @@ export default async function WorkListPage({
     return query
   }
 
-  const { data: allRows } = await scope()
-  const counts = (allRows ?? []).reduce<Record<string, number>>((acc, r) => {
-    const s = (r as { status: string }).status
-    acc[s] = (acc[s] ?? 0) + 1
-    return acc
-  }, {})
-  const totalAll = (allRows ?? []).length - (counts.archived ?? 0)
+  /* ⚠ 여기서 await 하지 않는다. 아래 목록 쿼리와 **동시에** 보내고 끝에서 함께 받는다 —
+     예전에는 하나씩 기다려서 Supabase 왕복 시간이 그대로 더해졌다. */
+  const countsQuery = scope()
 
   /* 검색 대상은 제목 · 참여 빌더 이름이다 (A-04 §세부).
      빌더 이름은 조인 테이블 너머라 ilike 로 바로 못 건다 — 이름으로 id 를 먼저 찾는다. */
@@ -106,7 +102,15 @@ export default async function WorkListPage({
       : list.ilike('title', `%${q}%`)
   }
 
-  const { data, count } = await list
+  const [{ data: allRows }, { data, count }] = await Promise.all([countsQuery, list])
+
+  const counts = (allRows ?? []).reduce<Record<string, number>>((acc, r) => {
+    const s = (r as { status: string }).status
+    acc[s] = (acc[s] ?? 0) + 1
+    return acc
+  }, {})
+  const totalAll = (allRows ?? []).length - (counts.archived ?? 0)
+
   const source = (data ?? []) as unknown as Row[]
 
   const rows: ListRow[] = source.map(r => ({

@@ -42,15 +42,9 @@ export default async function InsightListPage({
     return query
   }
 
-  /* 탭 카운트 — 한 번에 받아서 세면 쿼리가 하나로 끝난다 */
-  const { data: allRows } = await scope()
-  const counts = (allRows ?? []).reduce<Record<string, number>>((acc, r) => {
-    const s = (r as { status: string }).status
-    acc[s] = (acc[s] ?? 0) + 1
-    return acc
-  }, {})
-  /* 전체 탭은 보관을 뺀 수다 (A-02 §상태 탭) */
-  const totalAll = (allRows ?? []).length - (counts.archived ?? 0)
+  /* 탭 카운트 — 한 번에 받아서 세면 쿼리가 하나로 끝난다.
+     ⚠ 목록 본문과 **동시에** 보낸다. 예전에는 하나씩 기다려서 왕복 시간이 그대로 더해졌다. */
+  const countsQuery = scope()
 
   let list = supabase
     .from('insights')
@@ -64,7 +58,16 @@ export default async function InsightListPage({
   else list = list.neq('status', 'archived')
   if (q) list = list.ilike('title', `%${q}%`)
 
-  const { data, count } = await list
+  const [{ data: allRows }, { data, count }] = await Promise.all([countsQuery, list])
+
+  const counts = (allRows ?? []).reduce<Record<string, number>>((acc, r) => {
+    const s = (r as { status: string }).status
+    acc[s] = (acc[s] ?? 0) + 1
+    return acc
+  }, {})
+  /* 전체 탭은 보관을 뺀 수다 (A-02 §상태 탭) */
+  const totalAll = (allRows ?? []).length - (counts.archived ?? 0)
+
   const source = (data ?? []) as unknown as Row[]
 
   const rows: ListRow[] = source.map(r => ({

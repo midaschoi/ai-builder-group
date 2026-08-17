@@ -11,6 +11,21 @@ import AcctMenu from './acct'
    A-01 로그인은 이 셸을 쓰지 않으므로 (shell) 라우트 그룹으로 한 겹 나눴다.
    그룹 이름은 URL 에 나타나지 않는다 — /admin/insight 그대로다. */
 
+async function countPending(): Promise<number> {
+  try {
+    const supabase = await createClient()
+    const [insights, works] = await Promise.all([
+      supabase.from('insights').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('works').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+    ])
+    return (insights.count ?? 0) + (works.count ?? 0)
+  } catch {
+    /* 배지 하나 때문에 관리자 화면 전체가 죽으면 안 된다.
+       세지 못하면 안 보여준다 — 숫자가 틀리는 것보다 없는 편이 낫다. */
+    return 0
+  }
+}
+
 export default async function ShellLayout({ children }: { children: React.ReactNode }) {
   if (!SUPABASE_READY) return <SetupNotice />
 
@@ -19,16 +34,13 @@ export default async function ShellLayout({ children }: { children: React.ReactN
   const me = await getCurrentBuilder()
   if (!me) redirect('/admin/login')
 
-  /* 승인 대기 배지 (A-07). 관리자만 이 메뉴를 보므로 관리자일 때만 센다. */
-  let pending = 0
-  if (me.role === 'admin') {
-    const supabase = await createClient()
-    const [insights, works] = await Promise.all([
-      supabase.from('insights').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('works').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-    ])
-    pending = (insights.count ?? 0) + (works.count ?? 0)
-  }
+  /* 승인 대기 배지 (A-07). 관리자만 이 메뉴를 보므로 관리자일 때만 센다.
+
+     ⚠ await 하지 않고 **Promise 를 그대로 넘긴다.** 예전에는 여기서 기다렸는데,
+       그 동안 사이드바·헤더·본문이 전부 멈춰 있었다 — 배지 숫자 하나 때문에
+       화면 전체가 Supabase 왕복(≈380ms)을 기다린 셈이다.
+       이제 셸은 즉시 그려지고 숫자만 나중에 채워진다 (nav.tsx 의 Suspense). */
+  const pending = me.role === 'admin' ? countPending() : Promise.resolve(0)
 
   return (
     <div className="adm">

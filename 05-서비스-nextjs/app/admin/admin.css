@@ -352,3 +352,54 @@
   background: #FCE3E1; color: #A32318; font-size: 12.5px; font-weight: 600;
 }
 .rm-foot { display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px; }
+
+/* ── 화면 전환 스켈레톤 ((shell)/loading.tsx) ───────────
+   목적은 예쁨이 아니라 **클릭이 먹었다는 신호**다.
+   실제 목록과 같은 자리·같은 높이를 잡아 두어 내용이 들어올 때 튀지 않게 한다. */
+.adm-skel { display: flex; flex-direction: column; gap: 16px; }
+.adm-sr {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.sk-bar {
+  background: var(--ln); border-radius: 6px; height: 15px; flex: none;
+  position: relative; overflow: hidden;
+}
+.sk-bar::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .7), transparent);
+  transform: translateX(-100%); animation: adm-sweep 1.15s infinite;
+}
+.sk-grow { flex: 1 1 auto; min-width: 0; }
+.sk-title { width: 168px; height: 26px; border-radius: 7px; }
+.sk-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sk-tabs .sk-bar { height: 28px; border-radius: 999px; }
+.sk-filters .sk-bar { height: 34px; border-radius: 9px; }
+.sk-card { padding: 0; }
+.sk-thead { height: 42px; background: var(--ink); opacity: .9; }
+.sk-tr {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px; border-top: 1px solid var(--ln);
+}
+.sk-tr .sk-thumb { width: 44px; height: 32px; border-radius: 6px; }
+
+@keyframes adm-sweep { to { transform: translateX(100%); } }
+
+/* 움직임을 줄이도록 설정한 사용자에게는 쓸어가는 효과만 없앤다.
+   자리는 그대로 잡으므로 전환 신호는 유지된다. */
+@media (prefers-reduced-motion: reduce) {
+  .sk-bar::after { animation: none; display: none; }
+}
+
+/* ── 눌린 메뉴 표시 (nav.tsx · useLinkStatus) ───────────
+   프리페치가 안 끝난 상태에서 눌렸을 때, 응답이 오기 전까지 여기가 반응한다. */
+.adm-nav a .nav-wait {
+  width: 13px; height: 13px; flex: none; margin-left: auto;
+  border: 2px solid currentColor; border-right-color: transparent;
+  border-radius: 50%; opacity: .75;
+  animation: adm-spin .6s linear infinite;
+}
+@keyframes adm-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .adm-nav a .nav-wait { animation: none; border-right-color: currentColor; opacity: .4; }
+}
