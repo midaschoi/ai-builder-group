@@ -37,7 +37,12 @@
 /* 공개 웹 style.css 가 body 에 걸어둔 것들이 새어 들어오지 않게 한다 */
 .adm * { box-sizing: border-box; }
 .adm a { color: inherit; text-decoration: none; }
-.adm button { font: inherit; color: inherit; cursor: pointer; }
+/* ⚠ :where() 로 감싼 이유 — 이건 UA 기본값을 지우는 **리셋**이지 디자인이 아니다.
+     그냥 `.adm button` 이면 우선순위가 (0,1,1) 이라 `.adm-btn` (0,1,0) 을 이겨버린다.
+     실제로 그 탓에 .adm-btn 의 color·font-weight 700 이 통째로 죽어 있었고,
+     관리자 버튼이 전부 400 으로 그려지고 있었다 (2026-08-17 발견).
+     :where() 는 우선순위에 0 을 보태므로, 리셋은 그대로 걸리면서 컴포넌트가 이긴다. */
+.adm :where(button) { font: inherit; color: inherit; cursor: pointer; }
 .adm :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 4px; }
 
 /* ── 레이아웃 ─────────────────────────────────────────── */
