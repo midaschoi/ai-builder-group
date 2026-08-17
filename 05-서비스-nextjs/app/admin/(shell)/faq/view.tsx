@@ -1,7 +1,8 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import { saveFaqs, type SaveState } from '../site-content-actions'
+import SaveBar from '../save-bar'
 
 const INITIAL: SaveState = {}
 
@@ -22,6 +23,11 @@ export default function FaqView({ topics, rows }: { topics: Topic[]; rows: Row[]
   const [state, action, pending] = useActionState(saveFaqs, INITIAL)
   const [items, setItems] = useState<Row[]>(rows)
   const [dirty, setDirty] = useState(false)
+
+  /* 저장이 끝나면 "저장하지 않은 변경" 을 내린다.
+     예전에는 setDirty(false) 를 부르는 곳이 없어, 한 번 고치면 저장한 뒤에도
+     계속 "저장하지 않은 변경" 이 붙어 있었다 — 신호가 아니라 장식이 된다. */
+  useEffect(() => { if (state.ok) setDirty(false) }, [state.ok])
 
   const patch = (i: number, p: Partial<Row>) => {
     setItems(items.map((r, idx) => (idx === i ? { ...r, ...p } : r)))
@@ -130,6 +136,9 @@ export default function FaqView({ topics, rows }: { topics: Topic[]; rows: Row[]
           </section>
         )
       })}
+
+      {/* 폼 직계여야 한다 — .adm-card 안에 넣으면 overflow: hidden 에 잘려 sticky 가 죽는다 */}
+      <SaveBar dirty={dirty} pending={pending} />
     </form>
   )
 }

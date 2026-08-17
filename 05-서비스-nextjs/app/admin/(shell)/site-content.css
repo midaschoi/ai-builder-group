@@ -70,3 +70,38 @@
   .sc-thumb { width: 72px; height: 40px; }
   .sc-btns { padding-top: 0; }
 }
+
+/* ── 하단 고정 저장 바 (save-bar.tsx) ─────────────────────
+   맨 위 저장 버튼까지 되돌아가지 않도록 항상 손 닿는 곳에 둔다.
+   sticky 라 본문 칸 안에 머문다 — 사이드바 폭을 계산할 필요가 없다.
+   ⚠ .adm-card(overflow: hidden) 안에 넣으면 죽는다. 폼 직계로 둘 것. */
+.sc-savebar {
+  position: sticky;
+  bottom: 12px;              /* .adm-shell 의 padding 과 같은 값 — 화면 끝에 붙지 않는다 */
+  z-index: 5;
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 12px 11px 16px;
+  border: 1px solid var(--ln); border-radius: var(--r);
+  background: var(--card);
+  box-shadow: 0 6px 20px -10px rgba(14, 14, 12, .28), var(--shadow);
+}
+
+.sc-savebar-msg {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-right: auto;
+  font-size: 12.5px; color: var(--mut);
+}
+/* 저장 여부를 글자만으로 알리면 훑을 때 안 읽힌다. 점 하나가 먼저 보인다. */
+.sc-savebar-msg i {
+  width: 7px; height: 7px; border-radius: 50%; flex: none;
+  background: var(--ln);
+}
+.sc-savebar[data-dirty] .sc-savebar-msg { color: var(--ink); font-weight: 600; }
+.sc-savebar[data-dirty] .sc-savebar-msg i { background: var(--ink); }
+
+@media (max-width: 559px) {
+  /* 좁은 화면에서는 안내 문구를 접고 버튼만 남긴다 — 버튼이 밀려나면 의미가 없다 */
+  .sc-savebar { padding: 10px; }
+  .sc-savebar-msg { font-size: 0; gap: 0; }
+  .sc-savebar-msg i { margin-right: auto; }
+}

@@ -1,7 +1,8 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import { saveVideos, type SaveState } from '../site-content-actions'
+import SaveBar from '../save-bar'
 
 const INITIAL: SaveState = {}
 
@@ -32,6 +33,9 @@ export default function VideoView({ rows, channels }: {
   const [state, action, pending] = useActionState(saveVideos, INITIAL)
   const [items, setItems] = useState<Row[]>(rows)
   const [dirty, setDirty] = useState(false)
+
+  /* 저장이 끝나면 "저장하지 않은 변경" 을 내린다 (faq/view.tsx 와 같은 이유) */
+  useEffect(() => { if (state.ok) setDirty(false) }, [state.ok])
 
   const patch = (i: number, p: Partial<Row>) => {
     setItems(items.map((r, idx) => (idx === i ? { ...r, ...p } : r))); setDirty(true)
@@ -138,6 +142,11 @@ export default function VideoView({ rows, channels }: {
         ⓘ 채널 목록(하단 채널 카드)은 아직 DB 에서만 바꿀 수 있습니다 — <code>video_channels</code>.
         자주 바뀌는 값이 아니라 화면을 만들지 않았습니다.
       </p>
+
+      {/* 폼 직계여야 한다 — .adm-card 안에 넣으면 overflow: hidden 에 잘려 sticky 가 죽는다 */}
+      <SaveBar dirty={dirty} pending={pending}>
+        <button type="button" className="adm-btn adm-btn--ghost" onClick={add}>+ 영상 추가</button>
+      </SaveBar>
     </form>
   )
 }
