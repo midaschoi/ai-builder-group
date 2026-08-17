@@ -7,6 +7,7 @@ import { useEditor, EditorContent, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import { saveWork, uploadWorkImage, type SaveState } from './actions'
+import { BuilderPicker } from './builder-picker'
 
 /* A-05 Work 편집.
 
@@ -157,7 +158,6 @@ export default function WorkEditor({
   const [members, setMembers] = useState<Member[]>(record.members)
   const [tags, setTags] = useState<string[]>(record.tech_tags)
   const [tagDraft, setTagDraft] = useState('')
-  const [addId, setAddId] = useState('')
   const dragFrom = useRef<number | null>(null)
 
   const bind = useCallback(
@@ -236,7 +236,6 @@ export default function WorkEditor({
     const b = builders.find(x => x.id === id)
     if (!b || members.some(m => m.id === id)) return
     setMembers([...members, { id: b.id, name: b.name, is_active: b.is_active, role_label: '' }])
-    setAddId('')
     markDirty()
   }
   const patchMember = (i: number, patch: Partial<Member>) => {
@@ -570,22 +569,9 @@ export default function WorkEditor({
             {!readOnly && (
               <div className="adm-field">
                 <label htmlFor="wk-add">빌더 추가</label>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <select id="wk-add" value={addId} onChange={e => setAddId(e.target.value)}
-                    style={{ flex: 1, minWidth: 0 }}>
-                    <option value="">이름을 고르세요</option>
-                    {candidates.map(b => (
-                      <option key={b.id} value={b.id}>
-                        {b.name}{b.role_label ? ` — ${b.role_label}` : ''}
-                      </option>
-                    ))}
-                  </select>
-                  <button type="button" className="adm-btn adm-btn--ghost"
-                    onClick={() => addId && addMember(addId)} disabled={!addId}>추가</button>
-                </div>
+                <BuilderPicker candidates={candidates} onPick={addMember} />
                 <small className="adm-dim">
                   ↑↓ 또는 드래그로 순서를 바꿉니다. <b>이 순서가 공개 지면 노출 순서</b>입니다.
-                  {candidates.length === 0 && members.length > 0 && <><br />추가할 수 있는 활성 빌더가 없습니다.</>}
                 </small>
               </div>
             )}
