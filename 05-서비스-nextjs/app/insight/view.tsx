@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRibbonFlow, useDock } from '@/components/fx'
 import type { Category, InsightCard } from '@/lib/content'
 
@@ -45,8 +45,34 @@ export default function InsightView({
      아래 useEffect 의 클라이언트 필터는 샘플 모드에서만 의미가 있다.
      IA §1 이 /insight/[category] 를 요구하므로 경로 쪽이 정답이다 (TR-04). */
   const live = articles.length > 0
-  const rows = live ? fromDb(articles) : ARTICLES
+  const all = live ? fromDb(articles) : ARTICLES
   const total = Object.values(counts).reduce((a, b) => a + b, 0)
+
+  /* ── FR-P04-03 페이지네이션 (12건) ────────────────────────────────────
+     서버 searchParams 로 하면 이 라우트가 통째로 동적 렌더가 된다 (SSG 포기).
+     그래서 클라이언트에서 자르고 주소만 맞춘다 — `?category=` 를 다루는
+     work/view.tsx 와 같은 방식이다.
+
+     ⚠ 2페이지 이후 글이 HTML 에 없다는 뜻이지만, 색인은 사이트맵이 담당한다.
+       sitemap.ts 가 발행된 글 **전부**의 상세 주소를 내보내므로 크롤 경로는 끊기지 않는다. */
+  const PER = 12
+  const [page, setPage] = useState(1)
+  const pages = Math.max(1, Math.ceil(all.length / PER))
+  const cur = Math.min(page, pages)
+  const rows = pages > 1 ? all.slice((cur - 1) * PER, cur * PER) : all
+
+  /* 공유받은 `?page=3` 링크로 바로 들어올 수 있어야 한다 */
+  useEffect(() => {
+    const n = Number(new URLSearchParams(location.search).get('page'))
+    if (Number.isInteger(n) && n > 1) setPage(n)
+  }, [])
+
+  const goto = (n: number) => {
+    setPage(n)
+    const url = n === 1 ? location.pathname : `${location.pathname}?page=${n}`
+    history.replaceState(null, '', url)
+    document.getElementById('main')?.scrollIntoView({ behavior: 'auto', block: 'start' })
+  }
   const pad = (n: number) => String(n).padStart(2, '0')
   useRibbonFlow({
     rsI: [
@@ -148,7 +174,20 @@ export default function InsightView({
               <p>다른 카테고리의 글을 먼저 읽어보세요.</p>
             </div>
 
-            <div style={{ textAlign: 'center', marginTop: 40 }}><button className="btn btn--ghost">더 보기</button></div>
+            {/* FR-P04-03 — 1페이지뿐이면 아예 그리지 않는다 */}
+            {pages > 1 && (
+              <nav className="pager" aria-label="페이지">
+                <button type="button" onClick={() => goto(cur - 1)} disabled={cur === 1}>← 이전</button>
+                {Array.from({ length: pages }, (_, i) => i + 1).map(n => (
+                  <button type="button" key={n} onClick={() => goto(n)}
+                    className={n === cur ? 'on' : undefined}
+                    aria-current={n === cur ? 'page' : undefined}>
+                    {n}
+                  </button>
+                ))}
+                <button type="button" onClick={() => goto(cur + 1)} disabled={cur === pages}>다음 →</button>
+              </nav>
+            )}
           </div>
         </div>
       </main>

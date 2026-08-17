@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Fragment, useEffect } from 'react'
-import type { WorkDetail } from '@/lib/content'
+import type { WorkCard, WorkDetail } from '@/lib/content'
 
 /* 3막의 h2 는 템플릿이 가지고 있고, 본문 HTML 은 각 막 안쪽만 담는다.
    에디터에서 제목을 못 쓰게 막아 둔 이유가 이것이다 (A-05 §축소판 툴바) —
@@ -13,7 +13,9 @@ const ACTS = [
   { no: '03', label: '결과', key: 'body_result' },
 ] as const
 
-export default function WorkArticle({ work }: { work: WorkDetail }) {
+export default function WorkArticle(
+  { work, related = [] }: { work: WorkDetail; related?: WorkCard[] },
+) {
   useEffect(() => {
     window.track?.('work_detail_view', { slug: work.slug, category: work.category_slug })
   }, [work.slug, work.category_slug])
@@ -107,6 +109,26 @@ export default function WorkArticle({ work }: { work: WorkDetail }) {
           )}
         </aside>
       </div>
+
+      {/* FR-P03-03 — 같은 카테고리 최신 3건. 0건이면 섹션째 그리지 않는다 */}
+      {related.length > 0 && (
+        <section className="wd-rel">
+          <div className="wrap">
+            <h3>같은 카테고리의 다른 프로젝트</h3>
+            <div className="wd-rel__grid">
+              {related.map(r => (
+                <Link className="wd-rel__card" key={r.slug} href={`/work/${r.slug}`}>
+                  <span className="slot">
+                    {r.thumb_url && <img src={r.thumb_url} alt={`${r.title} 대표 화면`} loading="lazy" />}
+                  </span>
+                  <span className="c">{r.category_name}{r.year ? ` · ${r.year}` : ''}</span>
+                  <span className="t">{r.title}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section style={{ paddingTop: 0, paddingBottom: 0 }}>
         <div className="wrap">

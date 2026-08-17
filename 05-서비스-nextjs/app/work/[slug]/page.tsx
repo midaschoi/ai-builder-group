@@ -4,6 +4,7 @@ import { pageMeta } from '@/app/_meta'
 import { getWork, getWorks, getRedirect } from '@/lib/content'
 import { ArticleLd, BreadcrumbLd } from '@/components/JsonLd'
 import '../../work-detail/work-detail.css'
+import './related.css'
 import WorkArticle from './view'
 
 /* P-03 Work 상세 `/work/[slug]`.
@@ -53,6 +54,14 @@ export default async function WorkDetailPage(
     notFound()
   }
 
+  /* FR-P03-03 — 같은 카테고리 최신 3건. getWorks() 는 이미 캐시돼 있어 추가 쿼리가 없다.
+     카테고리가 비어 있으면 "같은 카테고리"가 성립하지 않으므로 아무것도 내지 않는다. */
+  const related = work.category_slug
+    ? (await getWorks())
+      .filter(w => w.slug !== slug && w.category_slug === work.category_slug)
+      .slice(0, 3)
+    : []
+
   return (
     <>
       {/* SR-04 — 리치결과용. 화면에는 아무것도 그리지 않는다 */}
@@ -69,7 +78,7 @@ export default async function WorkDetailPage(
         { name: 'Work', path: '/work' },
         { name: work.title, path: `/work/${slug}` },
       ]} />
-      <WorkArticle work={work} />
+      <WorkArticle work={work} related={related} />
     </>
   )
 }

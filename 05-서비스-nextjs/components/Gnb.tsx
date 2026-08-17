@@ -35,14 +35,26 @@ export default function Gnb() {
     return () => document.body.classList.remove('no-scroll')
   }, [open])
 
+  /* FR-C-04 판정 기준은 "ESC·✕·라우트 변경으로 닫힘" 인데 ESC 가 빠져 있었다.
+     오버레이는 body 스크롤을 잠그므로, 닫는 길이 막히면 사용자가 갇힌다. */
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [open])
+
   return (
     <header className={`gnb${scrolled ? ' scrolled' : ''}${open ? ' menu-open' : ''}`}>
       <div className="gnb__in">
         <BrandLink onNavigate={() => setOpen(false)} />
-        <button className="gnb__burger" aria-label="메뉴" onClick={() => setOpen(v => !v)}>
+        <button className="gnb__burger" type="button"
+          aria-label={open ? '메뉴 닫기' : '메뉴 열기'}
+          aria-expanded={open} aria-controls="gnb-nav"
+          onClick={() => setOpen(v => !v)}>
           {open ? '✕' : '☰'}
         </button>
-        <nav>
+        <nav id="gnb-nav">
           {NAV.map(item => (
             <Link key={item.href} href={item.href} className={item.match(pathname) ? 'active' : undefined}>
               {item.label}

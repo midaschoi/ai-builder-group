@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { SITE_URL } from './_meta'
 import { getCategories, getInsights, getWorks } from '@/lib/content'
+import { faqTopics } from '@/lib/faq-view'
 
 /* 사이트맵이 없으면 색인은 링크를 타고 들어오는 만큼만 된다.
 
@@ -13,6 +14,8 @@ import { getCategories, getInsights, getWorks } from '@/lib/content'
    · /submit               문의 접수 완료 화면. 검색으로 들어올 수 있는 주소가 아니다.
    · /work-detail          시안용 고정 1장. 실주소는 /work/[slug] 다 —
    · /insight-detail       둘 다 넣으면 같은 내용이 두 주소로 색인된다 (SR-02 중복 0).
+   · /faq                  FR-P07-05 로 기본 토픽에 308 을 낸다. 리다이렉트 주소는
+                           사이트맵에 넣지 않는다 — 아래에서 /faq/<토픽> 을 대신 넣는다.
 
    priority 는 구글이 무시한 지 오래지만 다른 크롤러가 참고하므로 남겨 둔다. */
 const ROUTES: Array<{ path: string; priority: number; freq: MetadataRoute.Sitemap[number]['changeFrequency'] }> = [
@@ -21,14 +24,13 @@ const ROUTES: Array<{ path: string; priority: number; freq: MetadataRoute.Sitema
   { path: '/builder', priority: 0.7, freq: 'monthly' },
   { path: '/insight', priority: 0.8, freq: 'weekly' },
   { path: '/content', priority: 0.8, freq: 'weekly' },
-  { path: '/faq', priority: 0.7, freq: 'monthly' },
   { path: '/contact', priority: 0.9, freq: 'monthly' },
   { path: '/privacy', priority: 0.3, freq: 'yearly' },
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [works, insights, categories] = await Promise.all([
-    getWorks(), getInsights(), getCategories('insight'),
+  const [works, insights, categories, faq] = await Promise.all([
+    getWorks(), getInsights(), getCategories('insight'), faqTopics(),
   ])
 
   /* lastModified 를 빌드 시각으로 두면 내용이 그대로여도 배포마다 바뀐다.
@@ -38,6 +40,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: new URL(r.path, SITE_URL).toString(),
     changeFrequency: r.freq,
     priority: r.priority,
+  }))
+
+  /* /faq 대신 토픽 주소를 넣는다 (FR-P07-05 로 /faq 는 308 이다) */
+  const faqPages = faq.all.map(t => ({
+    url: new URL(`/faq/${t.key}`, SITE_URL).toString(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
   }))
 
   const catPages = categories.map(c => ({
@@ -59,5 +68,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...fixed, ...workPages, ...catPages, ...insightPages]
+  return [...fixed, ...workPages, ...faqPages, ...catPages, ...insightPages]
 }
