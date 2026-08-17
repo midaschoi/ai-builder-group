@@ -11,10 +11,12 @@
   --mut: #807E74;
   --ln: #DEDCD0;
 
-  /* 관리자에서 추가한 값 — 3개뿐 */
+  /* 관리자에서 추가한 값 */
   --bg: #F7F5F0;
   --card: #FFFFFF;
   --hover: #FAF9F5;
+  /* 파괴적 동작 전용. 원래 .rm-danger 에 직접 박혀 있던 값을 올렸다 — 두 곳이 어긋나면 안 된다 */
+  --danger: #A32318;
 
   --r: 12px;
   --shadow: 0 1px 2px rgba(14, 14, 12, .06);
@@ -40,6 +42,13 @@
   gap: 14px;
   padding: 12px;
   min-height: 100vh;
+
+  /* 넓은 화면에서 본문이 끝에서 끝까지 늘어나면, 짧은 제목 하나가
+     1000px 짜리 입력칸을 차지한다 — 칸은 꽉 찼는데 안은 텅 빈다.
+     폭을 묶어 시선 이동 거리를 줄인다. 1240 이면 본문이 약 980px 로,
+     빌더·Work 목록의 6열 표가 들어가면서 한 줄이 너무 길어지지 않는다. */
+  max-width: 1240px;
+  margin: 0 auto;
 }
 
 /* ── 사이드바 (A-00 §4.3) ────────────────────────────── */
@@ -167,6 +176,35 @@
 .adm-btn:disabled { opacity: .5; cursor: not-allowed; }
 .adm-btn--ghost { background: var(--card); border-color: var(--ln); font-weight: 600; }
 .adm-btn--ghost:hover { background: var(--hover); }
+/* 되돌릴 수 없는 동작. 라임(기본 확인색)과 같은 색이면 손이 먼저 움직인다 */
+.adm-btn--danger { background: var(--danger); border-color: var(--danger); color: #FFF; }
+.adm-btn--danger:hover { background: #8C1E14; border-color: #8C1E14; }
+
+/* ── 확인 대화상자 (confirm-dialog.tsx) ────────────────
+   ⛔ window.confirm 을 쓰지 않는다 — 브라우저 기본 대화상자는 생김새를 맞출 수 없고,
+      메인 스레드를 통째로 멈춘다.
+   <dialog showModal()> 은 최상위 레이어에 뜨므로 .adm-card 의 overflow: hidden 에
+   잘리지 않는다. ESC 닫기·포커스 가둠·백드롭이 브라우저 기본으로 딸려온다. */
+.adm-confirm {
+  padding: 0; border: 1px solid var(--ln); border-radius: 14px;
+  width: min(380px, calc(100vw - 32px));
+  background: var(--card); color: var(--ink);
+  box-shadow: 0 24px 60px -20px rgba(14, 14, 12, .42);
+}
+.adm-confirm::backdrop { background: rgba(14, 14, 12, .42); }
+.adm-confirm-in { padding: 22px 22px 18px; display: flex; flex-direction: column; gap: 9px; }
+/* ⚠ 직계만 제목이다. 본문 <p> 안에도 <b> 가 있어서 자손 선택자로 두면 같이 커진다 */
+.adm-confirm-in > b { font-size: 15.5px; font-weight: 800; letter-spacing: -.02em; }
+.adm-confirm-in p { margin: 0; font-size: 13px; color: var(--mut); line-height: 1.65; }
+.adm-confirm-in p b { font-weight: 700; color: var(--ink); }
+/* 무엇을 지우는지 그대로 보여준다 — "정말 삭제할까요?" 만으로는 어느 항목인지 모른다 */
+.adm-confirm-in q {
+  display: block; quotes: none;
+  padding: 9px 11px; border-radius: 8px; background: var(--bg);
+  font-size: 13px; color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.adm-confirm-act { display: flex; justify-content: flex-end; gap: 8px; margin-top: 5px; }
 
 /* ── 카드 · 표 (A-00 §3.2) ───────────────────────────── */
 .adm-card {
@@ -331,7 +369,7 @@
 .rm-menu a:hover, .rm-menu button:hover:not(:disabled) { background: var(--hover); }
 .rm-menu button:disabled { opacity: .5; cursor: not-allowed; }
 /* 삭제는 파괴적이다. 나머지와 같은 색이면 실수로 누른다 */
-.rm-menu .rm-danger { color: #A32318; font-weight: 600; }
+.rm-menu .rm-danger { color: var(--danger); font-weight: 600; }
 .rm-menu form { display: contents; }
 
 .rm-overlay {

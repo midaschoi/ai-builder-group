@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from 'react'
 import { saveVideos, type SaveState } from '../site-content-actions'
 import SaveBar from '../save-bar'
+import ConfirmDialog from '../confirm-dialog'
 
 const INITIAL: SaveState = {}
 
@@ -46,6 +47,9 @@ export default function VideoView({ rows, channels }: {
     setItems(next); setDirty(true)
   }
   const remove = (i: number) => { setItems(items.filter((_, idx) => idx !== i)); setDirty(true) }
+
+  /* ✕ 는 바로 지우지 않는다 (faq/view.tsx 와 같은 이유). null 이면 닫힌 상태 */
+  const [askRemove, setAskRemove] = useState<number | null>(null)
   const add = () => {
     setItems([...items, {
       youtube_id: '', title: '', subtitle: '',
@@ -127,7 +131,7 @@ export default function VideoView({ rows, channels }: {
               <span className="sc-btns">
                 <button type="button" onClick={() => move(i, i - 1)} aria-label="위로">↑</button>
                 <button type="button" onClick={() => move(i, i + 1)} aria-label="아래로">↓</button>
-                <button type="button" onClick={() => remove(i)} aria-label="삭제">✕</button>
+                <button type="button" onClick={() => setAskRemove(i)} aria-label="삭제">✕</button>
               </span>
             </div>
           )
@@ -147,6 +151,14 @@ export default function VideoView({ rows, channels }: {
       <SaveBar dirty={dirty} pending={pending}>
         <button type="button" className="adm-btn adm-btn--ghost" onClick={add}>+ 영상 추가</button>
       </SaveBar>
+
+      <ConfirmDialog
+        open={askRemove !== null}
+        title="이 영상을 목록에서 삭제할까요?"
+        detail={askRemove !== null ? (items[askRemove]?.title.trim() || items[askRemove]?.youtube_id.trim() || '(제목이 비어 있는 항목)') : undefined}
+        onConfirm={() => { if (askRemove !== null) remove(askRemove); setAskRemove(null) }}
+        onCancel={() => setAskRemove(null)}
+      />
     </form>
   )
 }

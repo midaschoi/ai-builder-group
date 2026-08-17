@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from 'react'
 import { saveFaqs, type SaveState } from '../site-content-actions'
 import SaveBar from '../save-bar'
+import ConfirmDialog from '../confirm-dialog'
 
 const INITIAL: SaveState = {}
 
@@ -41,6 +42,10 @@ export default function FaqView({ topics, rows }: { topics: Topic[]; rows: Row[]
     setItems(next); setDirty(true)
   }
   const remove = (i: number) => { setItems(items.filter((_, idx) => idx !== i)); setDirty(true) }
+
+  /* ✕ 는 바로 지우지 않는다. 되돌리려면 저장 전에 새로고침하는 수밖에 없어서,
+     한 번 물어보는 편이 싸다. null 이면 닫힌 상태. */
+  const [askRemove, setAskRemove] = useState<number | null>(null)
   const add = (topicId: string) => {
     setItems([...items, { topic_id: topicId, question: '', answer: '', show_on_home: false, is_active: true }])
     setDirty(true)
@@ -129,7 +134,7 @@ export default function FaqView({ topics, rows }: { topics: Topic[]; rows: Row[]
                 <span className="sc-btns">
                   <button type="button" onClick={() => move(i, i - 1)} aria-label="위로">↑</button>
                   <button type="button" onClick={() => move(i, i + 1)} aria-label="아래로">↓</button>
-                  <button type="button" onClick={() => remove(i)} aria-label="삭제">✕</button>
+                  <button type="button" onClick={() => setAskRemove(i)} aria-label="삭제">✕</button>
                 </span>
               </div>
             ))}
@@ -139,6 +144,14 @@ export default function FaqView({ topics, rows }: { topics: Topic[]; rows: Row[]
 
       {/* 폼 직계여야 한다 — .adm-card 안에 넣으면 overflow: hidden 에 잘려 sticky 가 죽는다 */}
       <SaveBar dirty={dirty} pending={pending} />
+
+      <ConfirmDialog
+        open={askRemove !== null}
+        title="이 FAQ 항목을 삭제할까요?"
+        detail={askRemove !== null ? (items[askRemove]?.question.trim() || '(질문이 비어 있는 항목)') : undefined}
+        onConfirm={() => { if (askRemove !== null) remove(askRemove); setAskRemove(null) }}
+        onCancel={() => setAskRemove(null)}
+      />
     </form>
   )
 }

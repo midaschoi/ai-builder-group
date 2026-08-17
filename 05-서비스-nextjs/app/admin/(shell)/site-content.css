@@ -77,14 +77,16 @@
    ⚠ .adm-card(overflow: hidden) 안에 넣으면 죽는다. 폼 직계로 둘 것. */
 .sc-savebar {
   position: sticky;
-  bottom: 12px;              /* .adm-shell 의 padding 과 같은 값 — 화면 끝에 붙지 않는다 */
+  bottom: 26px;              /* 화면 밑바닥에 붙어 있으면 창 끝에 걸린 것처럼 보인다 — 띄운다 */
   z-index: 5;
-  display: flex; align-items: center; gap: 8px;
-  padding: 11px 12px 11px 16px;
-  border: 1px solid var(--ln); border-radius: var(--r);
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 7px 6px 14px; /* 바 자체는 얇게 — 본문을 가리는 면적을 줄인다 */
+  border: 1px solid var(--ln); border-radius: 11px;
   background: var(--card);
   box-shadow: 0 6px 20px -10px rgba(14, 14, 12, .28), var(--shadow);
 }
+/* 바 안에서는 버튼도 한 치수 작게 — 바 높이를 결정하는 게 버튼이다 */
+.sc-savebar .adm-btn { padding: 7px 13px; border-radius: 8px; font-size: 12px; }
 
 .sc-savebar-msg {
   display: inline-flex; align-items: center; gap: 8px;
