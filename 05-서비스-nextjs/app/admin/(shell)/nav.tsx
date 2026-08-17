@@ -24,10 +24,18 @@ function Icon({ children }: { children: React.ReactNode }) {
   )
 }
 
-/* 눌린 메뉴에 도는 표시를 띄운다 (Next 16 useLinkStatus).
+/* 눌린 메뉴를 표시한다 (Next 16 useLinkStatus).
 
-   loading.tsx 가 있으므로 대개는 프리페치가 끝나 있어 이 표시가 뜨지 않는다.
-   프리페치 전에 눌렀을 때만 잠깐 나타난다 — 그 순간이 바로 "눌렀는데 아무 반응 없는" 구간이었다.
+   한때 여기에 (shell)/loading.tsx 스켈레톤을 뒀는데 더 나빴다 —
+   관리 화면은 전부 force-dynamic 이라 프리페치가 가져올 수 있는 건 그 스켈레톤뿐이다.
+   그래서 누를 때마다 **반드시** 본문이 회색 막대로 비워지고, 반짝임이 좌우로 쓸고 지나간 뒤,
+   진짜 내용이 다른 너비로 들어오며 자리가 튀었다. 멈춤을 깜빡임으로 바꾼 셈이다.
+
+   지금은 이전 화면을 그대로 둔 채 두 가지만 바꾼다 —
+     ① 화면 맨 위에 얇은 진행 막대 (이 span 자체다)
+     ② 누른 메뉴에 눌린 표시 (admin.css 의 :has(.nav-wait))
+   본문은 새 내용이 준비된 순간 한 번에 바뀐다. 중간 상태가 없으니 튀지 않는다.
+
    ⚠ Link 의 자손 컴포넌트 안에서만 동작한다. Link 와 같은 파일에서 바로 호출하면 항상 false 다. */
 function NavWait() {
   const { pending } = useLinkStatus()
