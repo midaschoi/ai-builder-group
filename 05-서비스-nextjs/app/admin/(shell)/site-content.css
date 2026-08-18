@@ -8,7 +8,7 @@
 .sc-group { padding: 0; display: flex; flex-direction: column; }
 .sc-group-head {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  padding: 14px 18px; border-bottom: 1px solid var(--ln); background: var(--bg);
+  padding: 15px 18px; border-bottom: 1px solid var(--ln); background: var(--bg);
 }
 
 /* ── 토픽별 색 구분 (FAQ) ────────────────────────────────
@@ -23,16 +23,21 @@
   border-left: 3px solid var(--tone);
   background: color-mix(in srgb, var(--tone) 4%, var(--card));
 }
+/* 머리띠는 진하게 간다 — 스크롤 중에 게시판 경계를 놓치지 않는 것이 이 색의 목적이다.
+   13% 였을 때는 흰 카드와 거의 붙어 보여서 경계 역할을 못 했다. */
 .sc-group[style*='--tone'] > .sc-group-head {
-  background: color-mix(in srgb, var(--tone) 13%, var(--card));
-  border-bottom-color: color-mix(in srgb, var(--tone) 26%, var(--ln));
+  background: color-mix(in srgb, var(--tone) 28%, var(--card));
+  border-bottom-color: color-mix(in srgb, var(--tone) 48%, var(--ln));
 }
+/* ⚠ 바탕이 진해진 만큼 글자도 같이 어두워져야 한다.
+     72% 그대로 두면 바탕과 같은 색조가 가까워져 오히려 흐려진다 — ink 를 더 섞는다. */
 .sc-group[style*='--tone'] > .sc-group-head b {
-  color: color-mix(in srgb, var(--tone) 72%, var(--ink));
+  color: color-mix(in srgb, var(--tone) 46%, var(--ink));
 }
 /* 행 사이 실선도 같은 색조로 — 흰 선만 남으면 카드 색이 겉돈다 */
 .sc-group[style*='--tone'] > .sc-row { border-bottom-color: color-mix(in srgb, var(--tone) 14%, var(--ln)); }
-.sc-group-head b { font-size: 13.5px; font-weight: 800; }
+/* 게시판 이름 — 이 화면에서 가장 먼저 읽혀야 하는 글자다. 본문 입력칸(13px)보다 확실히 크게 */
+.sc-group-head b { font-size: 16.5px; font-weight: 800; letter-spacing: -.015em; }
 .sc-group-head code {
   font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--mut);
   background: var(--card); border: 1px solid var(--ln); border-radius: 5px; padding: 1px 6px;
