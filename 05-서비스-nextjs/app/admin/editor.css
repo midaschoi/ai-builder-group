@@ -256,3 +256,11 @@
   /* 편집 영역은 통째로 감춘다. 폼 자체는 남아 있어야 저장 버튼이 동작한다 */
   .ed-grid, .ed-top { display: none; }
 }
+
+/* ── 편집 화면의 삭제 구역 ──────────────────────────────────────────
+   목록의 [관리 ▾] 안에만 있던 삭제를 여기로도 꺼냈다.
+   빨간 테두리로 다른 카드와 확실히 구분한다 — 실수로 누르는 자리가 아니어야 한다. */
+.ed-danger { border-color: color-mix(in srgb, var(--danger) 32%, var(--ln)); }
+.ed-danger h2 { color: var(--danger); }
+.ed-danger p { margin: 0 0 12px; font-size: 12.5px; line-height: 1.65; }
+.ed-danger .adm-btn--danger { width: 100%; }

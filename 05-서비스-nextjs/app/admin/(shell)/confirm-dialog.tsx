@@ -16,13 +16,17 @@ import { useEffect, useRef } from 'react'
      빼먹으면 취소를 눌러도 폼이 제출된다. */
 
 export default function ConfirmDialog({
-  open, title, detail, confirmLabel = '삭제', onConfirm, onCancel,
+  open, title, detail, confirmLabel = '삭제', note, busy = false, onConfirm, onCancel,
 }: {
   open: boolean
   title: string
   /** 무엇을 지우는지 그대로 보여준다 — "정말 삭제할까요?" 만으로는 어느 항목인지 모른다 */
   detail?: string
   confirmLabel?: string
+  /** 기본 문구는 폼 안에서 쓰는 경우(FAQ·콘텐츠 관리) 기준이다.
+      DB 를 즉시 건드리는 곳은 "저장해야 반영" 이 거짓말이 되므로 반드시 갈아끼운다. */
+  note?: React.ReactNode
+  busy?: boolean
   onConfirm: () => void
   onCancel: () => void
 }) {
@@ -48,14 +52,14 @@ export default function ConfirmDialog({
       <div className="adm-confirm-in">
         <b>{title}</b>
         {detail && <q>{detail}</q>}
-        <p>삭제한 뒤 <b>저장</b>해야 공개 사이트에 반영됩니다. 저장 전이라면 새로고침으로 되돌릴 수 있습니다.</p>
+        <p>{note ?? <>삭제한 뒤 <b>저장</b>해야 공개 사이트에 반영됩니다. 저장 전이라면 새로고침으로 되돌릴 수 있습니다.</>}</p>
         <div className="adm-confirm-act">
           {/* 기본 포커스는 취소다. 엔터가 파괴적 동작에 닿으면 안 된다 */}
-          <button type="button" className="adm-btn adm-btn--ghost" autoFocus onClick={onCancel}>
+          <button type="button" className="adm-btn adm-btn--ghost" autoFocus onClick={onCancel} disabled={busy}>
             취소
           </button>
-          <button type="button" className="adm-btn adm-btn--danger" onClick={onConfirm}>
-            {confirmLabel}
+          <button type="button" className="adm-btn adm-btn--danger" onClick={onConfirm} disabled={busy}>
+            {busy ? '삭제 중…' : confirmLabel}
           </button>
         </div>
       </div>

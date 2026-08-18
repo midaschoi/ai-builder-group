@@ -5,6 +5,7 @@ import { useEffect, type CSSProperties } from 'react'
 import { useRibbonFlow, useReplayOnView, useAccordion } from '@/components/fx'
 import FaqList from '@/components/FaqList'
 import type { FaqTopic } from './_faq'
+import type { InsightCard } from '@/lib/content'
 
 /* 스테퍼 점등 순서를 CSS 변수로 넘긴다 (CSS 커스텀 속성이라 캐스트가 필요하다) */
 const step = (i: number) => ({ '--i': i }) as CSSProperties
@@ -131,7 +132,7 @@ function Bset({ brands }: { brands: [string, string][] }) {
 /* FAQ·히어로 문구·지표는 서버(page.tsx)가 DB 에서 읽어 넘긴다.
    값이 없으면 기존 문구를 그대로 쓴다 — 관리자 화면을 안 채워도 사이트가 그대로 뜬다. */
 export default function HomeView({
-  faq, heroTitle, heroSub, builderCount, workCount, statRating,
+  faq, heroTitle, heroSub, builderCount, workCount, statRating, insights = [],
 }: {
   faq: FaqTopic[]
   heroTitle: string
@@ -140,6 +141,8 @@ export default function HomeView({
   workCount: number
   /** 근거 없는 수치는 기본값을 두지 않는다 (기획서 C2) — 비면 지표를 아예 뺀다 */
   statRating: string
+  /** S7 "우리의 생각" 에 실을 최신 글. 0건이면 구간을 통째로 접는다 */
+  insights?: InsightCard[]
 }) {
   /* v19.5 이음새 리본 — 문구 덱 로테이션(페이드 전환) + 곡선 흐름.
      구현은 components/fx.ts 의 useRibbonFlow 한 곳으로 모았다 — 전에는 같은 스크립트가
@@ -667,34 +670,36 @@ export default function HomeView({
           </div>
         </section>
 
-        {/* ===== S7 Insight 프리뷰 — 정지 · 제목 우선 ===== */}
-        <section className="s7">
-          <div className="wrap">
-            <div className="sec-head">
-              <h2>우리의 생각</h2>
-              <Link className="more-link" href="/insight">인사이트 전체 보기</Link>
+        {/* ===== S7 Insight 프리뷰 — 정지 · 제목 우선 =====
+            ⛔ 견본 3건이 박혀 있던 자리다. 글을 발행해도 홈에는 영영 안 나왔고,
+               클릭하면 전부 목업(/insight-detail)으로 갔다. 이제 DB 최신 3건을 싣는다.
+               발행 글이 0건이면 구간을 통째로 접는다 — 제목만 남은 빈 칸을 보이느니 없는 게 낫다. */}
+        {insights.length > 0 && (
+          <section className="s7">
+            <div className="wrap">
+              <div className="sec-head">
+                <h2>우리의 생각</h2>
+                <Link className="more-link" href="/insight">인사이트 전체 보기</Link>
+              </div>
+              {insights.map(a => (
+                <Link className="irow" href={`/insight/${a.slug}`} key={a.id}>
+                  {a.thumb_url
+                    ? <img className="ithumb" src={a.thumb_url} alt="" loading="lazy" decoding="async" />
+                    : <span className="ithumb" aria-hidden="true" />}
+                  <span className="t">{a.title}</span>
+                  <span className="meta">
+                    <span className="tag">{a.category_name}</span>
+                    <span className="d num">
+                      {a.published_at
+                        ? new Date(a.published_at).toLocaleDateString('ko-KR').replace(/\.$/, '')
+                        : ''}
+                    </span>
+                  </span>
+                </Link>
+              ))}
             </div>
-            {/* ⚠ data-sample="thumb" — /insight 목록의 썸네일을 주제가 가까운 것으로 빌려 왔다.
-                그 이미지들에는 각자 다른 글 제목이 박혀 있어서, 이 크기(96×64)에서는 질감으로만
-                읽히지만 확대하면 문구가 어긋난다. 글마다 전용 썸네일이 생기면 교체할 것.
-                찾으려면 grep -rn 'data-sample' app/ */}
-            <Link className="irow" href="/insight-detail">
-              <img className="ithumb" data-sample="thumb" src="/assets/img/ins/ins-turnkey.webp" alt="" loading="lazy" decoding="async" />
-              <span className="t">바이브 코딩 외주, 잘하는 곳과 못하는 곳의 차이</span>
-              <span className="meta"><span className="tag">발주 가이드</span><span className="d num">2026.08.11</span></span>
-            </Link>
-            <Link className="irow" href="/insight-detail">
-              <img className="ithumb" data-sample="thumb" src="/assets/img/ins/ins-native.webp" alt="" loading="lazy" decoding="async" />
-              <span className="t">우리가 3주 만에 랜딩 페이지를 만드는 순서</span>
-              <span className="meta"><span className="tag">일하는 방식</span><span className="d num">2026.08.09</span></span>
-            </Link>
-            <Link className="irow" href="/insight-detail">
-              <img className="ithumb" data-sample="thumb" src="/assets/img/ins/ins-poc.webp" alt="" loading="lazy" decoding="async" />
-              <span className="t">새 AI 툴을 실무에 붙일 때 우리가 확인하는 것들</span>
-              <span className="meta"><span className="tag">AI 활용</span><span className="d num">2026.08.07</span></span>
-            </Link>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* v19: 이음새 리본 B — 인사이트 ↔ 콘텐츠(다크) (라임 리본 · 브랜드 문구) */}
         <div className="ribbon-sep" aria-hidden="true">

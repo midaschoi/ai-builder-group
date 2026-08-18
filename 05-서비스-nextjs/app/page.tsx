@@ -1,4 +1,4 @@
-import { getBuilders, getWorks } from '@/lib/content'
+import { getBuilders, getInsights, getWorks } from '@/lib/content'
 import { getSiteSettings } from '@/lib/settings'
 import { faqTopics } from '@/lib/faq-view'
 import './home.css'
@@ -10,13 +10,16 @@ import HomeView from './home-view'
 export const revalidate = 300
 
 export default async function HomePage() {
-  const [{ home }, settings, builders, works] = await Promise.all([
-    faqTopics(), getSiteSettings(), getBuilders(), getWorks(),
+  const [{ home }, settings, builders, works, insights] = await Promise.all([
+    faqTopics(), getSiteSettings(), getBuilders(), getWorks(), getInsights(),
   ])
 
   return (
     <HomeView
       faq={home}
+      /* S7 "우리의 생각" — 최신 3건. 예전에는 견본 3건이 박혀 있어서
+         글을 발행해도 홈에는 영영 나오지 않았다. */
+      insights={insights.slice(0, 3)}
       heroTitle={settings.heroTitle}
       heroSub={settings.heroSub}
       /* 아직 아무도 등록하지 않았으면 기존 화면의 숫자를 유지한다 */

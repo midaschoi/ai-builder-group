@@ -5,20 +5,10 @@ import { useEffect, useState } from 'react'
 import { useRibbonFlow, useDock } from '@/components/fx'
 import type { Category, InsightCard } from '@/lib/content'
 
-/* ⚠ 아래 ARTICLES 는 **시연용 샘플**이다. 발행된 글이 하나도 없을 때만 쓴다.
-     하나라도 발행되면 목록 전체가 DB 로 바뀐다 (page.tsx 가 넘겨준다). */
+/* ⛔ 시연용 견본 배열(ARTICLES 8건)을 걷어냈다 — 사용자 요청.
+     예전에는 발행 글이 0건이면 견본으로 되돌아갔고, 그래서 글을 지울 때마다
+     가짜 글 8개가 되살아났다. 이제 화면은 항상 DB 만 본다. */
 type Article = { c: string; img: string; title: string; cat: string; desc: string; meta: string; href?: string; cover?: string | null }
-const ARTICLES: Article[] = [
-  { c: 'ai-ax', img: 'ins-poc.webp', title: "AI PoC란? 기업 AI 도입 전 반드시 필요한 'PoC' 알아보기", cat: 'AI · AX', desc: '기업 AI 도입, 전면 구축 전에 PoC로 먼저 검증해야 하는 이유.', meta: '똑똑한개발자 · 2026.08.03' },
-  { c: 'ai-ax', img: 'ins-agent.webp', title: '우리 회사에도 AI 에이전트가 필요할까? 5분 체크리스트', cat: 'AI · AX', desc: '도입이 필요한 조직의 신호 — 5분 만에 자가진단해 보세요.', meta: '똑똑한개발자 · 2026.07.22' },
-  { c: 'guide', img: 'ins-quote.webp', title: '500만 원 vs 2,000만 원, 개발 외주 견적 비교 제대로 하는 법', cat: '발주 가이드', desc: '같은 앱인데 견적이 4배 차이 나는 이유를 뜯어봅니다.', meta: '똑똑한개발자 · 2026.07.03' },
-  { c: 'guide', img: 'ins-turnkey.webp', title: '외주개발, 왜 올인원 턴키 팀과 함께 해야 할까?', cat: '발주 가이드', desc: '기획·디자인·개발을 따로 맡기면 실패하는 구조적 이유.', meta: '똑똑한개발자 · 2026.07.03' },
-  { c: 'ai-ax', img: 'ins-ax.webp', title: 'AI 도입과 AX는 다르다 — 성과를 만드는 업무 설계 3가지', cat: 'AI · AX', desc: '도입했는데 성과가 없다면, AX와의 결정적 차이를 봐야 합니다.', meta: '똑똑한개발자 · 2026.07.16' },
-  { c: 'project', img: 'ins-toss.webp', title: '토스 안에서 미니게임을? 똑똑한개발자 × 앱인토스', cat: '프로젝트', desc: '토스와 함께 미니게임을 만든 프로젝트 비하인드.', meta: '똑똑한개발자 · 2026.07.03' },
-  { c: 'how', img: 'ins-native.webp', title: '기획·디자인·개발을 하나로 — AI 네이티브 에이전시 운영법', cat: '일하는 방식', desc: "'프로덕트 빌더'로 팀을 운영하는 방식, 빌더 조쉬와의 대화.", meta: '똑똑한개발자 · 2026.04.22' },
-  { c: 'ai-ax', img: 'ins-gov.webp', title: '기업용 AI 도입, 왜 거버넌스가 먼저 필요할까?', cat: 'AI · AX', desc: '데이터 유출·통제 불능을 막는 AI 거버넌스 설계법.', meta: '똑똑한개발자 · 2026.07.14' },
-]
-
 function fromDb(list: InsightCard[]): Article[] {
   return list.map(a => ({
     c: a.category_slug,
@@ -41,16 +31,10 @@ export default function InsightView({
   active?: string
   counts?: Record<string, number>
 }) {
-  /* DB 모드에서는 서버가 이미 걸러서 내려준다 — 카테고리는 링크(경로)가 되고,
-     아래 useEffect 의 클라이언트 필터는 샘플 모드에서만 의미가 있다.
+  /* 서버가 이미 걸러서 내려준다 — 카테고리는 링크(경로)다.
      IA §1 이 /insight/[category] 를 요구하므로 경로 쪽이 정답이다 (TR-04). */
-  /* ⚠ 견본/DB 판정은 **전체 발행 수**(total)로 한다. 이 화면에 뿌릴 articles 로 판정하면
-       글이 0건인 카테고리 경로(/insight/ai-playbook 등)에서 articles 가 빈 배열이라
-       견본 8개가 통째로 되살아난다 — /insight 는 새 글, 좌측 카테고리는 견본이 나왔다.
-       counts 는 서버가 항상 **전체** 집계로 내려준다 (page.tsx · [slug]/page.tsx 둘 다). */
   const total = Object.values(counts).reduce((a, b) => a + b, 0)
-  const live = total > 0
-  const all = live ? fromDb(articles) : ARTICLES
+  const all = fromDb(articles)
 
   /* ── FR-P04-03 페이지네이션 (12건) ────────────────────────────────────
      서버 searchParams 로 하면 이 라우트가 통째로 동적 렌더가 된다 (SSG 포기).
@@ -88,26 +72,9 @@ export default function InsightView({
   }, { rsI: 5500 })
   useDock('sub')
 
-  /* 카테고리 필터 */
-  useEffect(() => {
-    const rows = document.querySelectorAll<HTMLElement>('[data-list] .arow')
-    const empty = document.querySelector('[data-empty]') as HTMLElement | null
-    document.querySelectorAll<HTMLElement>('.cats button').forEach(b => {
-      b.addEventListener('click', () => {
-        document.querySelectorAll('.cats button').forEach(x => x.classList.remove('on'))
-        b.classList.add('on')
-        const cat = b.dataset.cat
-        let n = 0
-        rows.forEach(r => {
-          const show = cat === 'all' || r.dataset.c === cat
-          r.style.display = show ? '' : 'none'
-          if (show) n++
-        })
-        if (empty) empty.hidden = n > 0
-        history.replaceState(null, '', cat === 'all' ? '#' : '#' + cat)
-      })
-    })
-  }, [])
+  /* ⛔ 예전의 클라이언트 카테고리 필터(.cats button 클릭 → 행 숨기기)는 걷어냈다.
+       견본 모드 전용이었고, 그 버튼이 사라진 지금은 붙일 대상이 없다.
+       카테고리 전환은 /insight/[category] 경로가 담당한다. */
 
   return (
     <>
@@ -134,27 +101,15 @@ export default function InsightView({
         <div className="wrap ins">
           {/* 카테고리: 전환 시 URL 경로 변경 (실서비스: /insight/[category]) */}
           <nav className="cats" aria-label="카테고리">
-            {live ? (
-              <>
-                <Link className={active === '' ? 'on' : undefined} href="/insight">
-                  전체 <span className="cnt">{pad(total)}</span>
-                </Link>
-                {categories.map(c => (
-                  <Link key={c.slug} href={`/insight/${c.slug}`}
-                    className={active === c.slug ? 'on' : undefined}>
-                    {c.name} <span className="cnt">{pad(counts[c.slug] ?? 0)}</span>
-                  </Link>
-                ))}
-              </>
-            ) : (
-              <>
-                <button className="on" data-cat="all">전체 <span className="cnt">08</span></button>
-                <button data-cat="ai-ax">AI · AX <span className="cnt">04</span></button>
-                <button data-cat="guide">발주 가이드 <span className="cnt">02</span></button>
-                <button data-cat="how">일하는 방식 <span className="cnt">01</span></button>
-                <button data-cat="project">프로젝트 <span className="cnt">01</span></button>
-              </>
-            )}
+            <Link className={active === '' ? 'on' : undefined} href="/insight">
+              전체 <span className="cnt">{pad(total)}</span>
+            </Link>
+            {categories.map(c => (
+              <Link key={c.slug} href={`/insight/${c.slug}`}
+                className={active === c.slug ? 'on' : undefined}>
+                {c.name} <span className="cnt">{pad(counts[c.slug] ?? 0)}</span>
+              </Link>
+            ))}
           </nav>
 
           <div data-list>
@@ -173,14 +128,24 @@ export default function InsightView({
               </Link>
             ))}
 
-            {/* 샘플 모드에서는 위 useEffect 의 버튼 필터가 켜고 끈다.
-                DB 모드에는 그 버튼이 없으므로 서버가 직접 판단한다 —
-                안 그러면 글 0건인 카테고리가 아무것도 없는 백지가 된다. */}
-            <div className="empty" data-empty hidden={live ? all.length > 0 : true}
-              style={{ marginTop: 24 }}>
-              <h3>이 주제의 첫 글을 준비 중입니다</h3>
-              <p>다른 카테고리의 글을 먼저 읽어보세요.</p>
-            </div>
+            {/* 견본이 사라졌으니 빈 화면은 서버가 직접 말해 준다.
+                문구를 둘로 나눈다 — 사이트 전체가 비었는지, 이 카테고리만 비었는지는
+                읽는 사람에게 전혀 다른 이야기다. */}
+            {all.length === 0 && (
+              <div className="empty" data-empty style={{ marginTop: 24 }}>
+                {total === 0 ? (
+                  <>
+                    <h3>아직 발행된 글이 없습니다</h3>
+                    <p>첫 인사이트를 준비하고 있습니다.</p>
+                  </>
+                ) : (
+                  <>
+                    <h3>이 주제의 첫 글을 준비 중입니다</h3>
+                    <p>다른 카테고리의 글을 먼저 읽어보세요.</p>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* FR-P04-03 — 1페이지뿐이면 아예 그리지 않는다 */}
             {pages > 1 && (

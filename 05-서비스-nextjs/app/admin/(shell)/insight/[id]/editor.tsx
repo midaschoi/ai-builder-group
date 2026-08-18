@@ -7,6 +7,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import { saveInsight, uploadImage, type SaveState } from './actions'
+import DeleteBox from '../../delete-box'
 
 /* A-03 Insight 편집.
 
@@ -435,6 +436,11 @@ export default function InsightEditor({
               <dt>수정</dt><dd>{record.updated_at ? new Date(record.updated_at).toLocaleString('ko-KR') : '—'}</dd>
             </dl>
           </section>
+
+          {/* 삭제는 운영 관리자만. 새 글(id 없음)은 아직 지울 것이 없다 */}
+          {isAdmin && record.id && (
+            <DeleteBox kind="insight" id={record.id} title={title} status={record.status} />
+          )}
         </aside>
       </div>
     </form>
