@@ -42,7 +42,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
   useEffect(() => { if (state.ok) setDirty(false) }, [state])
 
   return (
-    <form action={action} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <form action={action} style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
       {state.error && <p className="adm-error" role="alert">{state.error}</p>}
       {state.ok && (
         <p className="adm-notice" role="status" style={{ background: '#DBF3E4', color: '#14663C' }}>
@@ -62,7 +62,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
         <div className="adm-field">
           <label htmlFor="pluug_form_url">폼 주소</label>
           <input
-            id="pluug_form_url" name="pluug_form_url" type="url"
+            id="pluug_form_url" name="pluug_form_url" data-size="lg" type="url"
             value={form.pluug_form_url} onChange={set('pluug_form_url')}
             placeholder="https://www.pluuug.com/form/폼ID"
           />
@@ -86,7 +86,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
         <div className="adm-field">
           <label htmlFor="google_site_verification">구글 서치 콘솔 확인 코드</label>
           <input
-            id="google_site_verification" name="google_site_verification" type="text"
+            id="google_site_verification" name="google_site_verification" data-size="lg" type="text"
             value={form.google_site_verification} onChange={set('google_site_verification')}
             placeholder='google-site-verification=... 또는 <meta ... content="..."> 통째로'
             spellCheck={false}
@@ -99,7 +99,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
         <div className="adm-field">
           <label htmlFor="naver_site_verification">네이버 서치어드바이저 확인 코드</label>
           <input
-            id="naver_site_verification" name="naver_site_verification" type="text"
+            id="naver_site_verification" name="naver_site_verification" data-size="lg" type="text"
             value={form.naver_site_verification} onChange={set('naver_site_verification')}
             placeholder='naver-site-verification 값 또는 태그 통째로'
             spellCheck={false}
@@ -112,7 +112,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
         <div className="adm-field">
           <label htmlFor="ga4_measurement_id">GA4 측정 ID</label>
           <input
-            id="ga4_measurement_id" name="ga4_measurement_id" type="text"
+            id="ga4_measurement_id" name="ga4_measurement_id" data-size="sm" type="text"
             value={form.ga4_measurement_id} onChange={set('ga4_measurement_id')}
             placeholder="G-ABCD1234" spellCheck={false}
           />
@@ -124,7 +124,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
         <div className="adm-field">
           <label htmlFor="gtm_container_id">태그 관리자(GTM) 컨테이너 ID</label>
           <input
-            id="gtm_container_id" name="gtm_container_id" type="text"
+            id="gtm_container_id" name="gtm_container_id" data-size="sm" type="text"
             value={form.gtm_container_id} onChange={set('gtm_container_id')}
             placeholder="GTM-ABC1234" spellCheck={false}
           />
@@ -149,7 +149,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
 
         <div className="adm-field">
           <label htmlFor="hero_title">헤드라인</label>
-          <input id="hero_title" name="hero_title" type="text" maxLength={80}
+          <input id="hero_title" name="hero_title" data-size="lg" type="text" maxLength={80}
             value={form.hero_title} onChange={set('hero_title')}
             placeholder="아이디어만 가져오세요 — 나머지는 검증된 빌더의 일입니다." />
           <small className="adm-dim" style={{ fontSize: 12 }}>비우면 기존 문구를 씁니다.</small>
@@ -157,13 +157,13 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
 
         <div className="adm-field">
           <label htmlFor="hero_sub">보조 문구</label>
-          <input id="hero_sub" name="hero_sub" type="text" maxLength={120}
+          <input id="hero_sub" name="hero_sub" data-size="lg" type="text" maxLength={120}
             value={form.hero_sub} onChange={set('hero_sub')} />
         </div>
 
         <div className="adm-field">
           <label htmlFor="stat_rating">평균 만족도 지표</label>
-          <input id="stat_rating" name="stat_rating" type="text" maxLength={12}
+          <input id="stat_rating" name="stat_rating" data-size="xs" type="text" maxLength={12}
             value={form.stat_rating} onChange={set('stat_rating')} placeholder="4.9" />
           <small className="adm-dim" style={{ fontSize: 12 }}>
             ⚠ <b>근거가 있을 때만 채우세요.</b> 기획서 절대 규칙이 근거 없는 수치를 금지합니다 (C2).
@@ -183,7 +183,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
         <div className="adm-field">
           <label htmlFor="channel_plugin_key">플러그인 키</label>
           <input
-            id="channel_plugin_key" name="channel_plugin_key" type="text"
+            id="channel_plugin_key" name="channel_plugin_key" data-size="md" type="text"
             value={form.channel_plugin_key} onChange={set('channel_plugin_key')} spellCheck={false}
           />
           <small className="adm-dim" style={{ fontSize: 12 }}>

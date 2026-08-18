@@ -215,28 +215,60 @@
 .set-card {
   padding: 0;                     /* 머리글이 카드 끝까지 닿아야 띠로 읽힌다 */
   display: flex; flex-direction: column;
-  border-left: 3px solid var(--tone);
-  background: color-mix(in srgb, var(--tone) 4%, var(--card));
+  border-left: 4px solid var(--tone);
+  /* 머리글만 물들이면 본문은 넷 다 흰색이라 여전히 같아 보인다.
+     카드 전체에 아주 옅게 깔아 "이 구역" 이 끝까지 이어지게 한다. */
+  background: color-mix(in srgb, var(--tone) 10%, var(--card));
+  border-color: color-mix(in srgb, var(--tone) 30%, var(--ln));
 }
 
 .set-head {
-  padding: 15px 20px;
+  padding: 17px 24px;
   background: color-mix(in srgb, var(--tone) 28%, var(--card));
   border-bottom: 1px solid color-mix(in srgb, var(--tone) 48%, var(--ln));
 }
 .set-head h2 {
-  margin: 0; font-size: 16.5px; font-weight: 800; letter-spacing: -.015em;
+  margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -.02em;
   color: color-mix(in srgb, var(--tone) 46%, var(--ink));
 }
-.set-head .adm-dim { margin: 5px 0 0; font-size: 12.5px; line-height: 1.6; }
+/* 설명은 제목에 딸린 것이다. 한 줄을 너무 길게 끌면 눈이 되돌아올 지점을 잃는다 */
+.set-head .adm-dim { margin: 6px 0 0; font-size: 12.5px; line-height: 1.7; max-width: 74ch; }
 
-/* 입력칸 묶음. 카드 padding 을 0 으로 돌렸으니 여기서 다시 준다.
-   ⚠ 머리글(.set-head)은 제외해야 하므로 :not() 으로 거른다. */
-.set-card > :not(.set-head) { margin: 0 20px; }
-.set-card > :not(.set-head):first-of-type { margin-top: 16px; }
-.set-card > :not(.set-head):last-child { margin-bottom: 18px; }
-.set-card > .adm-field + .adm-field { margin-top: 14px; }
+/* ── 본문 ─────────────────────────────────────────────────────────
+   카드 padding 을 0 으로 돌렸으니 여기서 다시 준다.
+   ⚠ 머리글은 제외해야 하므로 :not() 으로 거른다. */
+.set-card > :not(.set-head) { margin: 0 24px; }
+.set-card > :not(.set-head):first-of-type { margin-top: 22px; }
+.set-card > :not(.set-head):last-child { margin-bottom: 24px; }
+/* 필드 사이는 넉넉히 — 6px 간격에 설명글까지 붙어 있어서 답답했다 */
+.set-card > .adm-field + .adm-field { margin-top: 22px; }
 
-/* 색을 깐 바탕 위에서도 입력칸은 흰색이다 — 탁해 보이면 읽고 쓰기가 나빠진다 */
-.set-card .adm-field input,
-.set-card .adm-field textarea { background: var(--card); }
+/* ── 필드 한 벌: 라벨 → 입력칸 → 설명 ──────────────────────────── */
+.set-card .adm-field { gap: 0; }
+.set-card .adm-field label {
+  font-size: 13px; font-weight: 700; color: var(--ink);
+  margin-bottom: 7px;
+}
+.set-card .adm-field input {
+  padding: 11px 14px; font-size: 14px; border-radius: 10px;
+  border-color: color-mix(in srgb, var(--ink) 16%, var(--ln));
+  background: var(--card);        /* 색 깔린 바탕 위에서도 입력칸은 흰색이다 */
+}
+.set-card .adm-field input::placeholder { color: color-mix(in srgb, var(--mut) 80%, var(--card)); }
+.set-card .adm-field input:focus {
+  border-color: var(--tone);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone) 22%, transparent);
+}
+/* 설명은 입력칸에서 한 칸 떼고, 줄 길이를 묶는다 */
+.set-card .adm-field small {
+  margin-top: 8px; font-size: 12px; line-height: 1.7; max-width: 78ch;
+}
+
+/* ── 입력칸 폭은 들어갈 값의 길이를 따른다 ────────────────────────
+   전부 100% 로 두면 12자짜리 측정 ID 도 900px 짜리 막대가 된다.
+   폭이 곧 "여기 얼마나 긴 값이 들어가는가" 라는 안내가 되게 한다.
+   ⚠ max-width 로만 줄인다 — 창이 좁아지면 알아서 함께 줄어야 한다. */
+.set-card .adm-field input[data-size='xs'] { max-width: 120px; }
+.set-card .adm-field input[data-size='sm'] { max-width: 260px; }
+.set-card .adm-field input[data-size='md'] { max-width: 460px; }
+.set-card .adm-field input[data-size='lg'] { max-width: 720px; }
