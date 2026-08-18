@@ -35,8 +35,18 @@ export default async function proxy(request: NextRequest) {
     },
   })
 
-  /* 이 호출이 만료된 토큰을 갱신한다. 지우면 작업 중에 갑자기 로그아웃된다. */
-  const { data: { user } } = await supabase.auth.getUser()
+  /* 이 호출이 만료된 토큰을 갱신한다. 지우면 작업 중에 갑자기 로그아웃된다.
+
+     ⚠ getUser() 가 아니라 getClaims() 다. getUser() 는 **매 요청마다** Supabase Auth 로
+       네트워크 왕복을 한다. 이 프로젝트는 ES256 비대칭 키를 쓰므로 (JWKS 공개됨)
+       getClaims() 가 JWT 서명을 로컬에서 검증한다 — 왕복이 사라진다.
+         · 갱신은 그대로다. 내부에서 getSession() → __loadSession() 이 만료를 보고 갱신한다
+         · 공개키는 모듈 전역(GLOBAL_JWKS)에 10분 캐시된다 — 인스턴스가 살아있는 동안 재사용
+         · 대칭키이거나 WebCrypto 가 없으면 라이브러리가 알아서 getUser() 로 되돌아간다
+     ⛔ getSession() 으로 바꾸지 말 것. 그건 쿠키 내용을 **검증 없이** 그대로 믿는다.
+        getClaims() 는 서명을 실제로 검증한다 — 그 점이 결정적으로 다르다. */
+  const { data: claims } = await supabase.auth.getClaims()
+  const user = claims?.claims ?? null
 
   const isLoginPage = pathname === '/admin/login'
   /* 비밀번호 설정 화면은 비로그인으로 들어온다 — 초대·재설정 메일 링크의 착지점이다.

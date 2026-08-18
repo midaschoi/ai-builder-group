@@ -190,7 +190,7 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
       {/* 저장은 화면 오른쪽 아래에 고정한다. 예전에는 맨 아래 왼쪽에 덩그러니 있었는데,
           이 화면은 섹션이 넷이라 끝까지 스크롤해야 버튼이 보였다.
           FAQ·영상 관리와 같은 부품을 쓴다 (../save-bar.tsx). */}
-      <SaveBar dirty={dirty} pending={pending} align="end" />
+      <SaveBar dirty={dirty} pending={pending} />
     </form>
   )
 }
