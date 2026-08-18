@@ -6,6 +6,11 @@ import SaveBar from '../save-bar'
 
 const INITIAL: SettingsState = {}
 
+/* 구획별 색조. FAQ 토픽(faq/view.tsx)과 **같은 팔레트**를 쓴다 —
+   관리자 안에서 "색이 구역을 가른다" 는 규칙을 한 벌로 유지하려는 것이다.
+   순서대로 돌려 쓰므로 구획이 늘어도 그대로 동작한다. */
+const TONES = ['#8C9E2B', '#5B7290', '#A8742A', '#6E6A86'] as const
+
 export type SettingsForm = {
   pluug_form_url: string
   ga4_measurement_id: string
@@ -46,10 +51,10 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
       )}
 
       {/* ── 문의 폼 ───────────────────────────────────────────── */}
-      <section className="adm-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>문의 폼 (pluug)</h2>
-          <p className="adm-dim" style={{ margin: '4px 0 0', fontSize: 12.5 }}>
+      <section className="adm-card set-card" style={{ '--tone': TONES[0] } as React.CSSProperties}>
+        <div className="set-head">
+          <h2>문의 폼 (pluug)</h2>
+          <p className="adm-dim">
             문의하기 페이지에 뜨는 폼 주소입니다. 여기만 바꾸면 배포 없이 바로 바뀝니다.
           </p>
         </div>
@@ -69,10 +74,10 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
       </section>
 
       {/* ── 검색 등록 ─────────────────────────────────────────── */}
-      <section className="adm-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>검색 등록 · 분석</h2>
-          <p className="adm-dim" style={{ margin: '4px 0 0', fontSize: 12.5 }}>
+      <section className="adm-card set-card" style={{ '--tone': TONES[1] } as React.CSSProperties}>
+        <div className="set-head">
+          <h2>검색 등록 · 분석</h2>
+          <p className="adm-dim">
             소유권 확인 코드를 넣으면 사이트 &lt;head&gt; 에 확인용 태그가 들어갑니다.
             <b> 태그를 통째로 붙여넣어도 됩니다</b> — content 값만 알아서 뽑습니다.
           </p>
@@ -133,10 +138,10 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
       </section>
 
       {/* ── 홈 카피 (범위 변경분 · 백로그 §1.8) ────────────────── */}
-      <section className="adm-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>홈 첫 화면</h2>
-          <p className="adm-dim" style={{ margin: '4px 0 0', fontSize: 12.5 }}>
+      <section className="adm-card set-card" style={{ '--tone': TONES[2] } as React.CSSProperties}>
+        <div className="set-head">
+          <h2>홈 첫 화면</h2>
+          <p className="adm-dim">
             홈 전체가 아니라 <b>첫 화면 문구와 지표</b>만 엽니다. 나머지 카피는 코드에서 바꿉니다 —
             홈 전체를 편집 가능하게 만들면 CMS 를 짓는 일이 됩니다.
           </p>
@@ -168,10 +173,10 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
         </div>
       </section>
       {/* ── 상담 ──────────────────────────────────────────────── */}
-      <section className="adm-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>채널톡</h2>
-          <p className="adm-dim" style={{ margin: '4px 0 0', fontSize: 12.5 }}>
+      <section className="adm-card set-card" style={{ '--tone': TONES[3] } as React.CSSProperties}>
+        <div className="set-head">
+          <h2>채널톡</h2>
+          <p className="adm-dim">
             채널 설정 → 보안 및 개발 → 플러그인 키
           </p>
         </div>

@@ -56,10 +56,16 @@
 .sc-row[data-off] { opacity: .5; }
 .sc-row[data-off]:focus-within { opacity: 1; }
 
+/* 순번 — 11.5px 회색으로 거의 안 보였다. 순서를 바꾸는 화면에서 지금 몇 번째인지가
+   중요한 정보라 굵고 크게 간다. 폭도 함께 넓힌다 (두 자리 수가 줄바꿈되지 않게). */
 .sc-no {
-  font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; color: var(--mut);
-  flex: none; width: 18px; padding-top: 10px; text-align: right;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 15px; font-weight: 700; color: color-mix(in srgb, var(--ink) 62%, var(--bg));
+  flex: none; width: 26px; padding-top: 8px; text-align: right;
+  font-variant-numeric: tabular-nums;   /* 자릿수가 흔들리지 않게 */
 }
+/* 색조가 있는 게시판에서는 순번도 그 색을 따른다 — 같은 묶음이라는 표시가 하나 더 는다 */
+.sc-group[style*='--tone'] > .sc-row > .sc-no { color: color-mix(in srgb, var(--tone) 62%, var(--ink)); }
 
 .sc-thumb {
   width: 96px; height: 54px; border-radius: 7px; flex: none; object-fit: cover;
@@ -201,3 +207,36 @@
 
 /* 지금 쓰고 있는 칸은 어느 쪽이든 흰 바탕으로 올라온다 — 입력 중에는 바탕이 밝아야 편하다 */
 .sc-fields .sc-a:focus { background: var(--card); }
+
+/* ── 사이트 설정 구획 (settings/view.tsx) ─────────────────────────
+   흰 카드 넷이 세로로 이어져 있어서 어디서 어디까지가 한 묶음인지 안 보였다.
+   FAQ 게시판과 **같은 색 언어**를 쓴다 — 왼쪽 띠 + 머리글 색조.
+   관리자 안에서 "색이 구역을 가른다" 는 규칙을 한 벌로 유지한다. */
+.set-card {
+  padding: 0;                     /* 머리글이 카드 끝까지 닿아야 띠로 읽힌다 */
+  display: flex; flex-direction: column;
+  border-left: 3px solid var(--tone);
+  background: color-mix(in srgb, var(--tone) 4%, var(--card));
+}
+
+.set-head {
+  padding: 15px 20px;
+  background: color-mix(in srgb, var(--tone) 28%, var(--card));
+  border-bottom: 1px solid color-mix(in srgb, var(--tone) 48%, var(--ln));
+}
+.set-head h2 {
+  margin: 0; font-size: 16.5px; font-weight: 800; letter-spacing: -.015em;
+  color: color-mix(in srgb, var(--tone) 46%, var(--ink));
+}
+.set-head .adm-dim { margin: 5px 0 0; font-size: 12.5px; line-height: 1.6; }
+
+/* 입력칸 묶음. 카드 padding 을 0 으로 돌렸으니 여기서 다시 준다.
+   ⚠ 머리글(.set-head)은 제외해야 하므로 :not() 으로 거른다. */
+.set-card > :not(.set-head) { margin: 0 20px; }
+.set-card > :not(.set-head):first-of-type { margin-top: 16px; }
+.set-card > :not(.set-head):last-child { margin-bottom: 18px; }
+.set-card > .adm-field + .adm-field { margin-top: 14px; }
+
+/* 색을 깐 바탕 위에서도 입력칸은 흰색이다 — 탁해 보이면 읽고 쓰기가 나빠진다 */
+.set-card .adm-field input,
+.set-card .adm-field textarea { background: var(--card); }
