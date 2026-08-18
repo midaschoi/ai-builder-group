@@ -44,9 +44,13 @@ export default function InsightView({
   /* DB 모드에서는 서버가 이미 걸러서 내려준다 — 카테고리는 링크(경로)가 되고,
      아래 useEffect 의 클라이언트 필터는 샘플 모드에서만 의미가 있다.
      IA §1 이 /insight/[category] 를 요구하므로 경로 쪽이 정답이다 (TR-04). */
-  const live = articles.length > 0
-  const all = live ? fromDb(articles) : ARTICLES
+  /* ⚠ 견본/DB 판정은 **전체 발행 수**(total)로 한다. 이 화면에 뿌릴 articles 로 판정하면
+       글이 0건인 카테고리 경로(/insight/ai-playbook 등)에서 articles 가 빈 배열이라
+       견본 8개가 통째로 되살아난다 — /insight 는 새 글, 좌측 카테고리는 견본이 나왔다.
+       counts 는 서버가 항상 **전체** 집계로 내려준다 (page.tsx · [slug]/page.tsx 둘 다). */
   const total = Object.values(counts).reduce((a, b) => a + b, 0)
+  const live = total > 0
+  const all = live ? fromDb(articles) : ARTICLES
 
   /* ── FR-P04-03 페이지네이션 (12건) ────────────────────────────────────
      서버 searchParams 로 하면 이 라우트가 통째로 동적 렌더가 된다 (SSG 포기).
@@ -169,7 +173,11 @@ export default function InsightView({
               </Link>
             ))}
 
-            <div className="empty" data-empty hidden style={{ marginTop: 24 }}>
+            {/* 샘플 모드에서는 위 useEffect 의 버튼 필터가 켜고 끈다.
+                DB 모드에는 그 버튼이 없으므로 서버가 직접 판단한다 —
+                안 그러면 글 0건인 카테고리가 아무것도 없는 백지가 된다. */}
+            <div className="empty" data-empty hidden={live ? all.length > 0 : true}
+              style={{ marginTop: 24 }}>
               <h3>이 주제의 첫 글을 준비 중입니다</h3>
               <p>다른 카테고리의 글을 먼저 읽어보세요.</p>
             </div>
