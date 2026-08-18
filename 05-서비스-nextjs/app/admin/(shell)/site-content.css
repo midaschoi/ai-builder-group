@@ -56,16 +56,32 @@
 .sc-row[data-off] { opacity: .5; }
 .sc-row[data-off]:focus-within { opacity: 1; }
 
-/* 순번 — 11.5px 회색으로 거의 안 보였다. 순서를 바꾸는 화면에서 지금 몇 번째인지가
-   중요한 정보라 굵고 크게 간다. 폭도 함께 넓힌다 (두 자리 수가 줄바꿈되지 않게). */
+/* 순번 배지 — 예전에는 11.5px 회색 숫자가 허공에 떠 있어 행의 일부로 읽히지 않았다.
+   네모 칸에 담으면 "이 행의 번호" 라는 것이 형태만으로 전달된다.
+
+   ⚠ 원(50%)이 아니라 **모서리 둥근 네모**다. 두 자리가 되면 원은 타원으로 찌그러지는데,
+     min-width + 좌우 padding 을 쓴 네모는 12 · 100 이 되어도 모양이 무너지지 않는다.
+   ⚠ margin-top 5px 은 옆 입력칸의 첫 줄과 가운데를 맞춘 값이다
+     (.sc-row 가 flex-start 라 자동으로 맞지 않는다). */
 .sc-no {
+  flex: none;
+  display: inline-grid; place-items: center;
+  min-width: 28px; height: 28px; padding: 0 7px; margin-top: 5px;
+  border-radius: 9px;
   font-family: ui-monospace, Menlo, monospace;
-  font-size: 15px; font-weight: 700; color: color-mix(in srgb, var(--ink) 62%, var(--bg));
-  flex: none; width: 26px; padding-top: 8px; text-align: right;
+  font-size: 13px; font-weight: 700; line-height: 1;
   font-variant-numeric: tabular-nums;   /* 자릿수가 흔들리지 않게 */
+  background: var(--bg);
+  border: 1px solid var(--ln);
+  color: color-mix(in srgb, var(--ink) 66%, var(--bg));
 }
-/* 색조가 있는 게시판에서는 순번도 그 색을 따른다 — 같은 묶음이라는 표시가 하나 더 는다 */
-.sc-group[style*='--tone'] > .sc-row > .sc-no { color: color-mix(in srgb, var(--tone) 62%, var(--ink)); }
+/* 색조가 있는 게시판에서는 배지도 그 색을 입는다 — 같은 묶음이라는 표시가 하나 더 는다 */
+.sc-group[style*='--tone'] > .sc-row > .sc-no {
+  background: color-mix(in srgb, var(--tone) 20%, var(--card));
+  border-color: color-mix(in srgb, var(--tone) 42%, var(--ln));
+  color: color-mix(in srgb, var(--tone) 44%, var(--ink));
+}
+/* 비공개 행은 .sc-row[data-off] 가 통째로 흐려지므로 배지도 함께 흐려진다 — 따로 두지 않는다 */
 
 .sc-thumb {
   width: 96px; height: 54px; border-radius: 7px; flex: none; object-fit: cover;
@@ -238,7 +254,11 @@
    카드 padding 을 0 으로 돌렸으니 여기서 다시 준다.
    ⚠ 머리글은 제외해야 하므로 :not() 으로 거른다. */
 .set-card > :not(.set-head) { margin: 0 24px; }
-.set-card > :not(.set-head):first-of-type { margin-top: 22px; }
+/* ⛔ :first-of-type 을 쓰면 안 된다. of-type 은 **태그 종류** 기준이라
+     형제 중 첫 <div> 는 .set-head 자신이다. :not(.set-head) 와 겹칠 일이 없어
+     이 규칙이 통째로 죽고, 첫 입력칸이 머리글에 딱 붙어버렸다.
+     "머리글 바로 다음" 은 인접 형제(+)로 잡는 것이 정확하다. */
+.set-card > .set-head + * { margin-top: 22px; }
 .set-card > :not(.set-head):last-child { margin-bottom: 24px; }
 /* 필드 사이는 넉넉히 — 6px 간격에 설명글까지 붙어 있어서 답답했다 */
 .set-card > .adm-field + .adm-field { margin-top: 22px; }

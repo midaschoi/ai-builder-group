@@ -262,5 +262,6 @@
    빨간 테두리로 다른 카드와 확실히 구분한다 — 실수로 누르는 자리가 아니어야 한다. */
 .ed-danger { border-color: color-mix(in srgb, var(--danger) 32%, var(--ln)); }
 .ed-danger h2 { color: var(--danger); }
-.ed-danger p { margin: 0 0 12px; font-size: 12.5px; line-height: 1.65; }
+/* 부모(.ed-side section)가 gap:14px 를 주므로 여기서 margin 을 또 주면 26px 이 된다 */
+.ed-danger p { margin: 0; font-size: 12.5px; line-height: 1.65; }
 .ed-danger .adm-btn--danger { width: 100%; }
