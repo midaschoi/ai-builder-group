@@ -358,7 +358,10 @@ export default function HomeView({
             </p>
             <div className="st st3 hero-ctas">
               <Link className="btn btn--ink btn--pulse" href="/contact" data-track="cta_click" data-location="hero">프로젝트 문의 <span className="arr">→</span></Link>
-              <Link className="cta-sub" href="/work" data-track="cta_click" data-location="hero_secondary">작업물 먼저 보기 <span className="arr">→</span></Link>
+              {/* ⛔ cta_click 을 붙이지 않는다 — 이 링크는 /contact 가 아니라 /work 로 간다.
+                  문의가 아닌 클릭을 문의 전환으로 세면 GA4 의 전환율이 부풀려진다.
+                  한 번 들어간 데이터는 되돌려 고칠 수 없어서 태그를 뗀다 (FR-C-07 · 백로그 §2.1). */}
+              <Link className="cta-sub" href="/work">작업물 먼저 보기 <span className="arr">→</span></Link>
             </div>
             {/* 숫자는 DB 를 센 값이다. 손으로 적어두면 발행할 때마다 사실과 어긋난다 */}
             <p className="st st3 hero-proof">
@@ -550,7 +553,8 @@ export default function HomeView({
           <div className="wrap">
             <div className="s5__head">
               <h2><span className="w300">개발사를 고르지 마세요.</span><br />맞는 개발자를 매칭해 드립니다</h2>
-              <Link className="btn btn--ghost s5__cta" href="/work#builders" data-track="cta_click" data-location="match_section">어떤 빌더들인지 보러가기 <span className="arr">→</span></Link>
+              {/* ⛔ 위 hero 보조 링크와 같은 이유로 cta_click 을 붙이지 않는다 — 목적지가 /work 다 */}
+              <Link className="btn btn--ghost s5__cta" href="/work#builders">어떤 빌더들인지 보러가기 <span className="arr">→</span></Link>
             </div>
             {/* '카드에 마우스를 올려보세요' 안내는 뺐다 — 조작법을 적어두는 건 내부 시연용 문구다.
                 호버·탭 반응은 카드 자체가 알려줘야 한다. */}
