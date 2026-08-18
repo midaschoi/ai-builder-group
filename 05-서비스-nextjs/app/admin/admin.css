@@ -443,3 +443,37 @@
 @media (prefers-reduced-motion: reduce) {
   .nav-wait { animation: none; transform: scaleX(.4); }
 }
+
+/* ── 본문 전환 (template.tsx) ────────────────────────────────────────
+   메뉴를 눌러 화면이 바뀔 때 본문만 짧게 떠오른다.
+
+   ⚠ .adm-main 의 flex 규칙을 그대로 물려받는다 — 이 wrapper 가 새로 끼면서
+     제목·카드가 한 덩어리가 되어 사이 간격 16px 이 사라지기 때문이다. */
+.adm-page { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+/* ⛔ wrapper 자신은 애니메이션하지 않는다. 부모와 자식이 같이 페이드되면
+     투명도가 곱해져서 실제보다 한참 늦게 보인다 — 더 느려 보이는 역효과가 난다.
+     움직이는 것은 **직계 자식뿐**이고, 층은 아주 얕게만 준다. */
+.adm-page > * { animation: adm-page-in .22s cubic-bezier(.22, .7, .3, 1) both; }
+.adm-page > *:nth-child(2) { animation-delay: .045s; }
+.adm-page > *:nth-child(3) { animation-delay: .09s; }
+/* ⛔ 셋째까지만 늦춘다. 계속 늘리면 아래쪽이 눈에 띄게 늦게 나타나 답답해진다 */
+.adm-page > *:nth-child(n + 4) { animation-delay: .12s; }
+
+@keyframes adm-page-in {
+  from { opacity: 0; transform: translate3d(0, 7px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* 사이드바에서 지금 위치가 옮겨가는 것도 눈에 보이게 한다.
+   색만 있고 전환이 없으면 딸깍 바뀌어 버려서 "심심한" 느낌의 절반은 여기서 온다. */
+.adm-nav a {
+  transition: opacity .15s ease, background .15s ease, color .15s ease;
+}
+.adm-nav a[aria-current='page'] {
+  box-shadow: 0 2px 10px -4px rgba(216, 255, 61, .55);
+}
+
+/* ⛔ 이동 중에 본문을 흐리게 하지 않는다. 그게 정확히 예전에 지적받은
+     "투명하게 변했다가 …" 동작이다. 기다리는 표시는 상단 진행 막대(.nav-wait)와
+     눌린 메뉴 표시로 충분하다 — 지금 보고 있는 글자는 끝까지 읽을 수 있어야 한다. */

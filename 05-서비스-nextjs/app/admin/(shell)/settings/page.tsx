@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase'
 import { requireAdmin } from '@/lib/session'
 import Forbidden from '../forbidden'
 import SettingsView, { type SettingsForm } from './view'
+/* 저장바(.sc-savebar)를 FAQ·영상 관리와 공유한다 */
+import '../site-content.css'
 
 /* A-08 사이트 설정 — 260812 2차 미팅에서 새로 나온 요구사항.
    "나중에 저희가 바꿀 수 있게끔만 관리자 페이지에서 링크만 딱 바꾸면 렌더링 되게끔" */

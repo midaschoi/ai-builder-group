@@ -1,7 +1,8 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import { saveSettings, type SettingsState } from './actions'
+import SaveBar from '../save-bar'
 
 const INITIAL: SettingsState = {}
 
@@ -24,8 +25,16 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
      호출하므로 defaultValue 로 두면 저장에 실패했을 때 방금 입력한 값이 통째로 날아간다.
      같은 이유의 버그가 A-03 편집기에 있었다 — insight/[id]/editor.tsx 상단 주석 참고. */
   const [form, setForm] = useState<SettingsForm>(current)
-  const set = (k: keyof SettingsForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const [dirty, setDirty] = useState(false)
+  const set = (k: keyof SettingsForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDirty(true)
     setForm(f => ({ ...f, [k]: e.target.value }))
+  }
+
+  /* 저장이 끝나면 "저장하지 않은 변경" 표시를 내린다.
+     ⚠ 의존성은 state 객체다 — ok 는 한 번 true 가 되면 계속 true 라
+       .ok 로 두면 두 번째 저장부터 effect 가 다시 돌지 않는다 (faq/view.tsx 와 같은 이유). */
+  useEffect(() => { if (state.ok) setDirty(false) }, [state])
 
   return (
     <form action={action} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -178,11 +187,10 @@ export default function SettingsView({ current }: { current: SettingsForm }) {
         </div>
       </section>
 
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button className="adm-btn" type="submit" disabled={pending}>
-          {pending ? '저장 중…' : '저장'}
-        </button>
-      </div>
+      {/* 저장은 화면 오른쪽 아래에 고정한다. 예전에는 맨 아래 왼쪽에 덩그러니 있었는데,
+          이 화면은 섹션이 넷이라 끝까지 스크롤해야 버튼이 보였다.
+          FAQ·영상 관리와 같은 부품을 쓴다 (../save-bar.tsx). */}
+      <SaveBar dirty={dirty} pending={pending} />
     </form>
   )
 }
