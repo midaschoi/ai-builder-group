@@ -161,3 +161,38 @@
   .sc-savebar-msg { font-size: 0; gap: 0; }
   .sc-savebar-msg i { margin-right: auto; }
 }
+
+/* ── FAQ 질문 · 답변 구분 (faq/view.tsx) ──────────────────────────
+   둘 다 같은 흰 상자라 어디까지가 질문이고 어디부터 답변인지 훑을 때 헷갈렸다.
+   행이 여러 개 쌓이면 더 심해진다.
+
+   ⛔ 새 색을 만들지 않는다. 이미 있는 --card(흰색) · --bg(따뜻한 회색) 둘로 가른다.
+      토픽 색(--tone)은 이미 "어느 게시판인가" 를 맡고 있다. 거기에 질문·답변까지
+      색으로 얹으면 색이 두 가지 뜻을 갖게 돼 둘 다 안 읽힌다.
+      그래서 여기서는 **밝기와 굵기**로만 가른다. */
+
+/* 질문 — 흰 바탕, 굵게. 행의 제목 역할이라 먼저 읽혀야 한다 */
+.sc-fields .sc-q {
+  background: var(--card);
+  font-weight: 700;
+  font-size: 13.5px;
+  border-color: color-mix(in srgb, var(--ink) 22%, var(--ln));
+}
+
+/* 답변 — 한 단 내려앉은 바탕, 보통 굵기. 질문에 딸린 것으로 읽히게 한다.
+   ⚠ --bg(#F7F5F0)만으로는 흰색과 거의 붙어 보여서 구분이 안 됐다. 한 단 더 내린다.
+     --ln 을 섞어 쓴다 — 이미 이 화면의 선 색이라 새 색을 만들지 않는다. */
+.sc-fields .sc-a {
+  background: color-mix(in srgb, var(--ln) 45%, var(--bg));
+  color: color-mix(in srgb, var(--ink) 86%, var(--bg));
+  /* 왼쪽 띠로 한 번 더 말해 준다 — 색만으로 가르면 흑백 인쇄·색약에서 사라진다 */
+  border-left-width: 3px;
+  border-left-color: color-mix(in srgb, var(--ink) 20%, var(--ln));
+}
+
+/* 라벨을 따로 두지 않는 대신 빈 칸일 때 안내 문구가 그 일을 한다 */
+.sc-fields .sc-q::placeholder { color: var(--mut); font-weight: 700; }
+.sc-fields .sc-a::placeholder { color: var(--mut); font-weight: 400; }
+
+/* 지금 쓰고 있는 칸은 어느 쪽이든 흰 바탕으로 올라온다 — 입력 중에는 바탕이 밝아야 편하다 */
+.sc-fields .sc-a:focus { background: var(--card); }

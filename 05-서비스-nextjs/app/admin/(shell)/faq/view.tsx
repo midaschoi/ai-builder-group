@@ -118,12 +118,16 @@ export default function FaqView({ topics, rows }: { topics: Topic[]; rows: Row[]
             {mine.map(({ r, i }, n) => (
               <div className="sc-row" key={i} data-off={r.is_active ? undefined : ''}>
                 <span className="sc-no">{n + 1}</span>
+                {/* 질문·답변에 각각 클래스를 준다. 요소 종류(input/textarea)로 갈라도 되지만
+                    콘텐츠 관리도 같은 .sc-fields 를 쓰므로 그쪽까지 색이 바뀐다. */}
                 <div className="sc-fields">
                   <input
+                    className="sc-q"
                     value={r.question} placeholder="질문" maxLength={120}
                     onChange={e => patch(i, { question: e.target.value })}
                   />
                   <textarea
+                    className="sc-a"
                     value={r.answer} placeholder="답변" rows={3} maxLength={600}
                     onChange={e => patch(i, { answer: e.target.value })}
                   />
