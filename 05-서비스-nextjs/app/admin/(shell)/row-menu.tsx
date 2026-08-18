@@ -82,8 +82,32 @@ export default function RowMenu({
         onToggle={() => {
           const el = ref.current
           if (!el?.open) { setAt(null); return }
-          const r = el.querySelector('summary')!.getBoundingClientRect()
-          setAt({ top: Math.round(r.bottom + 5), left: Math.round(r.right - 150) })
+
+          /* ⚠ 예전에는 무조건 버튼 **아래**로 폈다 (top = r.bottom + 5).
+               목록 아래쪽 행에서는 그 자리가 이미 화면 밖이라 메뉴가 잘려 나갔고,
+               fixed 라 스크롤해도 따라오지 않는 데다 스크롤하면 닫히기까지 해서
+               "눌러도 안 열린다" 로 보였다. 8행짜리 목록에서 6~8행이 그랬다.
+               아래 공간이 모자라면 버튼 위로 뒤집는다. 좌우도 창 안으로 가둔다. */
+          const s = el.querySelector('summary')!.getBoundingClientRect()
+          const menu = el.querySelector('.rm-menu') as HTMLElement | null
+          /* onToggle 은 열린 뒤에 불리므로 이 시점에는 메뉴를 잴 수 있다.
+             혹시 못 재면 실제 값에 가까운 기본치를 쓴다 (항목 4~5개 기준). */
+          const h = menu?.offsetHeight || 160
+          const w = menu?.offsetWidth || 150
+          const GAP = 5      /* 버튼과 메뉴 사이 */
+          const EDGE = 8     /* 창 가장자리에서 띄울 최소 여백 */
+
+          const roomBelow = window.innerHeight - s.bottom - GAP - EDGE
+          const top = roomBelow >= h
+            ? s.bottom + GAP
+            : Math.max(EDGE, s.top - GAP - h)   /* 위로 뒤집기 */
+
+          const left = Math.min(
+            Math.max(EDGE, s.right - w),
+            window.innerWidth - w - EDGE,
+          )
+
+          setAt({ top: Math.round(top), left: Math.round(left) })
         }}
       >
         <summary className="adm-manage">관리 ▾</summary>

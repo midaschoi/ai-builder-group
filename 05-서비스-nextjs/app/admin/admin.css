@@ -453,14 +453,32 @@
 
 /* ⛔ wrapper 자신은 애니메이션하지 않는다. 부모와 자식이 같이 페이드되면
      투명도가 곱해져서 실제보다 한참 늦게 보인다 — 더 느려 보이는 역효과가 난다.
-     움직이는 것은 **직계 자식뿐**이고, 층은 아주 얕게만 준다. */
-.adm-page > * { animation: adm-page-in .22s cubic-bezier(.22, .7, .3, 1) both; }
+     움직이는 것은 **직계 자식뿐**이고, 층은 아주 얕게만 준다.
+
+   ⛔⛔ 카드에는 transform 을 걸지 않는다. 이유가 있다 —
+        transform 이 걸린 요소는 자손의 position: fixed 의 **기준(containing block)** 이 된다.
+        목록의 [관리 ▾] 메뉴(.rm-menu)가 바로 그 fixed 다. 카드 안이 overflow:hidden 이라
+        일부러 fixed 로 띄운 것인데, 조상에 transform 이 생기면 화면 기준이 아니라
+        카드 기준으로 잡혀 메뉴가 엉뚱한 곳(실측 226px 밖)으로 날아간다.
+        `to { transform: none }` 이라도 소용없다 — 계산된 값은 none 이 아니라
+        **단위행렬 matrix(1,0,0,1,0,0)** 이고, 규격상 none 이 아닌 모든 값이 기준을 만든다.
+        fill-mode 가 both 라 그 상태가 영구히 남는다. 실제로 이 버그를 냈다.
+        카드는 **투명도만** 쓴다. */
+.adm-page > * { animation: adm-page-in .22s cubic-bezier(.22, .7, .3, 1) backwards; }
 .adm-page > *:nth-child(2) { animation-delay: .045s; }
 .adm-page > *:nth-child(3) { animation-delay: .09s; }
 /* ⛔ 셋째까지만 늦춘다. 계속 늘리면 아래쪽이 눈에 띄게 늦게 나타나 답답해진다 */
 .adm-page > *:nth-child(n + 4) { animation-delay: .12s; }
 
 @keyframes adm-page-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* 떠오르는 움직임은 **제목에만** 남긴다. <h1> 안에는 fixed 로 띄우는 것이 없어서
+   위 문제에서 자유롭다. 화면이 바뀌는 느낌은 이 한 줄이 대부분 만든다. */
+.adm-page > .adm-title { animation-name: adm-title-in; }
+@keyframes adm-title-in {
   from { opacity: 0; transform: translate3d(0, 7px, 0); }
   to   { opacity: 1; transform: none; }
 }
