@@ -20,17 +20,20 @@
    맨 위 버튼은 그대로 둔다. 위에서 시작하는 사람은 위 버튼을 먼저 본다. */
 
 export default function SaveBar({
-  dirty, pending, children,
+  dirty, pending, align = 'center', children,
 }: {
   /** 저장하지 않은 변경이 있는가 */
   dirty: boolean
   /** 서버 액션 진행 중 */
   pending: boolean
+  /** 가로 위치. center = 본문 폭의 절반을 가운데 (FAQ · 콘텐츠 관리),
+   *  end = 내용만큼만 차지하고 오른쪽 끝에 (사이트 설정) */
+  align?: 'center' | 'end'
   /** 저장 버튼 왼쪽에 함께 둘 버튼 (예: "+ 영상 추가") */
   children?: React.ReactNode
 }) {
   return (
-    <div className="sc-savebar" data-dirty={dirty ? '' : undefined}>
+    <div className="sc-savebar" data-align={align} data-dirty={dirty ? '' : undefined}>
       <span className="sc-savebar-msg">
         <i aria-hidden="true" />
         {dirty ? '저장하지 않은 변경이 있습니다' : '모든 변경이 저장되었습니다'}
