@@ -8,10 +8,12 @@ import SetupNotice from '../setup-notice'
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>
+  searchParams: Promise<{ next?: string; changed?: string }>
 }) {
   if (!SUPABASE_READY) return <SetupNotice />
 
-  const { next } = await searchParams
-  return <LoginView next={next ?? '/admin/insight'} />
+  const { next, changed } = await searchParams
+  /* 비밀번호를 바꾸면 본인 포함 전부 로그아웃된다 (0010). 이유를 말해주지 않으면
+     "바꿨는데 왜 튕겼지" 가 된다. */
+  return <LoginView next={next ?? '/admin/insight'} changed={changed === '1'} />
 }

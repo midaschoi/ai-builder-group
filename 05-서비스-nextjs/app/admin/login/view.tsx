@@ -5,7 +5,7 @@ import { signIn, type LoginState } from './actions'
 
 const INITIAL: LoginState = {}
 
-export default function LoginView({ next }: { next: string }) {
+export default function LoginView({ next, changed = false }: { next: string; changed?: boolean }) {
   const [state, action, pending] = useActionState(signIn, INITIAL)
 
   /* 이메일은 제어 컴포넌트로 둔다. React 19 는 폼 액션이 끝나면 form.reset() 을 호출하므로
@@ -22,6 +22,13 @@ export default function LoginView({ next }: { next: string }) {
               <i aria-hidden="true">A</i>
               <b>AI 빌더 그룹<span>관리자</span></b>
             </div>
+
+            {changed && !state.error && (
+              <p className="adm-notice" role="status" style={{ background: '#DBF3E4', color: '#14663C' }}>
+                비밀번호를 바꿨습니다. <b>새 비밀번호로 다시 로그인</b>해 주세요.
+                <br />다른 기기에 열려 있던 창은 모두 로그아웃되었습니다.
+              </p>
+            )}
 
             {state.error && (
               <p className="adm-error" role="alert">{state.error}</p>

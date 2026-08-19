@@ -57,9 +57,25 @@ export async function updatePassword(_prev: UpdateState, form: FormData): Promis
 
   /* 임시 비밀번호로 발급된 계정의 강제 변경 플래그를 내린다 (A-01 §계정 발급 직후 최초 로그인).
      ⚠ 0004 마이그레이션이 authenticated 롤에서 이 컬럼의 UPDATE 를 회수했으므로
-       service_role 로 쓴다. 대상은 방금 비밀번호를 바꾼 본인 행 하나로 못박혀 있다. */
-  const admin = createAdminClient()
-  await admin.from('builders').update({ must_change_password: false }).eq('auth_user_id', user.id)
+       service_role 로 쓴다. 대상은 방금 비밀번호를 바꾼 본인 행 하나로 못박혀 있다.
 
-  redirect('/admin/insight')
+     함께 **기존 접속을 전부 끊는다** (0010).
+     비밀번호를 바꾼 이유가 "남이 알아버렸다" 인 경우가 대부분인데,
+     예전에는 그 사람이 열어 둔 창이 그대로 살아 있었다. */
+  const admin = createAdminClient()
+  await admin.from('builders').update({
+    must_change_password: false,
+    sessions_valid_from: new Date().toISOString(),
+  }).eq('auth_user_id', user.id)
+
+  /* 갱신 토큰까지 회수한다 — signOut() 의 기본 범위가 'global' 이라 이 한 번으로
+     본인·타 기기의 갱신 토큰이 모두 끊긴다 ({scope:'others'} 를 따로 부를 필요가 없다).
+     위 기준선이 **이미 발급된 접속 토큰**을 즉시 막고, 이쪽이 **새로 발급받는 길**을 막는다.
+     둘 다 있어야 완결된다.
+
+     ⚠ 본인도 다시 로그인해야 한다. updateUser() 는 접속 토큰을 새로 발급하지 않으므로
+       지금 쿠키에 든 토큰의 iat 는 방금 올린 기준선보다 과거다 — 위 판정에 그대로 걸린다.
+       어중간하게 남겨 두면 "왜 나만 튕기지" 가 되므로 여기서 명확히 끊고 안내한다. */
+  await supabase.auth.signOut()
+  redirect('/admin/login?changed=1')
 }

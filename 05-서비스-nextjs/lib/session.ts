@@ -16,10 +16,22 @@ export type Builder = {
   role_label: string | null
   is_active: boolean
   must_change_password: boolean
+  /** 이 시각 이전에 발급된 토큰은 무효 (0010). 비밀번호를 바꾼 적이 없으면 null */
+  sessions_valid_from: string | null
 }
 
 /* select * 를 쓰지 않는다 (DR-03). 컬럼을 명시해 비공개 필드가 딸려 나가지 않게 한다. */
-const FIELDS = 'id, name, email, slug, role, avatar_url, role_label, is_active, must_change_password'
+const FIELDS = 'id, name, email, slug, role, avatar_url, role_label, is_active, must_change_password, sessions_valid_from'
+
+/* 토큰 발급 시각(iat)과 기준선을 비교할 때 두는 여유 (0010).
+
+   ⚠ 없으면 방금 로그인한 사람이 튕길 수 있다. 이유가 둘이다 —
+     · iat 는 **초 단위로 잘린다.** 12:00:00.9 에 발급된 토큰의 iat 는 12:00:00 이라
+       기준선이 12:00:00.5 면 방금 받은 토큰이 과거로 보인다.
+     · DB 의 now() 와 Auth 의 발급 시각 사이에 미세한 시계 차가 있을 수 있다.
+   되돌릴 수 없는 잠김(아무도 못 들어옴)을 막는 쪽이 훨씬 중요하다.
+   이 틈으로 살아남는 것은 비밀번호를 바꾸기 10초 전에 발급된 토큰뿐이다. */
+const CLOCK_SKEW_MS = 10_000
 
 /** 현재 로그인한 빌더. 비로그인·비활성이면 null.
  *  `cache` 로 감싸 한 요청 안에서 몇 번을 불러도 쿼리는 한 번만 나간다. */
@@ -43,14 +55,40 @@ export const getCurrentBuilder = cache(async (): Promise<Builder | null> => {
   const authUserId = verified?.claims?.sub
   if (!authUserId) return null
 
-  const { data } = await supabase
+  const row = async (fields: string) => supabase
     .from('builders')
-    .select(FIELDS)
+    .select(fields)
     .eq('auth_user_id', authUserId)
     .maybeSingle<Builder>()
 
+  let { data, error } = await row(FIELDS)
+
+  /* ⚠ 0010 을 아직 실행하지 않은 DB 를 만나면 컬럼이 없어 **조회 전체가 실패**한다.
+       그대로 두면 아무도 관리자에 못 들어온다 — 마이그레이션 하나 때문에 잠기는 것은
+       너무 비싼 실패다. 기준선 검사만 빼고 통과시킨다.
+       (보안이 약해지는 것이 아니라 0010 이전 상태로 돌아갈 뿐이다.) */
+  if (error && /sessions_valid_from/.test(error.message)) {
+    console.warn('[session] 0010 미적용 — 세션 기준선 검사를 건너뜁니다.')
+    ;({ data } = await row(FIELDS.replace(', sessions_valid_from', '')))
+  }
+
   /* 회수된 계정(is_active=false)은 로그인한 것으로 치지 않는다 (FR-A01-05 · FR-A06-03). */
   if (!data || !data.is_active) return null
+
+  /* 비밀번호를 바꾸기 전에 발급된 토큰은 무효다 (0010).
+
+     Supabase 의 signOut({scope:'others'}) 는 **갱신 토큰**만 회수한다.
+     이미 남의 브라우저에 들어 있는 접속 토큰은 만료(기본 1시간)까지 살아 있고,
+     이 앱은 getClaims() 로 로컬 검증하므로 Auth 서버에 물어보지도 않는다.
+     그래서 여기서 직접 끊는다 — builders 행은 어차피 위에서 읽었으므로 공짜다. */
+  if (data.sessions_valid_from) {
+    const issuedAt = Number(verified?.claims?.iat)
+    /* iat 가 없으면(있을 수 없지만) 안전한 쪽으로 — 끊는다 */
+    if (!Number.isFinite(issuedAt)) return null
+    if (issuedAt * 1000 + CLOCK_SKEW_MS < new Date(data.sessions_valid_from).getTime()) {
+      return null
+    }
+  }
 
   return data
 })
