@@ -22,8 +22,10 @@ export default function SubmitView() {
         <p>담당자가 확인 후 남겨주신 연락처로 연락드리겠습니다.</p>
 
         <div className="next">
-          <Link className="ncard" href="/insight-detail">
-            <b>바이브 코딩 외주, 잘하는 곳과 못하는 곳의 차이</b>
+          {/* 시안 고정 페이지(/insight-detail)를 가리키고 있었다. 문의를 막 넣은 사람을
+              검색에서 빼둔 중복 페이지로 보내던 자리라 실제 발행 글로 바꾼다. */}
+          <Link className="ncard" href="/insight/turnkey-team">
+            <b>외주개발, 왜 올인원 턴키 팀과 함께 해야 할까?</b>
           </Link>
           <Link className="ncard" href="/content">
             <b>영상으로 보는 우리의 작업 →</b>
